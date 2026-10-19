@@ -1,0 +1,20 @@
+---
+import {sections} from '../lib/encyclopedia.mjs';
+---
+<div class="encyclopedia-header"><a href="/endpoints/" class="text-button">Fuentes de datos ↗</a></div>
+<nav class="encyclopedia-tabs" aria-label="Secciones de la enciclopedia">{sections.map(([id,name])=><button type="button" data-encyclopedia-section={id}>{name}</button>)}</nav>
+<div class="encyclopedia-mobile-navigation"><label for="encyclopedia-section-select">Explorar sección</label><select id="encyclopedia-section-select">{sections.map(([id,name])=><option value={id}>{name}</option>)}</select></div>
+<nav class="encyclopedia-shortcuts" aria-label="Accesos a herramientas"><a href="#database?section=calculators&tool=equipment">Taller de equipo <span aria-hidden="true">↗</span></a><a href="#database?section=more&tool=understanding">Comprensión de raza <span aria-hidden="true">↗</span></a><a href="#database?section=more&tool=pets">Colección de mascotas <span aria-hidden="true">↗</span></a></nav>
+<a id="encyclopedia-tool-back" class="text-button" href="#database?section=more" hidden>← Todas las herramientas</a>
+<div id="encyclopedia-workbench" hidden></div>
+<div id="encyclopedia-catalog">
+ <div id="catalog-groups" class="catalog-groups" aria-label="Familias de objetos"></div>
+ <details id="catalog-category-panel" class="catalog-disclosure"><summary>Categorías de objetos <span id="catalog-category-current">Elegir categoría</span></summary><div id="catalog-categories" class="catalog-categories" aria-label="Categorías de objetos"></div></details>
+ <div class="catalog-toolbar"><label class="catalog-search-field" for="catalog-search"><span>Buscar en esta sección</span><div><input id="catalog-search" type="search" placeholder="Nombre o ID, por ejemplo: araña"/><button id="catalog-search-clear" type="button" aria-label="Borrar búsqueda" hidden>×</button></div></label><label for="catalog-sort">Ordenar<select id="catalog-sort"><option value="name">Nombre: A–Z</option><option value="level-desc">Nivel: mayor primero</option><option value="level-asc">Nivel: menor primero</option><option value="id">Identificador</option></select></label><button id="catalog-reset" class="button secondary">Restablecer</button></div>
+ <details id="catalog-filter-panel" class="catalog-disclosure"><summary>Filtros avanzados <span id="catalog-filter-count">Sin filtros</span></summary><div id="catalog-filters" class="catalog-filters"></div></details>
+ <div id="catalog-active-filters" class="catalog-active-filters" aria-label="Filtros aplicados"></div>
+ <div id="catalog-error" class="catalog-error" role="status" hidden><p>No pudimos cargar el catálogo. Comprueba tu conexión y vuelve a intentarlo.</p><button id="catalog-retry" class="button secondary">Reintentar</button></div>
+ <p id="catalog-status" class="muted" role="status">Cargando catálogo…</p>
+ <div id="catalog-results" class="catalog-grid"></div>
+ <div class="catalog-pagination"><button class="button secondary" id="catalog-prev">← Anterior</button><span id="catalog-page"></span><button class="button secondary" id="catalog-next">Siguiente →</button></div>
+</div>

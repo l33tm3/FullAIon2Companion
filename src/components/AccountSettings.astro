@@ -1,0 +1,13 @@
+<dialog id="account-settings" aria-labelledby="account-settings-title">
+ <div class="settings-heading"><div><span class="eyebrow">TU CUENTA DAEVA</span><h2 id="account-settings-title">Configuración de cuenta</h2></div><button class="icon-button" id="account-settings-close" aria-label="Cerrar configuración">×</button></div>
+ <div class="settings-layout">
+  <div class="settings-nav" role="tablist" aria-label="Secciones de cuenta">
+   <span class="settings-nav-label">MI CUENTA</span>
+   <button role="tab" id="settings-tab-general" aria-controls="settings-content" data-settings-tab="general"><i data-lucide="settings"></i>Configuración</button>
+   <button role="tab" id="settings-tab-desktop" aria-controls="settings-content" data-settings-tab="desktop"><i data-lucide="monitor"></i>Aplicación de escritorio</button>
+   <button role="tab" id="settings-tab-donate" aria-controls="settings-content" data-settings-tab="donate"><i data-lucide="heart"></i>Apóyanos</button>
+  </div>
+  <section id="settings-content" class="settings-content" role="tabpanel" tabindex="0"></section>
+ </div>
+ <p id="settings-status" role="status" aria-live="polite"></p>
+</dialog>

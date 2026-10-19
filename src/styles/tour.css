@@ -1,0 +1,77 @@
+/* The desktop app's tour on the home page (Tour.astro): chapters with the app's own captures. */
+.tour{padding:70px 25px 30px;border-bottom:1px solid var(--line)}
+.tour-intro{max-width:880px;margin:0 auto 26px;text-align:center}
+.tour-intro .eyebrow{color:#edca87;letter-spacing:2px;font-size:12px}
+.tour-intro h2{font-size:clamp(30px,3vw,50px);line-height:1.1;letter-spacing:-1.5px;margin:14px 0 16px}
+.tour-intro p{font-size:17px;line-height:1.8;color:#b1bbce;margin:0 auto;max-width:720px}
+.tour-index{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:26px auto 0;max-width:900px}
+.tour-index button{border:1px solid #ffffff1c;background:#161e2d;color:#cfd9e6;border-radius:999px;padding:7px 14px;font-size:13px;cursor:pointer;transition:border-color .2s,color .2s}
+.tour-index button:hover{border-color:#edca8799;color:#edca87}
+.tour-chapter{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:56px;align-items:center;padding:64px 0;border-top:1px solid #ffffff0d;scroll-margin-top:24px}
+.tour-chapter.wide{grid-template-columns:minmax(0,.7fr) minmax(0,1.3fr)}
+.tour-chapter.reverse{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr)}
+.tour-chapter.reverse.wide{grid-template-columns:minmax(0,1.3fr) minmax(0,.7fr)}
+.tour-chapter.reverse .tour-copy{order:2}
+.tour-chapter.reverse .tour-shot{order:1}
+.tour-number{display:block;color:#edca87;font-size:12px;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px}
+.tour-copy h3{font-size:clamp(26px,2.3vw,40px);line-height:1.15;letter-spacing:-1px;margin:0 0 16px}
+.tour-copy p{font-size:16.5px;line-height:1.8;color:#b1bbce;margin:0 0 18px}
+.tour-copy ul{list-style:none;padding:0;margin:0;display:grid;gap:9px}
+.tour-copy li{position:relative;padding-left:24px;color:#dfe6ef;font-size:15px;line-height:1.5}
+.tour-copy li::before{content:"";position:absolute;left:3px;top:.55em;width:8px;height:8px;border-radius:2px;background:#84c9df;transform:rotate(45deg)}
+.tour-credit{display:block;margin-top:16px;color:var(--muted);font-size:12px}
+.tour-shot{position:relative;display:flex;justify-content:center;border-radius:14px;overflow:hidden;border:1px solid #ffffff17;background:radial-gradient(ellipse at 50% 0%,#29496b55,transparent 70%),#0d1319;box-shadow:0 30px 80px #0008;transition:transform .25s,border-color .25s}
+.tour-shot:hover{transform:translateY(-4px);border-color:#edca8770}
+.tour-shot img{display:block;width:100%;height:auto;max-height:720px;object-fit:contain}
+.tour-extras{padding:58px 0 10px;border-top:1px solid #ffffff0d}
+.tour-extras>h3{font-size:clamp(24px,2vw,34px);margin:0 0 22px;text-align:center}
+.tour-extra-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.tour-extra{display:flex;flex-direction:column;gap:6px;border:1px solid #ffffff14;background:#161e2d;border-radius:12px;padding:12px 12px 16px;color:inherit;text-decoration:none;transition:transform .2s,border-color .2s}
+.tour-extra:hover{transform:translateY(-4px);border-color:#78b2d66b}
+.tour-extra img{width:100%;aspect-ratio:16/10;object-fit:cover;object-position:top left;border-radius:8px;margin-bottom:8px}
+.tour-extra strong{font-size:16px}
+.tour-extra span{color:#b1bbce;font-size:14px;line-height:1.6}
+.tour-cta{display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;margin:46px 0 30px;padding:30px 34px;border-radius:16px;border:1px solid #edca8740;background:linear-gradient(120deg,#24324cdd,#131b2a 60%,#2a2414aa)}
+.tour-cta h3{font-size:clamp(22px,2vw,32px);margin:0 0 6px}
+.tour-cta p{margin:0;color:#b1bbce}
+.tour-cta .button{padding:13px 19px}
+/* The download section's left column: what the app brings, and a way up to the tour. */
+/* .home-companion ul/li (home.css) make two columns with a ✓: this list has its own icons, one per line. */
+.home-companion .download-highlights{list-style:none;padding:0;margin:0 0 16px;display:grid;grid-template-columns:minmax(0,1fr);gap:16px;max-width:560px;font-size:inherit}
+.download-highlights li{display:flex;gap:14px;align-items:flex-start}
+.home-companion .download-highlights li::before{content:none}
+.download-highlights li>svg{flex:none;width:38px;height:38px;padding:9px;border-radius:10px;background:#1c2840;border:1px solid #84c9df33;color:#84c9df}
+.download-highlights strong{display:block;font-size:15px;color:#eef2f7}
+.download-highlights span{display:block;font-size:13.5px;line-height:1.6;color:#b1bbce;margin-top:2px}
+.download-tour-link{display:inline-flex;align-items:center;gap:6px;color:#edca87;font-weight:600}
+.download-tour-link svg{width:15px;height:15px}
+/* In the markup the list comes after the release (on a phone the download button stays first); on a wide screen it goes
+   under the introduction, with the release beside both. */
+/* Everything is free (2026-10-19): a voluntary donation by PayPal, at the tour's close, in the footer and in Mi cuenta. */
+.tour-donate{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin:-10px 0 30px;padding:20px 26px;border-radius:14px;border:1px solid #e36cb84d;background:linear-gradient(120deg,#2a1624cc,#151d2b 70%)}
+.tour-donate>svg{flex:none;width:30px;height:30px;color:#f08cc4}
+.tour-donate p{flex:1 1 320px;margin:0;color:#c9d2e0;line-height:1.7}
+.tour-donate strong{color:#ffe1ef}
+.button.donate-button{background:#e36cb8;border-color:#e36cb8;color:#1d0c16;font-weight:700;display:inline-flex;align-items:center;gap:8px}
+.button.donate-button:hover{background:#f08cc4;border-color:#f08cc4;color:#1d0c16}
+.donate-button svg{width:17px;height:17px}
+.footer-donate{display:inline-flex;align-items:center;gap:6px;color:#f4b6cb;font-weight:600;text-decoration:none}
+.footer-donate:hover{color:#ffe1ef;text-decoration:underline}
+.footer-donate svg{width:15px;height:15px}
+.donate-card p{margin:0 0 14px;line-height:1.7}
+.donate-card small{display:block;margin-top:12px;color:var(--muted)}
+@media (min-width:901px){
+ body #home-companion .download-introduction{grid-column:1;grid-row:1}
+ body #home-companion #companion-releases{grid-column:2;grid-row:1/span 2}
+ body #home-companion .download-highlights-block{grid-column:1;grid-row:2}
+}
+@media (max-width:900px){
+ .tour{padding:46px 16px 20px}
+ .tour-chapter,.tour-chapter.wide,.tour-chapter.reverse,.tour-chapter.reverse.wide{grid-template-columns:minmax(0,1fr);gap:24px;padding:42px 0}
+ .tour-chapter.reverse .tour-copy{order:0}
+ .tour-chapter.reverse .tour-shot{order:0}
+ .tour-extra-grid{grid-template-columns:minmax(0,1fr)}
+ .tour-cta{padding:24px 20px}
+ .footer-donate{flex-basis:100%}
+ .tour-donate{padding:18px 18px}
+}

@@ -1,0 +1,112 @@
+---
+import '../styles/tour.css';
+// The desktop app, told chapter by chapter with its own captures (2026-10-19, «haz la historia de todo lo que tiene, que quede
+// genial la web, el inicio»; then «faltan más: el minimapa, la caza de bichos, el PvP de otro personaje, las alertas de
+// los jefes con sonidos»). Captures of the real app; other players' names were replaced by invented ones or left out.
+const chapters = [
+ { id: 'combate', eyebrow: 'En combate', title: 'El overlay, siempre encima de la partida.', image: 'overlay-pulido', wide: false,
+   text: 'Tu DPS, el daño y la curación, el reparto de tu grupo con su clase, el objetivo con su vida y, a un lado, la tabla de botín de lo que estás cazando.',
+   points: ['DPS, daño, curación y criaturas', 'Ranking del grupo con clase y poder de combate', 'Vida del objetivo y su botín al instante', 'Tu puesto del Abismo y los próximos eventos en la cabecera'] },
+ { id: 'jefes', eyebrow: 'Jefes', title: 'Sabe si llegas antes de la furia.', image: 'boss-card', wide: false,
+   text: 'La ficha del jefe calcula en cuánto lo derrotáis al ritmo de ahora, cuándo se enfurece y con cuánta vida llegará. Una barra de carrera lo dice de un vistazo.',
+   points: ['«Derrota en» y DPS del grupo', 'Cuenta atrás de la furia y DPS necesario', 'En su propia ventana, bajo la barra del jefe, o dentro del overlay'] },
+ { id: 'avisos', eyebrow: 'Avisos de jefes', title: 'Cuando el jefe carga algo grande, lo sabes.', image: 'boss-alert', wide: true,
+   text: 'Si un jefe empieza una habilidad peligrosa, sale un aviso grande en el centro de la pantalla y una franja en el overlay con lo que falta para que caiga. Y suena, como en los addons de raid: una voz que dice «¡Cuidado!», en español o en inglés, o una alarma.',
+   points: ['Aviso en el centro de la pantalla, en el overlay o en los dos', 'Voz en español, en inglés o alarma', 'Tú eliges qué avisa: jefes de mazmorra, de campo, élites o tu objetivo'] },
+ { id: 'asistente', eyebrow: 'Asistente de combate', title: 'Tus buffos y recargas, a la vista.', image: 'assistant', wide: false,
+   text: 'Una barra pequeña encima de la del juego con los buffos que tienes y lo que les queda, y debajo tus habilidades en recarga. Deja el mouse sobre un icono y verás qué hace en tu nivel, como en el juego, sin quitarle clics a la partida.',
+   points: ['Buffos con cuenta atrás', 'Recargas con aviso dorado y sonido al estar listas', 'Ficha de cada buff y habilidad al pasar el mouse'] },
+ { id: 'pvp', eyebrow: 'Otros jugadores', title: 'Mira a quién tienes delante.', image: 'pvp-card', wide: false,
+   text: 'Selecciona a otro jugador y el overlay trae su ficha oficial de NCSOFT: clase, nivel, legión, poder de combate y todo su equipo con los encantamientos, comparado contigo.',
+   points: ['Perfil oficial al seleccionarlo, sin buscarlo', 'Equipo completo con detalle al pasar el mouse', 'Tu poder y tus atributos frente a los suyos'] },
+ { id: 'medidor', eyebrow: 'Medidor DPS', title: 'Cada golpe, desglosado.', image: 'panel-combat', wide: true,
+   text: 'En el panel tienes el combate completo: tu DPS y el daño total, el desglose por habilidad con golpes y críticos, y el historial de tus combates para comparar.',
+   points: ['Desglose por habilidad', 'Historial de combates', 'Avisos de las habilidades del jefe, con sonido'] },
+ { id: 'estilos', eyebrow: 'Estilos', title: '36 estilos para tu overlay.', image: 'estilos', wide: false,
+   text: 'Del Clásico de siempre a Cyberpunk, Gamer Girl, Synthwave o Terminal: cada estilo cambia la letra, los colores, la trama y el resplandor, y todo el overlay se viste igual.',
+   points: ['Seis formas de ordenar la información', 'Diez paletas y veinte estilos temáticos', 'Se aplica al instante, desde Configuración → Estilos'] },
+ { id: 'minimapa', eyebrow: 'Minimapa', title: 'Un minimapa sobre el juego.', image: 'minimap', wide: false,
+   text: 'El atlas de Atreia alrededor de tu posición, mientras juegas: criaturas y jefes, cubos, minerales, plantas y Od, tu tropa y tus pines y rutas. Lo mueves y lo agrandas donde quieras.',
+   points: ['Capas que enciendes y apagas con un clic', 'Tu tropa y las criaturas en vivo', 'Atajo Ctrl+Alt+N'] },
+ { id: 'mapa', eyebrow: 'Mapa de Atreia', title: 'El mapa de Atreia, dentro de la app.', image: 'panel-atlas', wide: true,
+   text: 'Retratos de cada criatura, búsqueda en todas las capas, «Tú estás aquí» mientras juegas, tus pines y rutas, y los próximos eventos al lado del mapa.',
+   points: ['Ficha de cada criatura con su botín', '«Tú estás aquí» con tu posición en el juego', 'Pines y rutas que también ves en el minimapa'] },
+ { id: 'caza', eyebrow: 'Caza de almas', title: 'Caza de almas, criatura a criatura.', image: 'hunting', wide: true,
+   text: 'Selecciona una criatura y el overlay te dice qué mascota da su alma, cuántas llevas, cuántas faltan para el siguiente nivel y cuántas muertes te quedan al ritmo de hoy. Al lado, todo lo que suelta, con la probabilidad de cada objeto.',
+   points: ['La mascota de su alma y tu progreso', 'Muertes que faltan a tu ritmo', 'Botín agrupado con probabilidades'] },
+ { id: 'mascotas', eyebrow: 'Mascotas', title: 'Tu colección de mascotas, alma a alma.', image: 'panel-pets', wide: true,
+   text: 'El progreso de cada mascota con las almas que faltan y de qué criaturas salen, con un clic para verlas en el mapa. Fija las que estés cazando y aparecen bajo el overlay.',
+   points: ['Almas contadas mientras cazas', 'Fuentes de cada alma en el mapa', 'Tarjetas fijas bajo el overlay'] },
+ { id: 'mercado', eyebrow: 'Mercado', title: 'El Mercado de tu servidor, a mano.', image: 'panel-market', wide: true,
+   text: 'Los precios de todos los objetos por servidor, con subidas y bajadas, y tu inventario valorado. Lo que recoges en el botín muestra lo que vale.',
+   points: ['Todos los servidores de cada región', 'Tu inventario con su valor', 'Precio del botín en el overlay'], credit: 'Datos del Mercado: aion2.exchange' },
+ { id: 'clasificacion', eyebrow: 'Clasificación', title: 'Tu puesto en las clasificaciones del juego.', image: 'panel-ranking', wide: true,
+   text: 'Abismo, jefes, expedición, despertar y arenas: tu puesto en tu clase y en todas, cuánto subiste o bajaste y la evolución de cada hora.',
+   points: ['Seis clasificaciones', 'En tu clase y en todas las clases', 'Historial con gráfico'] },
+ { id: 'jefes-de-campo', eyebrow: 'Jefes de campo', title: 'Llega a tiempo a cada jefe de campo.', image: 'panel-fieldbosses', wide: true,
+   text: 'Los jefes de campo de cada mapa con su próxima aparición, avisos con sonido y tus favoritos en la cabecera del overlay.',
+   points: ['Todos los mapas', 'Avisos antes de que aparezcan', 'Favoritos siempre a la vista'] },
+ { id: 'cubos', eyebrow: 'Cubos ocultos', title: 'Que no se te escape ningún cubo.', image: 'panel-cubes', wide: true,
+   text: 'Cuando el servidor anuncia un cubo oculto cerca, el overlay te da la dirección y la distancia. El panel guarda cada uno, con su mapa y si seguía allí.',
+   points: ['Flecha y distancia en el overlay', 'Aviso con sonido', 'Historial de cubos'] },
+ { id: 'caceria', eyebrow: 'Cacería', title: 'Tu sesión de farmeo, con números.', image: 'panel-farm', wide: true,
+   text: 'Muertes, almas y kinah por hora, el botín que te da cada criatura, aprendido mientras juegas, y objetivos con cuenta atrás.',
+   points: ['Sesión de farmeo en el overlay', 'Botín aprendido criatura a criatura', 'Objetivos y retos con ritmo'] },
+];
+const extras = [
+ { image: 'panel-goals', title: 'Objetivos', text: 'Muertes, kinah o botín: marca la meta y la app te dice si vas a tiempo.' },
+ { image: 'panel-resources', title: 'Recursos y Od', text: 'Tus contadores del juego y la energía Od para las mazmorras.' },
+ { image: 'panel-events', title: 'Eventos', text: 'Próximos eventos de tu región, con avisos y sonido.' },
+];
+---
+<section class="tour" aria-labelledby="tour-title">
+ <div class="tour-intro">
+  <span class="eyebrow">FULLAION2COMPANION · APLICACIÓN DE ESCRITORIO</span>
+  <h2 id="tour-title">Todo lo que pasa en tu partida, a la vista.</h2>
+  <p>Lee el tráfico de AION 2 que ya llega a tu equipo, sin tocar el juego ni su memoria, y te lo muestra en un overlay sobre la partida y en un panel con todo lo demás. Estas capturas son de la app real.</p>
+  <nav class="tour-index" aria-label="Capítulos">
+   {chapters.map(c => <button type="button" data-tour-go={c.id}>{c.eyebrow}</button>)}
+  </nav>
+ </div>
+ {chapters.map((c, i) => (
+  <article class:list={['tour-chapter', { reverse: i % 2 === 1, wide: c.wide }]} id={`tour-${c.id}`}>
+   <div class="tour-copy">
+    <span class="tour-number">{String(i + 1).padStart(2, '0')} · {c.eyebrow}</span>
+    <h3>{c.title}</h3>
+    <p>{c.text}</p>
+    <ul>{c.points.map(p => <li>{p}</li>)}</ul>
+    {c.credit && <small class="tour-credit">{c.credit}</small>}
+   </div>
+   <a class="tour-shot" href={`/assets/tour/${c.image}.webp`} target="_blank" rel="noopener" aria-label={`Ampliar: ${c.title}`}>
+    <img src={`/assets/tour/${c.image}.webp`} alt={c.title} loading={i < 2 ? 'eager' : 'lazy'} decoding="async"/>
+   </a>
+  </article>
+ ))}
+ <div class="tour-extras">
+  <h3>Y además</h3>
+  <div class="tour-extra-grid">
+   {extras.map(x => (
+    <a class="tour-extra" href={`/assets/tour/${x.image}.webp`} target="_blank" rel="noopener">
+     <img src={`/assets/tour/${x.image}.webp`} alt={x.title} loading="lazy" decoding="async"/>
+     <strong>{x.title}</strong><span>{x.text}</span>
+    </a>
+   ))}
+  </div>
+ </div>
+ <div class="tour-cta">
+  <div><h3>Pruébala en tu próxima partida.</h3><p>Todo gratis · Descarga sin cuenta · Windows de 64 bits.</p></div>
+  <a class="button download-primary" data-release-download href="/#home?download=1"><i data-lucide="download"></i><span data-release-label>Descargar para Windows</span></a>
+ </div>
+ <div class="tour-donate">
+  <i data-lucide="heart"></i>
+  <p><strong>Es gratis, y lo seguirá siendo.</strong> Si la app o la web te sirven y quieres ayudarnos a mantenerlas, puedes hacer una donación por PayPal. Es voluntaria y no cambia nada.</p>
+  <a class="button donate-button" href="https://paypal.me/martincito45" target="_blank" rel="noopener noreferrer"><i data-lucide="heart"></i>Donar con PayPal</a>
+ </div>
+</section>
+<script>
+ // The chapter index scrolls to its chapter: the site's hash is its router, so no #anchors.
+ document.addEventListener('click', event => {
+  const go = (event.target as HTMLElement).closest<HTMLElement>('[data-tour-go]');
+  if (go) document.getElementById('tour-' + go.dataset.tourGo)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+ });
+</script>

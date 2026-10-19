@@ -1,0 +1,11 @@
+import fs from 'node:fs/promises';
+const read=async p=>JSON.parse(await fs.readFile(p,'utf8')),changes=await read('output/encyclopedia-spanish-files.json'),index=await read('public/data/game/encyclopedia/index.json'),cache=await read('output/encyclopedia-reviewed-names.json');
+const npcNames=new Map(index.entries.filter(x=>x.detail==='npc').map(x=>[Number(x.id),x.name]));
+const localIcons=(x,k='')=>{if(k==='icon'&&!x)return '/assets/unavailable.svg';if(Array.isArray(x))return x.map(v=>localIcons(v,k));if(x&&typeof x==='object')return Object.fromEntries(Object.entries(x).map(([key,v])=>[key,localIcons(v,key)]));return typeof x==='string'&&k==='icon'&&/^[\w-]+$/.test(x)?'/assets/game/'+x+'.webp':x;};
+for(const cls of new Set(index.entries.filter(x=>x.detail==='skills').map(x=>x.classType))){const p='public/data/game/skills-'+cls+'.json';await fs.writeFile(p,JSON.stringify(localIcons(await read(p))));changes.files.push(p);}
+for(const file of await fs.readdir('public/data/atlas'))if(file.endsWith('.json')){const p='public/data/atlas/'+file,d=await read(p);for(const cat of d.categories||[])for(const marker of cat.markers||[])marker.name=npcNames.get(Number(marker.npcId))||cache[marker.originalName]||marker.name;await fs.writeFile(p,JSON.stringify(d));changes.files.push(p);}
+const resources=await read('public/data/game/encyclopedia/resources.json');for(const p of resources.promotions)for(const item of p.rewards||[])item.name=index.entries.find(x=>x.detail==='items'&&Number(x.id)===Number(item.id))?.name||item.name;
+const rawServers=await read('research/dbaion/servers-full.json'),serverNames=new Map(rawServers.servers.map(x=>[String(x.id),x.name]));for(const server of resources.servers.servers)server.name=serverNames.get(String(server.id))||server.name;
+await fs.writeFile('public/data/game/encyclopedia/resources.json',JSON.stringify(resources));
+const npcIndexPath='public/data/game/npc-index.json',npcIndex=await read(npcIndexPath);for(const npc of npcIndex.entries)npc.name=npcNames.get(Number(npc.id))||npc.name;await fs.writeFile(npcIndexPath,JSON.stringify(npcIndex));changes.files.push(npcIndexPath);
+changes.files=[...new Set(changes.files)];await fs.writeFile('output/encyclopedia-spanish-files.json',JSON.stringify(changes));console.log('Rutas locales y nombres del mapa actualizados');

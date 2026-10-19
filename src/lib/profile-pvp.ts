@@ -1,0 +1,5 @@
+export function profilePvp(info:any,esc:(x:any)=>string){
+ const rows=Array.isArray(info.ranking?.rankingList)?info.ranking.rankingList:[];
+ const valid=rows.filter((x:any)=>Number(x.rank??x.ranking)>0);
+ return `<section class="panel companion-panel profile-pvp"><div class="eyebrow">COMPETICIÓN · NCSOFT</div><h3>Clasificación JcJ</h3>${valid.length?valid.map((x:any)=>`<div class="profile-pvp-row"><span>${esc(x.name||x.rankingName||x.typeName||'JcJ')}</span><strong>#${Number(x.rank??x.ranking).toLocaleString('es-CL')}</strong>${Number.isFinite(Number(x.score??x.point))?`<small>${Number(x.score??x.point).toLocaleString('es-CL')} puntos</small>`:''}</div>`).join(''):'<div class="pvp-unavailable"><strong>Sin clasificación publicada</strong><p>NCSOFT no devuelve un puesto JcJ para este personaje en la lectura actual.</p></div>'}<button class="text-button" data-profile-ranking>Ver clasificación de su servidor →</button><small>El poder de combate y el nivel de equipo se muestran por separado de la clasificación JcJ.</small></section>`;
+}

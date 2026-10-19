@@ -1,0 +1,101 @@
+/* Refinement of the existing Daeva interface: readable controls and one clear primary action. */
+body .button {min-height:44px;border-radius:10px;font-size:14px;font-weight:650;padding:11px 18px;line-height:1.4;gap:9px;box-shadow:none}
+body .button:hover {filter:none;background:#f3d18a;border-color:#f3d18a}
+body .button.secondary {background:#192335;border:1px solid #475973;color:#e3ebf7}
+body .button.secondary:hover {background:#253650;border-color:#8199b9}
+body .button:disabled {opacity:.6;cursor:not-allowed}
+body .text-button {min-height:40px;font-size:14px;line-height:1.5;display:inline-flex;align-items:center;gap:8px}
+body .text-button:hover {color:#f2ce86;text-decoration:underline;text-underline-offset:4px}
+body :is(button,a,input,select,textarea,summary):focus-visible {outline:2px solid #f4d596;outline-offset:4px}
+body .sidebar .nav-item {font-size:14px;min-height:46px;gap:12px;border-radius:10px}
+body .sidebar .nav-item.active {background:#253750;color:#d8edff}
+body .sidebar .nav-download {color:#f2d49a}
+body .sidebar .nav-download svg {color:#f2d49a}
+body .topbar {border-bottom-color:#354158}
+body .topbar .header-download {background:#273c58;border-color:#57799e;white-space:nowrap;min-height:42px;flex-shrink:0;color:#eef5ff}
+body .topbar .header-download:hover {background:#345473;border-color:#86afd5}
+body .topbar .quiet,body .topbar .icon-button {min-height:44px;min-width:44px}
+body .topbar .quiet {font-size:14px}
+body .topbar #account-open {min-height:42px;font-size:13px}
+body .page-heading h1 {letter-spacing:-.025em}
+body .page-heading p {font-size:15px;max-width:65ch;color:#c0cde0}
+body :is(.craft-fields,.catalog-filters,.catalog-toolbar,dialog) :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),select,textarea) {min-height:44px;font-size:14px}
+body :is(.encyclopedia-tabs,.catalog-groups,.catalog-categories,.board-tabs,.board-character-tabs) button {min-height:42px;font-size:13px}
+body .account-dropdown [role=menuitem] {min-height:44px;font-size:14px}
+body .account-menu-identity {overflow-wrap:anywhere}
+body .home-hero {padding:32px 0 40px;min-height:0;grid-template-columns:minmax(0,1.2fr) minmax(300px,.9fr);gap:48px}
+body .home-copy h1 {font-size:clamp(36px,3.2vw,54px);line-height:1.12;margin:0 0 24px}
+body .home-copy p {font-size:16px;line-height:1.75;max-width:55ch}
+body .home-actions {gap:12px;margin:26px 0 16px}
+body .home-actions .button {padding:14px 20px;min-height:50px;font-size:15px}
+body .download-primary {background:#edc46e;border-color:#edc46e;color:#151b29}
+body .download-primary:hover {background:#f5d597;border-color:#f5d597;color:#151b29}
+body .home-note {font-size:13px;color:#bdcce1;max-width:60ch}
+.home-note [data-release-summary] {display:block;margin-top:5px;font-variant-numeric:tabular-nums;color:#a7bad2}
+.home-app-intro {background:#182438;border:1px solid #435674;padding:28px;border-radius:16px;min-width:0}
+.home-app-brand {display:flex;align-items:center;gap:14px;margin-bottom:20px}
+.home-app-brand img {width:72px;height:58px;object-fit:contain}
+.home-app-brand strong {font-size:17px;font-weight:700;overflow-wrap:anywhere}
+.home-app-brand span {display:block;font-size:13px;color:#b4c8e2;margin-top:4px}
+.home-app-intro h2 {font-size:24px;line-height:1.3;font-weight:650}
+.home-app-intro ul {list-style:none;margin:18px 0 14px;padding:0}
+.home-app-intro li {display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid #354963}
+.home-app-intro li>svg {width:22px;height:22px;color:#82c5dc}
+.home-app-intro li:last-child {border-bottom:0}
+.home-app-intro li strong {font-size:14px;color:#edf3fc;display:block}
+.home-app-intro li small {display:block;font-size:13px;color:#b9cce4;margin-top:4px}
+.home-app-intro>.text-button {color:#b7d9fb}
+body #home-companion {display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,1fr);gap:24px 48px;margin:32px 0 40px;padding:32px;background:#151e2e;border:1px solid #3e506b;border-radius:16px;scroll-margin-top:84px}
+#download-heading {font-size:30px;font-weight:700;letter-spacing:-.025em;line-height:1.25;margin-bottom:16px;overflow-wrap:anywhere}
+#download-heading:focus {outline:none}
+#home-companion .download-introduction>p {font-size:15px;line-height:1.75;max-width:55ch;color:#c2cee0}
+.download-platform {display:flex;align-items:center;gap:9px;margin:18px 0;color:#c2d9f1;font-size:14px}
+body #companion-releases {margin:0;display:block;min-width:0}
+.download-release-heading {display:flex;align-items:center;justify-content:space-between;gap:12px}
+.download-release-heading h3 {font-size:20px;font-weight:650;color:#edf3fb}
+.download-release-heading>span {font-size:12px;background:#263c3b;color:#a8e2c5;border:1px solid #416a5a;padding:4px 10px;border-radius:6px}
+#companion-releases .download-release>p {font-size:13px;color:#bacde5;margin:10px 0;line-height:1.7}
+#companion-releases .download-primary {display:flex;width:100%;min-height:68px;justify-content:center;font-size:18px;margin:20px 0 10px;padding:16px 20px}
+#companion-releases .download-primary>svg {width:24px;height:24px}
+#companion-releases .download-primary span {display:block}
+#companion-releases .download-primary small {display:block;font-size:12px;color:#384052;line-height:1.5;margin-top:3px}
+.download-release-links {display:flex;gap:12px 20px;align-items:center;flex-wrap:wrap;margin:10px 0}
+.download-release-links>a,.download-security>a {color:#aed3f9;font-size:13px;text-underline-offset:4px;min-height:40px;display:inline-flex;align-items:center;gap:8px}
+.download-release-links>a:hover,.download-security>a:hover {color:#f4d28f;text-decoration:underline}
+#download-message {overflow-wrap:anywhere}
+#download-link-fallback {width:100%;margin-bottom:12px}
+#companion-releases :is(.download-changelog,.download-integrity) {border-top:1px solid #3a4a64;padding-top:12px;margin-top:12px;font-size:14px;color:#c6d5e9}
+#companion-releases summary,.download-security summary {padding:6px 0;cursor:pointer;color:#dbe8f7}
+#companion-releases .download-changelog p {white-space:pre-line;max-height:320px;overflow:auto;line-height:1.8;margin-top:14px;font-size:13px}
+#companion-releases code {font-size:12px;color:#c6d5e9;padding:12px 0;line-height:1.75}
+.download-unavailable h3 {font-size:20px;font-weight:650}
+.download-unavailable p {font-size:14px;line-height:1.7;color:#c2cee0;margin:12px 0 18px}
+.installation-guide {grid-column:1/-1;border-top:1px solid #3e506b;padding-top:24px}
+.installation-guide h3 {font-size:20px;font-weight:650;margin-bottom:18px}
+.installation-guide ol {list-style:none;counter-reset:setup;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px;margin:0;padding:0}
+.installation-guide li {counter-increment:setup;min-width:0}
+.installation-guide li>strong {display:flex;align-items:center;gap:10px;font-size:15px;color:#eef3fc}
+.installation-guide li>strong::before {content:counter(setup);display:grid;place-items:center;width:26px;height:26px;flex-shrink:0;background:#2c405d;border-radius:6px;color:#e7f1ff;font-size:13px}
+#home-companion .installation-guide p {font-size:14px;color:#c2cee0;line-height:1.75;margin:12px 0}
+.installation-links {display:flex;gap:8px 16px;flex-wrap:wrap}
+.installation-links :is(a,button) {font-size:13px;color:#b6d8fb;background:transparent;border:0;display:inline-flex;align-items:center;gap:6px;padding:4px 0;min-height:40px;text-underline-offset:4px}
+.installation-links :is(a,button):hover {text-decoration:underline;color:#f5d18a}
+.installation-links svg {width:15px;height:15px}
+.download-security {grid-column:1/-1;border-top:1px solid #3e506b;padding-top:16px;font-size:14px;color:#bacde4}
+#home-companion .download-security p {font-size:13px;line-height:1.75;max-width:80ch;margin:12px 0;color:#bdcee3}
+body .home-section-heading {padding-top:16px}
+body .home-section-heading .eyebrow,body .home-get-started .eyebrow,body .home-streamers .eyebrow {display:none}
+body .home-section-heading h2,body .home-get-started h2,body .home-streamers h2 {font-size:30px;letter-spacing:-.025em}
+body .home-features>button {border-radius:12px;padding:24px;text-align:left;background:#172133;border-color:#3a4c67}
+body .home-features>button:hover {background:#243550;border-color:#809abd}
+body .home-features h3 {font-size:18px}
+body .home-features p {font-size:14px;line-height:1.75;color:#c0cde1}
+body .home-features span {font-size:13px}
+@media(max-width:1750px){body #event-ticker{display:none}}
+@media(max-width:1150px){body .home-hero{gap:28px;grid-template-columns:minmax(0,1fr) minmax(280px,.9fr)}body #home-companion{gap:24px;padding:26px}.home-app-intro{padding:22px}}
+@media(max-width:900px){body .home-hero{grid-template-columns:1fr}.home-app-intro{display:none}body #home-companion{grid-template-columns:1fr}.installation-guide ol{grid-template-columns:1fr;gap:20px}.installation-guide li{padding-bottom:18px;border-bottom:1px solid #354861}.installation-guide li:last-child{border-bottom:0;padding-bottom:0}.installation-guide{padding-top:20px}body .topbar .quiet kbd{display:none}}
+@media(max-width:700px){body .topbar{padding:0 12px;gap:8px}body .topbar .breadcrumbs{display:none!important}body .topbar .top-actions{gap:6px;margin-left:auto;min-width:0}body .topbar .header-download{padding:9px 10px;min-height:44px;font-size:12px;gap:6px}body .topbar #account-open{padding:9px 10px;max-width:104px;overflow:hidden;white-space:nowrap;font-size:12px;min-height:44px}body .topbar .quiet{padding:8px}body .home-hero{padding:12px 0 28px}body .home-copy h1{font-size:36px;line-height:1.13;margin-bottom:20px}body .home-actions{display:grid;grid-template-columns:1fr;margin-top:22px;gap:10px}body .home-actions .button{width:100%;font-size:16px;min-height:52px}body .home-actions .text-button{justify-content:center}body .home-note{font-size:13px;line-height:1.75}body #home-companion{margin:24px 0 32px;padding:22px 18px;gap:20px;border-radius:14px}#download-heading{font-size:26px}#companion-releases .download-primary{font-size:17px;min-height:68px}body .page-heading p{font-size:14px}body :is(.craft-fields,.catalog-filters,.catalog-toolbar,dialog) :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),select,textarea){font-size:16px}body .home-section-heading h2,body .home-get-started h2,body .home-streamers h2{font-size:26px}body .home-features>button{padding:22px}body .home-features h3{font-size:17px}}
+
+@media(max-width:360px){body .topbar .header-download{padding-inline:8px;gap:4px}body .topbar #account-open{padding-inline:8px;gap:4px}body .topbar .top-actions{gap:4px}}
+
+@media(max-width:700px){body.atlas-view .workspace .topbar .breadcrumbs{display:none!important}}

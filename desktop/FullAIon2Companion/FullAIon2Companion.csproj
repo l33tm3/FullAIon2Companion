@@ -1,0 +1,61 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType><TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
+    <AssemblyName>FullAIon2Companion</AssemblyName><Product>FullAIon2Companion</Product>
+    <Version>1.0.20</Version><Company>Daeva Companion</Company><Copyright>© 2026 Daeva Companion</Copyright><Description>Daeva Companion para AION 2</Description><ApplicationIcon>assets\app.ico</ApplicationIcon><StartupObject>FullAIon2Companion.Program</StartupObject>
+    <Vendor>../vendor/Aion-DPS-Meter-084e7e94c5c5c4d280c4547ce9c39168e86d6437/Client</Vendor>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="SharpPcap" Version="6.3.0" />
+    <PackageReference Include="PacketDotNet" Version="1.4.7" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3537.50" />
+    <Compile Include="$(Vendor)/Aion2/Protocol/*.cs" Link="Protocol/%(Filename)%(Extension)" />
+    <Compile Include="$(Vendor)/Aion2/Aion2EntityDirectory.cs;$(Vendor)/Aion2/Aion2CharacterStore.cs;$(Vendor)/Aion2/Aion2HitPoints.cs;$(Vendor)/Aion2/Aion2FieldBosses.cs;$(Vendor)/Aion2/PetFarmLog.cs" Link="Protocol/%(Filename)%(Extension)" />
+    <Compile Include="$(Vendor)/Aion2/Capture/TcpReassembler.cs;$(Vendor)/Aion2/Capture/TcpSegment.cs;$(Vendor)/Aion2/Capture/CaptureAdapters.cs" Link="Capture/%(Filename)%(Extension)" />
+    <Compile Include="$(Vendor)/Combat/DamageEvent.cs;$(Vendor)/Combat/Sources/ICombatSource.cs" Link="Protocol/%(Filename)%(Extension)" />
+    <Content Include="$(Vendor)/assets/aion2/**/*.json" Link="assets/aion2/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(Vendor)/assets/aion2/skills/icons/*.png" Link="assets/aion2/skills/icons/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../public/data/game/catalog.json" Link="data/catalog.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../public/data/game/npc/*.json" Link="data/npc/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../public/assets/game/*.webp" Link="assets/game/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../public/assets/ui/profile*png" Link="assets/ui/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../public/assets/ui/class_icon_*.png" Link="assets/ui/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../public/data/events.json" Link="data/events.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../public/data/servers.json" Link="data/servers.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="dungeon-names.json" Link="data/dungeon-names.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="minimap.json" Link="data/minimap.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="rooms.json" Link="data/rooms.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="i18n/panel.json" Link="data/i18n.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="i18n/patterns.tsv" Link="data/i18n-patterns.tsv" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="items.json" Link="data/items.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="pet-icons.json" Link="data/pet-icons.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="skill-timers.json" Link="data/skill-timers.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="skill-texts.json" Link="data/skill-texts.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="pet-icons/*.webp" Link="assets/pets/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="pet-badges/*.png" Link="assets/pet-badges/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="npc-siblings.json" Link="data/npc-siblings.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../public/data/game/encyclopedia/npc-aliases.json" Link="data/npc-aliases.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="sounds/*.mp3" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="minimap-markers/*.json" Link="data/minimap-markers/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="atlas-npcs/*.json" Link="data/atlas-npcs/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Creature portraits from aion2.th.gl, with its authors' permission (credited in the Atlas and on the website). -->
+    <Content Include="thgl-icons/*.webp" Link="assets/thgl/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="minimap-icons/*.png" Link="assets/map-icons/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Minimap tiles: the six open-world maps of the atlas (zoom 4, 16 x 16 tiles of 256 px). -->
+    <Content Include="../../public/assets/atlas/1/*.webp" Link="assets/atlas/1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../public/assets/atlas/2/*.webp" Link="assets/atlas/2/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../public/assets/atlas/5/*.webp" Link="assets/atlas/5/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../public/assets/atlas/6/*.webp" Link="assets/atlas/6/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../public/assets/atlas/8/*.webp" Link="assets/atlas/8/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../public/assets/atlas/9/*.webp" Link="assets/atlas/9/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../public/assets/atlas/3/4_*.webp" Link="assets/atlas/3/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../public/assets/atlas/7/4_*.webp" Link="assets/atlas/7/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../public/assets/atlas/10/4_*.webp" Link="assets/atlas/10/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="assets/**/*.png;assets/app.ico" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="ui/**/*" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../public/assets/aion2-logo.png" Link="assets/aion2-logo.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../THIRD-PARTY-NOTICES.txt" Link="THIRD-PARTY-NOTICES.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
+

@@ -1,0 +1,16 @@
+# Build output
+node_modules/
+dist/
+.astro/
+desktop/build*/
+desktop/release/
+bin/
+obj/
+*.user
+.vs/
+
+# Local settings and secrets
+.env*
+!.env.example
+output/
+*.bak

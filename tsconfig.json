@@ -1,0 +1,1 @@
+{"extends":"astro/tsconfigs/base","include":["src/**/*",".astro/types.d.ts","astro.config.mjs"],"exclude":["research","scripts","node_modules","dist"],"compilerOptions":{"strictNullChecks":true}}

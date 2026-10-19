@@ -1,0 +1,12 @@
+/* «Vincular esta app»: only inside FullAIon2Companion's panel (src/scripts/app-link.ts). */
+.app-link{display:flex;align-items:center;gap:16px;margin:0 0 22px;padding:16px 20px;border:1px solid #2f5d58;border-left:3px solid #71ded6;border-radius:8px;background:#14252a}
+.app-link[hidden]{display:none}
+.app-link>svg,.app-link>i{flex:none;width:22px;height:22px;color:#71ded6}
+.app-link-text{flex:1;min-width:0}
+.app-link-text strong{font-size:14px}
+.app-link-text p{margin-top:5px;font-size:13px;color:#bcd7d3;overflow-wrap:anywhere}
+.app-link-note{color:var(--text)}
+.app-link-note[data-kind=error]{color:#ffb4a2}
+.app-link-note[data-kind=ok]{color:#8ee6c4}
+.app-link-actions{display:flex;flex-wrap:wrap;gap:8px;flex:none}
+@media (max-width:640px){.app-link{flex-wrap:wrap}.app-link-actions{width:100%}}

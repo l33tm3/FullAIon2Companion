@@ -1,0 +1,8 @@
+import fs from 'node:fs/promises';import crypto from 'node:crypto';
+const d=JSON.parse(await fs.readFile('public/data/altgard.json','utf8')),options=JSON.parse(await fs.readFile('research/map-options.json','utf8'));
+const categoryIcons=new Map(options.groups.flatMap(g=>g.categories.map(c=>[String(c.id),c.icon_image])));
+for(const c of d.categories)c.icon=categoryIcons.get(String(c.id));
+const icons=[...new Set(d.categories.flatMap(c=>[c.icon,...c.markers.map(m=>m.icon)]).filter(Boolean))],mapping=new Map(),manifest={fetchedAt:new Date().toISOString(),files:[],failed:[]};await fs.mkdir('public/assets/map-icons',{recursive:true});
+for(const raw of icons){const source=new URL(raw.startsWith('/admin/')?'/aion2/maps'+raw:raw,'https://interactivemap.app').href;try{const r=await fetch(source);if(!r.ok||!r.headers.get('content-type')?.startsWith('image/'))throw Error('HTTP '+r.status);const b=Buffer.from(await r.arrayBuffer()),path='/assets/map-icons/'+crypto.createHash('sha256').update(source).digest('hex').slice(0,20)+'.png';await fs.writeFile('public'+path,b);mapping.set(raw,path);manifest.files.push({source,path,bytes:b.length,sha256:crypto.createHash('sha256').update(b).digest('hex')});}catch(e){manifest.failed.push({source,error:e.message});}}
+for(const c of d.categories){c.icon=mapping.get(c.icon)||null;for(const m of c.markers)m.icon=mapping.get(m.icon)||c.icon;}
+await fs.writeFile('public/data/altgard.json',JSON.stringify(d));await fs.writeFile('public/data/map-icons-manifest.json',JSON.stringify(manifest));console.log('Iconos de mapa:',manifest.files.length,'no disponibles:',manifest.failed.length);

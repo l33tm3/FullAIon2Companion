@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {compare,stats} from '../src/lib/analysis.mjs';
+const mine=JSON.parse(fs.readFileSync(new URL('../public/data/mine.json',import.meta.url)));
+const target=JSON.parse(fs.readFileSync(new URL('../public/data/target.json',import.meta.url)));
+test('comparison uses real player stats and reference gear',()=>{const c=compare(mine,target);assert.equal(c.sameClass,true);assert.equal(c.powerGap,52430);assert.equal(stats(mine).AGI.value,26);assert.ok(c.tasks.find(t=>t.id==='gear-1').detail.includes('+15'));});
+test('more open nodes does not suppress comparison of different node choices',()=>{assert.ok(mine.info.daevanion.boardList.find(b=>b.id===14).openNodeCount>target.info.daevanion.boardList.find(b=>b.id===14).openNodeCount);assert.ok(compare(mine,target).tasks.some(t=>t.id==='board-14'));});
+test('different class suppresses transferable build recommendations',()=>{const other=structuredClone(target);other.info.profile.pcId=999;assert.equal(compare(mine,other).sameClass,false);assert.deepEqual(compare(mine,other).tasks,[]);});
+test('an identical reference does not recommend replacing matching equipment',()=>{assert.equal(compare(mine,mine).tasks.length,0);});
+test('pvp-specific attribute priorities apply only in pvp mode',()=>{assert.ok(!compare(mine,target,'pve').tasks.some(t=>t.id==='stat-DEX'));assert.ok(compare(mine,target,'pvp').tasks.some(t=>t.id==='stat-DEX'));});

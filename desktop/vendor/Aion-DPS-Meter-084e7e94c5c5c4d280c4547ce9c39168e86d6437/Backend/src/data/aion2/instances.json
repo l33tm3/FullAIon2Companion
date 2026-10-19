@@ -1,0 +1,1010 @@
+{
+  "_meta": {
+    "source": "derived",
+    "sourceKind": "third-party-dataset",
+    "derivedAt": "2026-09-22",
+    "note": "Facts only (names as shown by the game client, NPC ids, roles, trigger/severity). Prose fields are ours and start empty; edit them here, then run content:sync.",
+    "localizedNames": "de/fr/es/ja/pt/ru names read from the game client's own text tables (L10NString.dat of the EU client, 2026-10-02); en and ko are kept from the original dataset. Names the client does not contain (content not in the EU client) have no translation.",
+    "modes": "explore/conquest values read from the in-game Expedition window screenshots (EU client, 2026-10-02). NPC id prefix 230 = explore (seen in a Krao run); 231-233 are assumed conquest tiers, NOT yet confirmed."
+  },
+  "items": [
+    {
+      "key": "Krao",
+      "slug": "krao-cave",
+      "name": {
+        "en": "Krao Cave",
+        "ko": "크라오 동굴",
+        "zh": "克拉奧洞窟",
+        "de": "Kraohöhle",
+        "fr": "Grotte de Krao",
+        "es": "Cueva de Krao",
+        "ja": "クラオ洞窟",
+        "pt": "Caverna de Krao",
+        "ru": "Пещера крао"
+      },
+      "category": "expedition",
+      "sortOrder": 1,
+      "modes": {
+        "explore": {
+          "minLevel": 20,
+          "itemLevel": 200,
+          "players": "1-5",
+          "weeklyTries": 6
+        }
+      },
+      "variant": "explore",
+      "hidden": false
+    },
+    {
+      "key": "DDN",
+      "slug": "dying-dramatas-nest",
+      "name": {
+        "en": "Dying Dramata's Nest",
+        "ko": "죽은 드라마타의 둥지",
+        "zh": "死亡德拉瑪塔巢穴",
+        "de": "Nest des Toten Dramatha",
+        "es": "Nido del Dramata Muerto",
+        "fr": "Nid du Dramata Mort",
+        "ja": "死んだドラマタの巣",
+        "pt": "Ninho de Dramata Morto",
+        "ru": "Гнездо мертвой драматы"
+      },
+      "category": "expedition",
+      "sortOrder": 7,
+      "hidden": true
+    },
+    {
+      "key": "FT",
+      "slug": "fire-temple",
+      "name": {
+        "en": "Fire Temple",
+        "ko": "불의 신전",
+        "zh": "火之神殿",
+        "de": "Feuertempel",
+        "fr": "Temple Divin du Feu",
+        "es": "Templo de Fuego",
+        "ja": "炎の神殿",
+        "pt": "Templo Divino do Fogo",
+        "ru": "Храм огня"
+      },
+      "category": "expedition",
+      "sortOrder": 3,
+      "modes": {
+        "explore": {
+          "minLevel": 35,
+          "itemLevel": 500,
+          "players": "1-5",
+          "weeklyTries": 6
+        }
+      },
+      "variant": "explore",
+      "hidden": false
+    },
+    {
+      "key": "Draupnir",
+      "slug": "draupnir",
+      "name": {
+        "en": "Draupnir",
+        "ko": "드라웁니르",
+        "zh": "德拉烏伯尼爾",
+        "de": "Draupnir",
+        "es": "Draupnir",
+        "fr": "Draupnir",
+        "ja": "ドラウプニル",
+        "pt": "Draupnir",
+        "ru": "Драупнир"
+      },
+      "category": "expedition",
+      "sortOrder": 4,
+      "modes": {
+        "explore": {
+          "minLevel": 45,
+          "itemLevel": 700,
+          "players": "1-5",
+          "weeklyTries": 6
+        }
+      },
+      "variant": "explore",
+      "hidden": false
+    },
+    {
+      "key": "Bakron",
+      "slug": "vakron-sky-island",
+      "name": {
+        "en": "Vakron Sky Island",
+        "ko": "바크론의 공중섬",
+        "zh": "巴克隆空中島",
+        "de": "Vakrons Luftinsel",
+        "fr": "Île Céleste de Vakron",
+        "es": "Isla Aérea de Vakron",
+        "ja": "バクロンの空中島",
+        "pt": "Ilha Aérea de Vakron",
+        "ru": "Парящий остров Вакрона"
+      },
+      "category": "expedition",
+      "sortOrder": 5,
+      "modes": {
+        "explore": {
+          "minLevel": 45,
+          "itemLevel": 1400,
+          "players": "2-5",
+          "weeklyTries": 6
+        }
+      },
+      "variant": "explore",
+      "hidden": false
+    },
+    {
+      "key": "CradleNihility",
+      "slug": "cradle-of-nihility",
+      "name": {
+        "en": "Cradle of Nihility",
+        "ko": "허무의 요람",
+        "zh": "虛無搖籃",
+        "de": "Wiege des Nichts",
+        "ru": "Колыбель пустоты",
+        "es": "Cuna de la Nada",
+        "fr": "Berceau du Néant",
+        "ja": "武の揺りかご",
+        "pt": "Berço do Vazio"
+      },
+      "category": "expedition",
+      "sortOrder": 8,
+      "hidden": true
+    },
+    {
+      "key": "SunkenTemple",
+      "slug": "submerged-life-temple",
+      "name": {
+        "en": "Submerged Life Temple",
+        "ko": "가라앉은 생명의 신전",
+        "zh": "沉沒的生命神殿",
+        "de": "Versunkener Lebenstempel",
+        "es": "Templo Divino de Vida Hundido",
+        "fr": "Temple Divin de la Vie Englouti",
+        "ja": "沈んだ生命の神殿",
+        "pt": "Templo Divino da Vida Submerso",
+        "ru": "Затонувший храм жизни"
+      },
+      "category": "transcendence",
+      "sortOrder": 4,
+      "hidden": true
+    },
+    {
+      "key": "Arkanis",
+      "slug": "shattered-arkanis",
+      "name": {
+        "en": "Shattered Arkanis",
+        "ko": "조각난 아르카니스",
+        "zh": "破碎的雅爾卡尼斯",
+        "de": "Zersplitterter Arkanis",
+        "es": "Arkanis Fragmentado",
+        "fr": "Arcanis Fragmenté",
+        "ja": "砕けたアルカニス",
+        "pt": "Arcanis Despedaçada",
+        "ru": "Расколотый Арканис"
+      },
+      "category": "transcendence",
+      "sortOrder": 5,
+      "hidden": false
+    },
+    {
+      "key": "DeusCenter",
+      "slug": "deus-research-base",
+      "name": {
+        "en": "Deus Research Base",
+        "ko": "데우스 연구기지",
+        "zh": "德烏斯研究基地",
+        "de": "Forschungsbasis Deus",
+        "es": "Base de Investigación Deus",
+        "fr": "Base de Recherche Deus",
+        "ja": "デウス研究基地",
+        "pt": "Base de Pesquisa Deus",
+        "ru": "Исследовательская база Деус"
+      },
+      "category": "transcendence",
+      "sortOrder": 6,
+      "hidden": false
+    },
+    {
+      "key": "ReforgedAbyss",
+      "slug": "abyssal-forge-ludra",
+      "name": {
+        "en": "Abyssal Forge: Ludra",
+        "ko": "심연의 재련 : 루드라",
+        "zh": "深淵重鑄：盧德萊",
+        "de": "Abgrundsveredelung: Ludra",
+        "es": "Forja Abismal: Ludra",
+        "fr": "Creuset de l'Abîme : Ludra",
+        "ja": "深淵の再錬：ルドラ",
+        "pt": "Reforja Abissal: Ludra",
+        "ru": "Закалка пропасти: Рудра"
+      },
+      "category": null,
+      "sortOrder": 109,
+      "hidden": true
+    },
+    {
+      "key": "DraconicCrisis",
+      "slug": "draconic-crisis-subjugation",
+      "name": {
+        "en": "Draconic Crisis (Subjugation)",
+        "ko": "토벌전 (드라코닉 크라이시스)",
+        "zh": "討伐戰 (龍族危機)"
+      },
+      "category": null,
+      "sortOrder": 110,
+      "hidden": true
+    },
+    {
+      "key": "Nightmare",
+      "slug": "nightmare",
+      "name": {
+        "en": "Nightmare",
+        "ko": "악몽",
+        "zh": "噩夢"
+      },
+      "category": null,
+      "sortOrder": 111,
+      "hidden": true
+    },
+    {
+      "key": "PhantomsHall",
+      "slug": "hall-of-illusion",
+      "name": {
+        "en": "Hall of Illusion",
+        "ko": "환영의 전당",
+        "zh": "幻影大殿",
+        "de": "Illusionskorridor",
+        "ru": "Галерея иллюзий",
+        "es": "Corredor de la Ilusión",
+        "fr": "Corridor d'Illusion",
+        "ja": "幻影の回廊",
+        "pt": "Corredor da Ilusão"
+      },
+      "category": "expedition",
+      "sortOrder": 9,
+      "hidden": true
+    },
+    {
+      "key": "ErosionPurifier",
+      "slug": "corroded-decontamination-facility",
+      "name": {
+        "en": "Corroded Decontamination Facility",
+        "ko": "침식의 정화소",
+        "zh": "侵蝕淨化所",
+        "de": "Läuterungsstätte der Korrosion",
+        "es": "Purificatorio de Erosión",
+        "fr": "Sanctuaire de Purification de l'Érosion",
+        "ja": "侵食の浄化所",
+        "pt": "Posto de Purificação da Erosão",
+        "ru": "Чистилище скверны"
+      },
+      "category": "sanctuary",
+      "sortOrder": 2,
+      "hidden": true
+    },
+    {
+      "key": "UC",
+      "slug": "urugugu-canyon",
+      "name": {
+        "en": "Urugugu Canyon",
+        "ko": "우루구구 협곡",
+        "zh": "烏努庫庫峽谷",
+        "de": "Uruguguschlucht",
+        "fr": "Canyon Urugugu",
+        "es": "Cañón de Urugugu",
+        "ja": "ウルググ峡谷",
+        "pt": "Desfiladeiro de Urugugu",
+        "ru": "Ущелье ауругу"
+      },
+      "category": "expedition",
+      "sortOrder": 2,
+      "modes": {
+        "explore": {
+          "minLevel": 28,
+          "itemLevel": 300,
+          "players": "2-5",
+          "weeklyTries": 6
+        }
+      },
+      "variant": "explore",
+      "hidden": false
+    },
+    {
+      "key": "MauCave",
+      "slug": "ferocious-horn-den",
+      "name": {
+        "en": "Ferocious Horn Den",
+        "ko": "사나운 뿔 암굴",
+        "zh": "凶猛的角岩窟",
+        "de": "Grimmhornhöhle",
+        "fr": "Grotte de la Corne Féroce",
+        "es": "Caverna del Cuerno Feroz",
+        "ja": "獰猛な角岩窟",
+        "pt": "Gruta do Chifre Feroz",
+        "ru": "Логово Свирепого Рога"
+      },
+      "category": "expedition",
+      "sortOrder": 6,
+      "modes": {
+        "explore": {
+          "minLevel": 45,
+          "itemLevel": 2100,
+          "players": "1-5",
+          "weeklyTries": 6
+        }
+      },
+      "variant": "explore",
+      "hidden": false
+    },
+    {
+      "key": "BlueBreathIsle",
+      "slug": "azure-breath-island",
+      "name": {
+        "en": "Azure Breath Island",
+        "ko": "푸른 숨의 섬",
+        "zh": "青息之島",
+        "de": "Insel des Blauatems",
+        "es": "Isla del Aliento Azul",
+        "fr": "Île du Souffle Azuré",
+        "ja": "青い息の島",
+        "pt": "Ilha do Sopro Azul",
+        "ru": "Остров лазурного дыхания"
+      },
+      "category": "expedition",
+      "sortOrder": 10,
+      "hidden": true
+    },
+    {
+      "key": "MusphelHolyGrail",
+      "slug": "chalice-of-muspel",
+      "name": {
+        "en": "Chalice of Muspel",
+        "ko": "무스펠의 성배",
+        "zh": "穆斯費爾聖杯",
+        "de": "Kelch von Muspel",
+        "es": "Cáliz de Muspel",
+        "fr": "Calice de Muspel",
+        "ja": "ムスフェルの聖杯",
+        "pt": "Cálice de Muspel",
+        "ru": "Чаша Мусфеля"
+      },
+      "category": "sanctuary",
+      "sortOrder": 3,
+      "hidden": true
+    },
+    {
+      "key": "MirrorHeart",
+      "slug": "mirror-of-scarlet-desire",
+      "name": {
+        "en": "Mirror of Scarlet Desire",
+        "ko": "붉은 연심의 거울",
+        "zh": "緋紅羈絆之鏡",
+        "de": "Roter Spiegel des Verlangens",
+        "es": "Espejo de Deseo Rojo",
+        "fr": "Miroir de l'Affection Rouge",
+        "ja": "赤い恋心の鏡",
+        "pt": "Espelho do Afeto Escarlate",
+        "ru": "Красное зеркало тяготения"
+      },
+      "category": "transcendence",
+      "sortOrder": 3,
+      "hidden": true
+    },
+    {
+      "key": "NightmareAltar",
+      "slug": "nightmare-altar",
+      "name": {
+        "en": "Nightmare Altar",
+        "ko": "악몽의 제단",
+        "zh": "惡夢祭壇",
+        "de": "Altar der Albträume",
+        "es": "Altar de Pesadilla",
+        "fr": "Autel des Cauchemars",
+        "ja": "悪夢の祭壇",
+        "pt": "Altar do Pesadelo",
+        "ru": "Алтарь кошмара"
+      },
+      "category": "ascension",
+      "sortOrder": 120,
+      "hidden": false
+    },
+    {
+      "key": "TyrantsHideout",
+      "slug": "tyrants-hideout",
+      "name": {
+        "en": "Tyrant's Hideout",
+        "ko": "폭군의 은신처",
+        "zh": "暴君藏身處",
+        "de": "Versteck des Tyrannen",
+        "es": "Escondite del Tirano",
+        "fr": "Repaire du Tyran",
+        "ja": "暴君の隠れ家",
+        "pt": "Esconderijo do Tirano",
+        "ru": "Убежище тирана"
+      },
+      "category": "ascension",
+      "sortOrder": 121,
+      "hidden": false
+    },
+    {
+      "key": "SanctumOfLoathing",
+      "slug": "sanctum-of-loathing",
+      "name": {
+        "en": "Sanctum of Loathing",
+        "ko": "증오의 성소",
+        "zh": "憎惡聖所",
+        "de": "Sanktuarium des Hasses",
+        "es": "Sagrario del Odio",
+        "fr": "Sanctuaire de la Haine",
+        "ja": "憎悪の聖所",
+        "pt": "Sacrário do Ódio",
+        "ru": "Святилище ненависти"
+      },
+      "category": "ascension",
+      "sortOrder": 122,
+      "hidden": false
+    },
+    {
+      "key": "DepositoryOfFates",
+      "slug": "depository-of-fates",
+      "name": {
+        "en": "Depository of Fates",
+        "ko": "궤적 보관소",
+        "zh": "軌跡保管所",
+        "de": "Kammer der Laufbahn",
+        "es": "Depósito de Trayectoria",
+        "fr": "Dépôt des Trajectoires",
+        "ja": "軌跡保管所",
+        "pt": "Depósito de Trajetórias",
+        "ru": "Хранилище траекторий"
+      },
+      "category": "ascension",
+      "sortOrder": 123,
+      "hidden": false
+    },
+    {
+      "key": "ForgottenRepository",
+      "slug": "forgotten-repository",
+      "name": {
+        "en": "Forgotten Repository",
+        "ko": "잊힌 저장소",
+        "zh": "被遺忘的儲藏所",
+        "de": "Vergessener Speicher",
+        "es": "Repositorio Olvidado",
+        "fr": "Entrepôt Oublié",
+        "ja": "忘れられた保存庫",
+        "pt": "Repositório Esquecido",
+        "ru": "Забытый тайник"
+      },
+      "category": "ascension",
+      "sortOrder": 124,
+      "hidden": false
+    },
+    {
+      "key": "ChamberOfTheDead",
+      "slug": "chamber-of-the-dead",
+      "name": {
+        "en": "Chamber of the Dead",
+        "ko": "죽은 자의 침실",
+        "zh": "死者寢室",
+        "de": "Schlafstätte der Toten",
+        "es": "Alcoba de los Muertos",
+        "fr": "Chambre du Mort",
+        "ja": "死者の寝室",
+        "pt": "Dormitório dos Mortos",
+        "ru": "Опочивальня мертвых"
+      },
+      "category": "ascension",
+      "sortOrder": 125,
+      "hidden": false
+    },
+    {
+      "key": "DaevaCitadel",
+      "slug": "citadel-of-the-fallen-daeva",
+      "name": {
+        "en": "Citadel of the Fallen Daeva",
+        "ko": "타락한 데바의 성",
+        "zh": "墮落守護者之城",
+        "de": "Zitadelle der gefallenen Daeva",
+        "es": "Ciudadela del Daeva Caído",
+        "fr": "Citadelle du Daeva déchu",
+        "ja": "堕落したディーヴァの城",
+        "pt": "Cidadela do Daeva Caído",
+        "ru": "Цитадель павших даэвов"
+      },
+      "category": "expedition",
+      "sortOrder": 11,
+      "hidden": true
+    },
+    {
+      "key": "FafniteGully",
+      "slug": "abyssal-horn-den",
+      "name": {
+        "en": "Abyssal Horn Den",
+        "ko": "심연의 뿔 암굴",
+        "zh": "深淵角岩窟",
+        "de": "Abyss-Hornhöhle",
+        "es": "Guarida del Cuerno Abismal",
+        "fr": "Antre de la Corne abyssale",
+        "ja": "深淵の角岩窟",
+        "pt": "Covil do Chifre do Abismo",
+        "ru": "Логово рога Бездны"
+      },
+      "category": "transcendence",
+      "sortOrder": 2,
+      "hidden": true
+    },
+    {
+      "key": "BlasphemyLab",
+      "slug": "consumed-deus-research-base",
+      "name": {
+        "en": "Consumed Deus Research Base",
+        "ko": "잠식된 데우스 연구기지",
+        "zh": "被蠶食的德烏斯研究基地"
+      },
+      "category": "expedition",
+      "sortOrder": 12,
+      "hidden": true
+    },
+    {
+      "key": "LegacyNoiran",
+      "slug": "noirans-hidden-legacy",
+      "name": {
+        "en": "Noiran's Hidden Legacy",
+        "ko": "노이란의 숨겨진 유산",
+        "zh": "諾伊蘭隱藏的遺產"
+      },
+      "category": "transcendence",
+      "sortOrder": 1,
+      "hidden": true
+    },
+    {
+      "key": "SealDark067",
+      "slug": "pure-spring",
+      "name": {
+        "en": "Pure Spring",
+        "ko": "순수의 샘",
+        "zh": "純粹之泉",
+        "de": "Quelle der Reinheit",
+        "es": "Manantial de Pureza",
+        "fr": "Fontaine de Pureté",
+        "ja": "純粋の泉",
+        "pt": "Fonte da Pureza",
+        "ru": "Источник чистоты"
+      },
+      "category": "hideout",
+      "sortOrder": 130,
+      "hidden": true
+    },
+    {
+      "key": "SealDark069",
+      "slug": "cave-of-the-stranded",
+      "name": {
+        "en": "Cave of the Stranded",
+        "ko": "돌아가지 못한 자의 동굴",
+        "zh": "未歸之人洞穴",
+        "de": "Höhle der Gestrandeten",
+        "es": "Cueva de los Varados",
+        "fr": "Grotte des Naufragés",
+        "ja": "帰れぬ者の洞窟",
+        "pt": "Caverna dos Abandonados",
+        "ru": "Пещера заточенных"
+      },
+      "category": "hideout",
+      "sortOrder": 131,
+      "hidden": true
+    },
+    {
+      "key": "DefunctCreionLaboratory",
+      "slug": "defunct-creion-laboratory",
+      "name": {
+        "en": "Defunct Creion Laboratory",
+        "ko": "실패한 크레이온 실험실",
+        "zh": "失敗的克雷恩實驗室",
+        "de": "Aufgegebene Versuchsstätte der Creion",
+        "es": "Laboratorio de Creion abandonado",
+        "fr": "Laboratoire Creion désaffecté",
+        "ja": "失敗したクレイオンの実験室",
+        "pt": "Laboratório Creion Desativado",
+        "ru": "Заброшенная лаборатория крейонов"
+      },
+      "category": "hideout",
+      "sortOrder": 132,
+      "hidden": true
+    },
+    {
+      "key": "FallenHaven",
+      "slug": "fallen-haven",
+      "name": {
+        "en": "Fallen Haven",
+        "ko": "스러진 안식처",
+        "zh": "消逝的安息處",
+        "de": "Gefallene Zuflucht",
+        "es": "Refugio Caído",
+        "fr": "Paradis perdu",
+        "ja": "荒廃した安息所",
+        "pt": "Abrigo Caído",
+        "ru": "Павшее пристанище"
+      },
+      "category": "hideout",
+      "sortOrder": 133,
+      "hidden": true
+    },
+    {
+      "key": "FilthyCave",
+      "slug": "filthy-cave",
+      "name": {
+        "en": "Filthy Cave",
+        "ko": "지저분한 동굴",
+        "zh": "亂七八糟的洞穴",
+        "de": "Schmutzige Höhle",
+        "es": "Cueva Mugrienta",
+        "fr": "Grotte souillée",
+        "ja": "汚い洞窟",
+        "pt": "Caverna Imunda",
+        "ru": "Грязная пещера"
+      },
+      "category": "hideout",
+      "sortOrder": 134,
+      "hidden": true
+    },
+    {
+      "key": "CaveOfTheExiledOnes",
+      "slug": "cave-of-the-exiled-ones",
+      "name": {
+        "en": "Cave of the Exiled Ones",
+        "ko": "쫓겨난 자들의 굴",
+        "zh": "被驅逐者巢穴",
+        "de": "Höhle der Verbannten",
+        "es": "Cueva de los Exiliados",
+        "fr": "Grotte des Exilés",
+        "ja": "追放された者たちの洞窟",
+        "pt": "Caverna dos Exilados",
+        "ru": "Пещера изгнанников"
+      },
+      "category": "hideout",
+      "sortOrder": 135,
+      "hidden": true
+    },
+    {
+      "key": "Krao:conquest",
+      "slug": "krao-cave-conquest",
+      "name": {
+        "en": "Krao Cave (Conquest)",
+        "ko": "크라오 동굴 (정복)",
+        "zh": "克拉奧洞窟 (征服)",
+        "de": "Kraohöhle (Eroberung)",
+        "fr": "Grotte de Krao (Conquête)",
+        "es": "Cueva de Krao (Conquista)",
+        "ja": "クラオ洞窟 (征服)",
+        "pt": "Caverna de Krao (Conquista)",
+        "ru": "Пещера крао (Завоевание)"
+      },
+      "category": "expedition",
+      "sortOrder": 201,
+      "modes": {
+        "conquest": {
+          "stars": 1,
+          "minLevel": 45,
+          "itemLevel": 700,
+          "players": "1-5",
+          "weeklyTries": 10
+        }
+      },
+      "variant": "conquest",
+      "hidden": false
+    },
+    {
+      "key": "UC:conquest",
+      "slug": "urugugu-canyon-conquest",
+      "name": {
+        "en": "Urugugu Canyon (Conquest)",
+        "ko": "우루구구 협곡 (정복)",
+        "zh": "烏努庫庫峽谷 (征服)",
+        "de": "Uruguguschlucht (Eroberung)",
+        "fr": "Canyon Urugugu (Conquête)",
+        "es": "Cañón de Urugugu (Conquista)",
+        "ja": "ウルググ峡谷 (征服)",
+        "pt": "Desfiladeiro de Urugugu (Conquista)",
+        "ru": "Ущелье ауругу (Завоевание)"
+      },
+      "category": "expedition",
+      "sortOrder": 203,
+      "modes": {
+        "conquest": {
+          "stars": 2,
+          "minLevel": 45,
+          "itemLevel": 1400,
+          "players": "2-5",
+          "weeklyTries": 10
+        }
+      },
+      "variant": "conquest",
+      "hidden": false
+    },
+    {
+      "key": "FT:conquest",
+      "slug": "fire-temple-conquest",
+      "name": {
+        "en": "Fire Temple (Conquest)",
+        "ko": "불의 신전 (정복)",
+        "zh": "火之神殿 (征服)",
+        "de": "Feuertempel (Eroberung)",
+        "fr": "Temple Divin du Feu (Conquête)",
+        "es": "Templo de Fuego (Conquista)",
+        "ja": "炎の神殿 (征服)",
+        "pt": "Templo Divino do Fogo (Conquista)",
+        "ru": "Храм огня (Завоевание)"
+      },
+      "category": "expedition",
+      "sortOrder": 205,
+      "modes": {
+        "conquest": {
+          "stars": 3,
+          "minLevel": 45,
+          "itemLevel": 2100,
+          "players": "1-5",
+          "weeklyTries": 10
+        }
+      },
+      "variant": "conquest",
+      "hidden": false
+    },
+    {
+      "key": "Draupnir:conquest",
+      "slug": "draupnir-conquest",
+      "name": {
+        "en": "Draupnir (Conquest)",
+        "ko": "드라웁니르 (정복)",
+        "zh": "德拉烏伯尼爾 (征服)",
+        "de": "Draupnir (Eroberung)",
+        "es": "Draupnir (Conquista)",
+        "fr": "Draupnir (Conquête)",
+        "ja": "ドラウプニル (征服)",
+        "pt": "Draupnir (Conquista)",
+        "ru": "Драупнир (Завоевание)"
+      },
+      "category": "expedition",
+      "sortOrder": 202,
+      "modes": {
+        "conquest": {
+          "stars": 1,
+          "minLevel": 45,
+          "itemLevel": 700,
+          "players": "1-5",
+          "weeklyTries": 10
+        }
+      },
+      "variant": "conquest",
+      "hidden": false
+    },
+    {
+      "key": "Bakron:conquest",
+      "slug": "vakron-sky-island-conquest",
+      "name": {
+        "en": "Vakron Sky Island (Conquest)",
+        "ko": "바크론의 공중섬 (정복)",
+        "zh": "巴克隆空中島 (征服)",
+        "de": "Vakrons Luftinsel (Eroberung)",
+        "fr": "Île Céleste de Vakron (Conquête)",
+        "es": "Isla Aérea de Vakron (Conquista)",
+        "ja": "バクロンの空中島 (征服)",
+        "pt": "Ilha Aérea de Vakron (Conquista)",
+        "ru": "Парящий остров Вакрона (Завоевание)"
+      },
+      "category": "expedition",
+      "sortOrder": 204,
+      "modes": {
+        "conquest": {
+          "stars": 2,
+          "minLevel": 45,
+          "itemLevel": 1400,
+          "players": "2-5",
+          "weeklyTries": 10
+        }
+      },
+      "variant": "conquest",
+      "hidden": false
+    },
+    {
+      "key": "MauCave:conquest",
+      "slug": "ferocious-horn-den-conquest",
+      "name": {
+        "en": "Ferocious Horn Den (Conquest)",
+        "ko": "사나운 뿔 암굴 (정복)",
+        "zh": "凶猛的角岩窟 (征服)",
+        "de": "Grimmhornhöhle (Eroberung)",
+        "fr": "Grotte de la Corne Féroce (Conquête)",
+        "es": "Caverna del Cuerno Feroz (Conquista)",
+        "ja": "獰猛な角岩窟 (征服)",
+        "pt": "Gruta do Chifre Feroz (Conquista)",
+        "ru": "Логово Свирепого Рога (Завоевание)"
+      },
+      "category": "expedition",
+      "sortOrder": 206,
+      "modes": {
+        "conquest": {
+          "stars": 3,
+          "minLevel": 45,
+          "itemLevel": 2100,
+          "players": "1-5",
+          "weeklyTries": 10
+        }
+      },
+      "variant": "conquest",
+      "hidden": false
+    },
+    {
+      "key": "Albtraum:wurzelspeicher",
+      "slug": "root-cellar",
+      "name": {
+        "en": "Root Cellar",
+        "de": "Wurzelspeicher",
+        "es": "Bodega de la Raíz",
+        "fr": "Réserve des Racines",
+        "ru": "Тайник корней"
+      },
+      "category": "nightmare",
+      "sortOrder": 300,
+      "hidden": false,
+      "legacyNames": [
+        "Wurzelspeicher"
+      ]
+    },
+    {
+      "key": "Albtraum:verlies-von-dranactus",
+      "slug": "dranactus-underkeep",
+      "name": {
+        "en": "Dranactus Underkeep",
+        "de": "Verlies von Dranactus",
+        "es": "Prisión Subterránea de Dranactus",
+        "fr": "Prison Souterraine de Dranactus",
+        "ru": "Подземная тюрьма Дранактуса"
+      },
+      "category": "nightmare",
+      "sortOrder": 301,
+      "hidden": false,
+      "legacyNames": [
+        "Verlies von Dranactus"
+      ]
+    },
+    {
+      "key": "Albtraum:wurzel-des-heiligenbaums",
+      "slug": "root-of-the-sacred-tree",
+      "name": {
+        "en": "Root of the Sacred Tree",
+        "de": "Wurzel des Heiligenbaums",
+        "es": "Raíces del Árbol Sagrado",
+        "fr": "Racines de l'Arbre Sacré",
+        "ru": "Корни священного дерева"
+      },
+      "category": "nightmare",
+      "sortOrder": 302,
+      "hidden": false,
+      "legacyNames": [
+        "Wurzel des Heiligenbaums"
+      ]
+    },
+    {
+      "key": "Albtraum:gruft",
+      "slug": "crypt",
+      "name": {
+        "en": "Crypt",
+        "de": "Gruft",
+        "es": "Cripta",
+        "fr": "Crypte",
+        "ru": "Подземный склеп"
+      },
+      "category": "nightmare",
+      "sortOrder": 303,
+      "hidden": false,
+      "legacyNames": [
+        "Gruft"
+      ]
+    },
+    {
+      "key": "Albtraum:untergrundfeste-der-zerstoerungsarchonen",
+      "slug": "destruction-archon-underground-fortress",
+      "name": {
+        "en": "Destruction Archon Underground Fortress",
+        "de": "Untergrundfeste der Zerstörungsarchonen",
+        "es": "Fortaleza Subterránea de Akan de Destrucción",
+        "fr": "Forteresse Souterraine de l'Archon de Destruction",
+        "ru": "Подземная крепость аканов разрушения"
+      },
+      "category": "nightmare",
+      "sortOrder": 304,
+      "hidden": false,
+      "legacyNames": [
+        "Untergrundfeste der Zerstörungsarchonen"
+      ]
+    },
+    {
+      "key": "Albtraum:versteck-der-klingenlegion",
+      "slug": "blades-hideout",
+      "name": {
+        "en": "Blades Hideout",
+        "de": "Versteck der Klingenlegion",
+        "es": "Escondite de la Legión de la Cuchilla",
+        "fr": "Repaire du Clan des Lames",
+        "ru": "Убежище клинков"
+      },
+      "category": "nightmare",
+      "sortOrder": 305,
+      "hidden": false,
+      "legacyNames": [
+        "Versteck der Klingenlegion"
+      ]
+    },
+    {
+      "key": "Albtraum:impetusium",
+      "slug": "impetusium",
+      "name": {
+        "en": "Impetusium",
+        "de": "Impetusium",
+        "es": "Impetusium",
+        "fr": "Impetusium",
+        "ru": "Имфетиус"
+      },
+      "category": "nightmare",
+      "sortOrder": 306,
+      "hidden": false,
+      "legacyNames": [
+        "Impetusium"
+      ]
+    },
+    {
+      "key": "WorldVerteron",
+      "slug": "verteron",
+      "name": {
+        "de": "Verteron",
+        "en": "Verteron",
+        "es": "Verteron",
+        "fr": "Verteron",
+        "ja": "ベルテロン",
+        "ko": "베르테론",
+        "pt": "Verteron",
+        "ru": "Бертрон"
+      },
+      "category": "worldboss",
+      "sortOrder": 307,
+      "hidden": false
+    },
+    {
+      "key": "WorldAltgard",
+      "slug": "altgard",
+      "name": {
+        "de": "Altgard",
+        "en": "Altgard",
+        "es": "Altgard",
+        "fr": "Altgard",
+        "ja": "アルトガルド",
+        "ko": "알트가르드",
+        "pt": "Altgard",
+        "ru": "Альтгард"
+      },
+      "category": "worldboss",
+      "sortOrder": 308,
+      "hidden": false
+    },
+    {
+      "key": "WorldAbyss",
+      "slug": "abyss",
+      "name": {
+        "de": "Abyss",
+        "en": "Abyss",
+        "es": "Abismo",
+        "fr": "Abysse",
+        "ja": "アビス",
+        "ko": "어비스",
+        "pt": "Abismo",
+        "ru": "Бездна"
+      },
+      "category": "worldboss",
+      "sortOrder": 309,
+      "hidden": false
+    }
+  ]
+}

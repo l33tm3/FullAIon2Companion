@@ -1,0 +1,22 @@
+---
+import Download from './Download.astro';
+import Tour from './Tour.astro';
+---
+<section id="view-home" class="view active">
+ <div class="home-hero">
+  <div class="home-copy"><h1>Conoce tu Daeva.<br/><em>Conquista tu próximo reto.</em></h1><p>Compara personajes y prepara tus mejoras en la web. Descarga FullAIon2Companion para consultar el daño, los objetivos y los avisos durante el juego.</p><div class="home-actions"><a class="button download-primary" data-release-download href="/#home?download=1"><i data-lucide="download"></i><span data-release-label>Descargar para Windows</span></a><button class="button secondary" data-home-search><i data-lucide="search"></i>Buscar mi personaje</button><button class="text-button" data-own-profile data-home-member hidden>Mi perfil →</button></div><span class="home-note">Medidor gratuito · Descarga sin cuenta. <span data-release-summary>Windows de 64 bits</span></span></div>
+  <div class="home-app-intro"><div class="home-app-brand"><img src="/assets/aion2-logo.png" alt="AION 2"/><div><strong>FullAIon2Companion</strong><span>Aplicación de escritorio</span></div></div><h2>Tu combate, de un vistazo.</h2><ul><li><i data-lucide="swords"></i><span><strong>Daño y habilidades</strong><small>Consulta el desglose del combate.</small></span></li><li><i data-lucide="user-round"></i><span><strong>Personaje y objetivos</strong><small>Información durante tu aventura.</small></span></li><li><i data-lucide="clock"></i><span><strong>Eventos y avisos</strong><small>Prepara tu próxima sesión.</small></span></li></ul><a class="text-button" href="/#home?download=1" data-download-open>Ver requisitos e instalación <i data-lucide="arrow-right"></i></a></div>
+ </div>
+ <Tour />
+ <Download />
+ <div class="home-section-heading"><span class="eyebrow">DAEVA COMPANION · EN LA WEB</span><h2>Menos pestañas. Más aventura.</h2><p>Información útil para elegir tu siguiente paso, dentro y fuera del combate.</p></div>
+ <div class="home-features">
+  <button data-view="overview"><i data-lucide="swords"></i><h3>Compara tu build</h3><p>Equipo, habilidades, títulos y Daevanion, lado a lado con tu referencia.</p><span>Preparar mejoras →</span></button>
+  <button data-view="map"><i data-lucide="map"></i><h3>Explora Atreia</h3><p>Busca criaturas y botines. Guarda lugares, notas, rutas y objetivos de cacería.</p><span>Abrir el mapa →</span></button>
+  <button data-view="ranking"><i data-lucide="trophy"></i><h3>Sigue a los personajes</h3><p>Perfiles propios, evolución y clasificaciones por región, servidor y clase.</p><span>Ver clasificación →</span></button>
+  <button data-view="events"><i data-lucide="clock"></i><h3>Llega a tiempo</h3><p>Próximos eventos y avisos sonoros según tu región. Planifica tu sesión.</p><span>Consultar eventos →</span></button>
+ </div>
+ <section class="home-get-started" data-home-guest><div><span class="eyebrow">TU PROGRESO, SIEMPRE CONTIGO</span><h2>Empieza con tu personaje.</h2><p>Crea tu cuenta, confirma tu correo y guarda tus rutas, builds y metas. Recupera el acceso por correo cuando lo necesites.</p></div><div><button class="button" data-account-mode="register">Crear mi cuenta</button><button class="text-button" data-account-mode="login">Ya tengo una cuenta →</button></div></section>
+ <section class="home-streamers"><div><span class="eyebrow">COMUNIDAD DE AION 2</span><h2>Nos vemos en Atreia.</h2><p>Streamers que apoyan Daeva Companion y comparten la aventura.</p><a href="https://www.twitch.tv/serllinogg" target="_blank" rel="noopener" class="streamer-identity"><span class="twitch-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="25" height="25" fill="currentColor"><path d="M3 2 1 6v16h6v2l4-2h5l5-5V2H3zm18 14-4 4h-6l-4 3v-3H3V4h18v12zM16 7h2v6h-2V7zm-5 0h2v6h-2V7z"/></svg></span><div><strong>serllinogg</strong><small>Streamer de AION 2 · Apoya la web</small></div><span>Ver canal →</span></a><small>El reproductor muestra el estado actual del canal en Twitch.</small></div><div class="twitch-window"><iframe src="https://player.twitch.tv/?channel=serllinogg&amp;parent=governanceai.me&amp;parent=www.governanceai.me&amp;autoplay=false&amp;muted=true" title="Twitch de serllinogg — AION 2" loading="lazy" width="100%" height="300" allow="fullscreen" allowfullscreen></iframe><a href="https://www.twitch.tv/serllinogg" target="_blank" rel="noopener">Abrir serllinogg en Twitch ↗</a></div></section>
+</section>
+

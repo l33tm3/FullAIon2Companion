@@ -1,0 +1,8 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {downloadRelease,staticDownloadUrl} from '../src/lib/download-release.mjs';
+const stable={id:'a'.repeat(32),version:'1.0.11',bytes:102525108,sha256:'b'.repeat(64),url:'/api/operations.php?action=download&id='+'a'.repeat(32),notes:'Notas'};
+test('published release uses validated same-site installer metadata',()=>{assert.equal(downloadRelease({stable}).version,'1.0.11');assert.equal(downloadRelease({stable}).channel,'stable');assert.equal(downloadRelease({beta:stable}).channel,'beta');});
+test('untrusted URLs, inconsistent identifiers and broken file metadata are rejected',()=>{for(const patch of [{url:'https://evil.invalid/a.exe'},{url:'/api/operations.php?action=download&id='+'c'.repeat(32)},{sha256:'wrong'},{bytes:-1},{bytes:'1024'},{version:'<script>'},{id:'wrong'}])assert.equal(downloadRelease({stable:{...stable,...patch}}),null);});
+test('missing release stays unavailable and invalid stable can fall back to valid beta',()=>{assert.equal(downloadRelease(null),null);assert.equal(downloadRelease({}),null);assert.equal(downloadRelease({stable:{...stable,bytes:0},beta:stable}).channel,'beta');});
+test('browsers get the static address only for plain stable versions',()=>{assert.equal(staticDownloadUrl(downloadRelease({stable})),'/descargas/FullAIon2Companion-1.0.11-setup.exe');assert.equal(staticDownloadUrl(downloadRelease({beta:stable})),null);for(const version of ['1.0.11-beta.1','1.0','../1.0.11','1.0.11 '])assert.equal(staticDownloadUrl({...stable,channel:'stable',version}),null);assert.equal(staticDownloadUrl(null),null);});

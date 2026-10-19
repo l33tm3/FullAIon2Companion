@@ -1,0 +1,10 @@
+# Installers of FullAIon2Companion as plain static files: the publish script copies the current stable one here
+# (FullAIon2Companion-<version>-setup.exe) and removes those no longer published. The folder is never listed.
+Options -Indexes
+AddType application/octet-stream .exe
+<IfModule mod_headers.c>
+ <FilesMatch "^FullAIon2Companion-\d+\.\d+\.\d+-setup\.exe$">
+  Header set Content-Disposition "attachment"
+  Header set Cache-Control "public, max-age=3600"
+ </FilesMatch>
+</IfModule>

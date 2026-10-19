@@ -1,0 +1,328 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1788947418751,
+      "tag": "0000_thankful_mikhail_rasputin",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1788951675529,
+      "tag": "0001_yummy_red_hulk",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1788952483839,
+      "tag": "0002_add_heal_tracking_drop_ap_total",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1788953643733,
+      "tag": "0003_acoustic_cannonball",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1788954392407,
+      "tag": "0004_tired_cannonball",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1788973628996,
+      "tag": "0005_careful_mauler",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1788983330169,
+      "tag": "0006_dry_monster_badoon",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1788985546152,
+      "tag": "0007_watery_gamma_corps",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1788986284185,
+      "tag": "0008_tiresome_iron_monger",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1789136468685,
+      "tag": "0009_same_psynapse",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1789392551824,
+      "tag": "0010_add_aionriftshade_and_48_instances",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1789394308523,
+      "tag": "0011_rename_aionriftshade_display_name",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1789394813666,
+      "tag": "0012_add_beshmundir_rentus_tiamat",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1789395227863,
+      "tag": "0013_add_server_catalog_instances",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "6",
+      "when": 1789395239769,
+      "tag": "0014_seed_server_catalog_instances",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "6",
+      "when": 1789396203133,
+      "tag": "0015_add_tiamat_fortress_rename_baruna_lab",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "6",
+      "when": 1789399685120,
+      "tag": "0016_add_user_reported_riftshade_instances",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "6",
+      "when": 1789414449777,
+      "tag": "0017_rename_fugitive_asachin",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "6",
+      "when": 1789457123066,
+      "tag": "0018_curate_riftshade_instance_list",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1789458065975,
+      "tag": "0019_fix_riftshade_curation_name_typo",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "6",
+      "when": 1789490366453,
+      "tag": "0020_fix_servers_fingerprint_uniqueness",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "6",
+      "when": 1789490405130,
+      "tag": "0021_split_riftshade_data_from_origin_aion_fingerprint_clash",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "6",
+      "when": 1789495627861,
+      "tag": "0022_merge_duplicate_vasharti_boss_rows",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "6",
+      "when": 1789496253967,
+      "tag": "0023_normalize_modern_class_names",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "6",
+      "when": 1790077096095,
+      "tag": "0024_add_game_and_slugs",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "6",
+      "when": 1790083007779,
+      "tag": "0025_add_aion2_server_catalog",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "6",
+      "when": 1790773551719,
+      "tag": "0026_add_aion2_regions_servers",
+      "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "6",
+      "when": 1790810732704,
+      "tag": "0027_add_player_guild",
+      "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "6",
+      "when": 1790814645035,
+      "tag": "0028_add_player_profiles",
+      "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "6",
+      "when": 1791190000000,
+      "tag": "0029_add_player_slug",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "6",
+      "when": 1791200000000,
+      "tag": "0030_add_shield_absorb",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "6",
+      "when": 1791210000000,
+      "tag": "0031_add_instance_variant_and_mode",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "6",
+      "when": 1791220000000,
+      "tag": "0032_add_species_knowledge",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "6",
+      "when": 1791230000000,
+      "tag": "0033_add_boss_max_hp",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "6",
+      "when": 1791356000000,
+      "tag": "0034_add_downloads",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "6",
+      "when": 1791360000000,
+      "tag": "0035_add_upload_game_server",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "6",
+      "when": 1791365000000,
+      "tag": "0036_add_profile_combat_power",
+      "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "6",
+      "when": 1791366000000,
+      "tag": "0037_rename_combat_power_to_gear_score",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "6",
+      "when": 1791367000000,
+      "tag": "0038_add_profile_growth",
+      "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "6",
+      "when": 1791640000000,
+      "tag": "0039_rename_profile_faction_to_class_bits",
+      "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "6",
+      "when": 1791641000000,
+      "tag": "0040_add_profile_character",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "6",
+      "when": 1791642000000,
+      "tag": "0041_add_player_portraits",
+      "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "6",
+      "when": 1791643000000,
+      "tag": "0042_add_player_nc_character",
+      "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "6",
+      "when": 1791660000000,
+      "tag": "0043_add_player_faction",
+      "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "6",
+      "when": 1791670000000,
+      "tag": "0044_add_guilds",
+      "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "6",
+      "when": 1791680000000,
+      "tag": "0045_add_player_nc_match",
+      "breakpoints": true
+    }
+  ]
+}

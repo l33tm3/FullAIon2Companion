@@ -1,0 +1,128 @@
+^Efecto activo · quedan (.+) de (.+)$	Active effect · $1 of $2 left	Efeito ativo · faltam $1 de $2
+^En recarga · faltan (.+) de (.+)$	Cooling down · $1 of $2 left	Em recarga · faltam $1 de $2
+^Lista para usar · recarga de (.+)$	Ready to use · $1 cooldown	Pronta para usar · recarga de $1
+^TROPA · DAÑO · (\d+) con daño$	TROOP · DAMAGE · $1 dealing damage	TROPA · DANO · $1 com dano
+^MASCOTAS · (\d+)$	PETS · $1	MASCOTES · $1
+^GRUPO (\d+)$	GROUP $1	GRUPO $1
+^(\d+)/(\d+) · faltan (\d+)$	$1/$2 · $3 left	$1/$2 · faltam $3
+^EN ESPERA · (.+)$	IDLE · $1	EM ESPERA · $1
+^EN COMBATE · (.+)$	IN COMBAT · $1	EM COMBATE · $1
+^(.+) perdidos$	$1 lost	$1 perdidos
+^de ([\d.,\u00a0]+) · top ([\d.,\u00a0]+) %$	of $1 · top $2 %	de $1 · top $2 %
+^Clase vista (\d+:\d\d) · general (\d+:\d\d) · se renueva (\d+:\d\d)$	Class seen $1 · overall $2 · renews $3	Classe vista $1 · geral $2 · renova $3
+^Vista (\d+:\d\d) · se renueva (\d+:\d\d)$	Seen $1 · renews $2	Vista $1 · renova $2
+^Hay datos nuevos desde las (\d+:\d\d): abre la clasificación en el juego$	New data since $1: open the ranking in the game	Há dados novos desde as $1: abra a classificação no jogo
+^EN FURIA · desde hace (\d+:\d\d)$	ENRAGED · for $1	EM FÚRIA · há $1
+^Llegáis (.+) antes de la furia$	You get there $1 before the enrage	Vocês chegam $1 antes da fúria
+^Faltan (.+) de DPS · llegará con (\d+) %$	$1 DPS short · it enrages at $2 %	Faltam $1 de DPS · chegará com $2 %
+^Combate · (\d+:\d\d)(.*)$	Fight · $1$2	Combate · $1$2
+^Nv\. (\d+) · (.+)$	Lv. $1 · $2	Nv. $1 · $2
+^Nv\. (\d+)$	Lv. $1	Nv. $1
+^Nv\. (\d+) · (\d+)/(\d+)$	Lv. $1 · $2/$3	Nv. $1 · $2/$3
+^Sin obtener · (\d+)/(\d+) almas$	Not obtained · $1/$2 souls	Não obtido · $1/$2 almas
+^faltan (\d+)$	$1 left	faltam $1
+^(\d+) / (\d+) almas · faltan (\d+) para desbloquear$	$1 / $2 souls · $3 to unlock	$1 / $2 almas · faltam $3 para desbloquear
+^(\d+) / (\d+) almas · faltan (\d+) para Nv\. (\d+)$	$1 / $2 souls · $3 to Lv. $4	$1 / $2 almas · faltam $3 para Nv. $4
+^hoy (\d+) almas? · (\d+) muertes(.*)$	today $1 souls · $2 kills$3	hoje $1 almas · $2 abates$3
+^(.+) · ~(\d+) más$	$1 · ~$2 more	$1 · ~$2 mais
+^(.+) · (\d[\d.,]*) muertes · (\d[\d.,]*) almas$	$1 · $2 kills · $3 souls	$1 · $2 abates · $3 almas
+^(.+) daño$	$1 damage	$1 de dano
+^(.+) curación$	$1 healing	$1 de cura
+^(\d+) criaturas$	$1 creatures	$1 criaturas
+^TROPA · GRUPO (\d+) · (\d+) miembros$	TROOP · GROUP $1 · $2 members	TROPA · GRUPO $1 · $2 membros
+^TROPA · (\d+)/20 · tu grupo: (\d+)$	TROOP · $1/20 · your group: $2	TROPA · $1/20 · seu grupo: $2
+^Grupo (\d+)  \(el tuyo\)$	Group $1  (yours)	Grupo $1  (o seu)
+^Grupo (\d+)$	Group $1	Grupo $1
+^SALA · (.+) · (\d+)/(\d+) · (\d+)/(\d+) listos$	ROOM · $1 · $2/$3 · $4/$5 ready	SALA · $1 · $2/$3 · $4/$5 prontos
+^Objetivo sin ficha · (\d+)$	Target without card · $1	Alvo sem ficha · $1
+^Empieza a las (.+)$	Starts at $1	Começa às $1
+^cae en (.+) s$	lands in $1 s	cai em $1 s
+^DPS necesario (.+) · vais (\d+)% por delante$	Required DPS $1 · you're $2% ahead	DPS necessário $1 · vocês estão $2% à frente
+^DPS necesario (.+) · faltan (.+) \((\d+)%\)$	Required DPS $1 · $2 short ($3%)	DPS necessário $1 · faltam $2 ($3%)
+^(\d+) objetos · (\d+) únicos o mejores$	$1 items · $2 unique or better	$1 itens · $2 únicos ou melhores
+^(.+) · botín de su variante Nv\. (\d+)$	$1 · loot of its Lv. $2 variant	$1 · saque da variante Nv. $2
+^\+(\d+) más · la lista completa está en el panel ⚙ → Objetivo → Ficha$	+$1 more · the full list is in the panel ⚙ → Target → Card	+$1 mais · a lista completa está no painel ⚙ → Alvo → Ficha
+^JcJ: (.+)$	PvP: $1	JxJ: $1
+^#(\d+) en poder de combate de (.+)$	#$1 in combat power on $2	#$1 em poder de combate em $2
+^Tu PC (.+) vs (.+)$	Your CP $1 vs $2	Seu PC $1 vs $2
+^(.+) · ventaja en (.+)$	$1 · ahead in $2	$1 · vantagem em $2
+^(.+) · desventaja en (.+)$	$1 · behind in $2	$1 · desvantagem em $2
+^No se pudo consultar: (.+)$	Couldn't look it up: $1	Não foi possível consultar: $1
+^Crítico (.+)%$	Crit $1%	Crítico $1%
+^Crítico (.+)%   ·   Multigolpe (.+)%   ·   Espalda (.+)% \(estimado\)$	Crit $1%   ·   Multi-hit $2%   ·   Back $3% (estimated)	Crítico $1%   ·   Multigolpe $2%   ·   Costas $3% (estimado)
+^(.+) · (.+) (daño|curación) · (\d+) lanzamientos · (\d+) golpes$	$1 · $2 per second · $4 casts · $5 hits	$1 · $2 por segundo · $4 lançamentos · $5 golpes
+^Todos  (.+)$	All  $1	Todos  $1
+^A la vista: (.+)$	In view: $1	À vista: $1
+^(.+) · grupo (\d+)$	$1 · group $2	$1 · grupo $2
+^(.+) · hace (\d+) s$	$1 · $2 s ago	$1 · há $2 s
+^(.+)  ·  última posición$	$1  ·  last position	$1  ·  última posição
+^(.+)  ·  posición aproximada$	$1  ·  approximate position	$1  ·  posição aproximada
+^Verificar a (.+)$	Verify $1	Verificar $1
+^(.+) verificado$	$1 verified	$1 verificado
+^¡Ataca ahora! \(ataque (\d+) de 8\)$	Attack now! (attack $1 of 8)	Ataque agora! (ataque $1 de 8)
+^🐾 \+1 (.+) · (\d+) almas? hoy$	🐾 +1 $1 · $2 souls today	🐾 +1 $1 · $2 almas hoje
+^🐾 (.+) · Nv\. (\d+) · MÁX\.$	🐾 $1 · Lv. $2 · MAX	🐾 $1 · Nv. $2 · MÁX.
+^🐾 (.+) · Nv\. (\d+) · (\d+)/(\d+) · faltan (\d+)(.*)$	🐾 $1 · Lv. $2 · $3/$4 · $5 left$6	🐾 $1 · Nv. $2 · $3/$4 · faltam $5$6
+^Energía Od (.+) · actualizada (.+)$	Od energy $1 · updated $2	Energia Od $1 · atualizada $2
+^OBJETIVO · (.+) / (.+) muertes$	GOAL · $1 / $2 kills	OBJETIVO · $1 / $2 abates
+^OBJETIVO · (.+) / (.+) kinah en botín$	GOAL · $1 / $2 kinah in loot	OBJETIVO · $1 / $2 kinah em saque
+^OBJETIVO · (.+) / (.+) kinah$	GOAL · $1 / $2 kinah	OBJETIVO · $1 / $2 kinah
+^([\d.,  ]+) / ([\d.,  ]+) muertes$	$1 / $2 kills	$1 / $2 abates
+^([\d.,  ]+) / ([\d.,  ]+) kinah en botín$	$1 / $2 kinah in loot	$1 / $2 kinah em saque
+^A este ritmo, (.+) restantes$	At this pace, $1 left	Neste ritmo, faltam $1
+^¡Objetivo cumplido en (.+)!$	Goal reached in $1!	Objetivo cumprido em $1!
+^Reto · quedan (.+) · vas a tiempo \((.+)\)$	Challenge · $1 left · on time ($2)	Desafio · faltam $1 · no prazo ($2)
+^Reto · quedan (.+) · a este ritmo faltan (.+)$	Challenge · $1 left · at this pace $2 to go	Desafio · faltam $1 · neste ritmo faltam $2
+^Reto · quedan (.+) · sin ritmo aún$	Challenge · $1 left · no pace yet	Desafio · faltam $1 · sem ritmo ainda
+^Quedan (.+) · vas a tiempo: terminas en (.+)$	$1 left · on time: you finish in $2	Faltam $1 · no prazo: termina em $2
+^Quedan (.+) · a este ritmo te faltan (.+)$	$1 left · at this pace you need $2	Faltam $1 · neste ritmo faltam $2
+^Quedan (.+) · sin ritmo aún$	$1 left · no pace yet	Faltam $1 · sem ritmo ainda
+^Reto de (\d+) min$	$1 min challenge	Desafio de $1 min
+^(.+) (muertes|kinah) · (\d+) min$	$1 $2 · $3 min	$1 $2 · $3 min
+^(\d+) m arriba$	$1 m above	$1 m acima
+^(\d+) m abajo$	$1 m below	$1 m abaixo
+^(.*)hace (\d+:\d\d) · norte arriba$	$1$2 ago · north up	$1há $2 · norte para cima
+^(.*)desde las (.+)$	$1since $2	$1desde as $2
+^(.+) · (-?\d+), (-?\d+) · altura (-?\d+) · detectado a (\d+) m$	$1 · $2, $3 · height $4 · detected at $5 m	$1 · $2, $3 · altura $4 · detectado a $5 m
+^(.+) · (-?\d+), (-?\d+) · altura (-?\d+)$	$1 · $2, $3 · height $4	$1 · $2, $3 · altura $4
+^Muertes \((\d+)\)$	Deaths ($1)	Mortes ($1)
+^Efectos sobre (.+): tiempo activo$	Effects on $1: uptime	Efeitos em $1: tempo ativo
+^(.+): la usaste (\d+) de (\d+) veces posibles \(reutilización (\d+) s\)\. Úsala en cuanto esté lista\.$	$1: you used it $2 of $3 possible times ($4 s cooldown). Use it as soon as it is ready.	$1: você usou $2 de $3 vezes possíveis (recarga de $4 s). Use assim que estiver pronta.
+^(.+) estuvo activo solo el (\d+) % del combate\.$	$1 was active only $2 % of the fight.	$1 ficou ativo só $2 % do combate.
+^El objetivo paró o bloqueó el (\d+) % de tus ataques: atacar por la espalda lo evita\.$	The target parried or blocked $1 % of your attacks: attacking from behind avoids it.	O alvo aparou ou bloqueou $1 % dos seus ataques: atacar pelas costas evita isso.
+^El objetivo esquivó el (\d+) % de tus ataques: sube la precisión\.$	The target dodged $1 % of your attacks: raise your accuracy.	O alvo esquivou $1 % dos seus ataques: aumente a precisão.
+^Moriste (\d+) (vez|veces): mira en «Muertes» qué te golpeó al final\.$	You died $1 time(s): see in "Deaths" what hit you last.	Você morreu $1 vez(es): veja em «Mortes» o que te atingiu por último.
+^Golpe más grande: (.+) ([\d.,  ]+)$	Biggest hit: $1 $2	Maior golpe: $1 $2
+^Muere (.+)$	$1 dies	$1 morre
+^0:00 · máx\. (.+)/s · barras de (\d+) s$	0:00 · max $1/s · $2 s bars	0:00 · máx. $1/s · barras de $2 s
+^Daño recibido en los últimos 5 s: (.+)$	Damage taken in the last 5 s: $1	Dano recebido nos últimos 5 s: $1
+^(\d+:\d\d) · (.+) · por (.+)$	$1 · $2 · by $3	$1 · $2 · por $3
+^◈ Grieta ahora$	◈ Rift now	◈ Fenda agora
+^✦ Shugo ahora$	✦ Shugo now	✦ Shugo agora
+^♛ (.+) ahora$	♛ $1 now	♛ $1 agora
+^(◈) Grieta (.+)$	$1 Rift $2	$1 Fenda $2
+^Ha aparecido · visto por ti$	It has appeared · seen by you	Apareceu · visto por você
+^Murió a las (.+) · abre la lista del mapa para saber su reaparición$	Died at $1 · open the map list to know its respawn	Morreu às $1 · abra a lista do mapa para saber o renascimento
+^Aparece hacia las (.+) · estimado por su última muerte$	Appears around $1 · estimated from its last death	Aparece por volta das $1 · estimado pela última morte
+^(.+) · detectado a (\d+) m$	$1 · detected at $2 m	$1 · detectado a $2 m
+^Ver solo (.+)$	Show only $1	Ver só $1
+^fuera de alcance, puede que ya no esté · (.+)$	out of range, it may be gone · $1	fora de alcance, pode já não estar · $1
+^(.*)hace (\d+:\d\d)$	$1$2 ago	$1há $2
+^Novedades \((\d+)\)$	News ($1)	Novidades ($1)
+^Versión (\S+)$	Version $1	Versão $1
+^Tienes la (\S+) · (.+) MB(.*)$	You have $1 · $2 MB$3	Você tem a $1 · $2 MB$3
+^Tienes la versión (\S+)\. No hay noticias nuevas\.$	You have version $1. No new news.	Você tem a versão $1. Sem notícias novas.
+^Descargando (\S+)…$	Downloading $1…	Baixando $1…
+^Instalando (\S+): la app se cerrará y volverá a abrirse sola en unos segundos\.$	Installing $1: the app will close and open again by itself in a few seconds.	Instalando $1: o app vai fechar e abrir de novo sozinho em alguns segundos.
+^Equipo de ([^()]+)$	Armor · $1	Equipamento de $1
+^Equipo del ([^()]+)$	Armor · $1	Equipamento do $1
+^Armas de ([^()]+)$	Weapons · $1	Armas de $1
+^Armas del ([^()]+)$	Weapons · $1	Armas do $1
+^Equipo (olvidado|terrestre|sediento de sangre)$	Armor · $1	Equipamento · $1
+^Armas (olvidadas|terrestres|sedientas de sangre)$	Weapons · $1	Armas · $1
+^(.+%) c/u$	$1 each	$1 cada
+^(\d+) objetos · ~(.+) de que caiga alguno$	$1 items · ~$2 chance of any	$1 itens · ~$2 de cair algum
+^Sin botín en el catálogo · (\d+) muertes tuyas$	No loot in the catalog · $1 kills of yours	Sem saque no catálogo · $1 abates seus
+^PNJ ([\d.,  ]+)$	NPC $1	PNJ $1
+^([\d.,  ]+) kinah cada uno en el Mercado$	$1 kinah each on the Market	$1 kinah cada no Mercado
+^(\d+) objetos del botín sin precio: ponlo en la pestaña Mercado del panel$	$1 loot items without a price: set it in the panel's Market tab	$1 itens do saque sem preço: defina na aba Mercado do painel

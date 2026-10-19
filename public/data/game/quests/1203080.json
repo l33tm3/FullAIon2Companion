@@ -1,0 +1,1 @@
+{"id":1203080,"name":"???","description":"???","type":"District","typeName":"Regional","race":"Light","levelMin":10,"levelMax":46,"region":"Eltnen","steps":[{"order":1,"text":"???","goals":[]}],"rewards":{"exp":16205574,"gold":110000,"items":[],"classItems":[]},"startNpc":{"id":2990632,"name":"Hui","originalName":"Hui"},"prev":null,"next":null,"originalName":"???"}

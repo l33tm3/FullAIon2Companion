@@ -1,0 +1,108 @@
+<?php
+declare(strict_types=1);
+header('Content-Type: application/json; charset=utf-8');header('Cache-Control: no-store');header('X-Content-Type-Options: nosniff');
+function reply(array $x,int $s=200):never{http_response_code($s);echo json_encode($x,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);exit;}
+function stop(int $s,string $m):never{reply(['error'=>$m],$s);}
+$private=(getenv('AION_PRIVATE_DIR')?:dirname(__DIR__,2).'/aion2-private');$root=$private.'/companion';
+try{$cfg=json_decode(file_get_contents($private.'/account-config.json'),true,32,JSON_THROW_ON_ERROR);if(!($cfg['accountsEnabled']??false))stop(503,'Servicio no disponible.');if(!is_dir($root))mkdir($root,0700,true);}
+catch(Throwable){stop(503,'Servicio no disponible.');}
+function rate(string $key,int $cap,int $period):void{global $root;$file=$root.'/limit-'.hash('sha256',$key.($_SERVER['REMOTE_ADDR']??'').floor(time()/$period));$h=fopen($file,'c+');if(!$h)stop(503,'Servicio no disponible.');flock($h,LOCK_EX);$n=(int)stream_get_contents($h);if($n>=$cap){fclose($h);header('Retry-After: '.$period);stop(429,'Demasiadas solicitudes. Espera antes de reintentar.');}rewind($h);ftruncate($h,0);fwrite($h,(string)($n+1));fclose($h);}
+function readRecord(string $name):?array{global $root;$p=$root.'/'.$name.'.json';if(!is_file($p))return null;return json_decode(file_get_contents($p),true);}
+function writeRecord(string $name,array $x):void{global $root;$p=$root.'/'.$name.'.json';$tmp=$p.'.'.bin2hex(random_bytes(5));file_put_contents($tmp,json_encode($x,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR),LOCK_EX);chmod($tmp,0600);rename($tmp,$p);}
+function charRef(mixed $c):array{if(!is_array($c)||!in_array($c['region']??'',['la','eu','nae','naw','as'],true)||!preg_match('/^\d{4,5}$/',(string)($c['serverId']??''))||!preg_match('/^[A-Za-z0-9_=-]{10,120}$/',(string)($c['characterId']??'')))stop(400,'Personaje no válido.');return ['region'=>$c['region'],'serverId'=>(int)$c['serverId'],'characterId'=>$c['characterId']];}
+function idValue(mixed $x):string{if(!is_string($x)||!preg_match('/^[a-f0-9]{32}$/D',$x))stop(400,'Identificador no válido.');return $x;}
+function expectedMethod(string $m):void{if(($_SERVER['REQUEST_METHOD']??'')!==$m)stop(405,'Método no permitido.');}
+$action=(string)($_GET['action']??'');$method=$_SERVER['REQUEST_METHOD']??'';
+if(!in_array($action,['pair','redeem','devices','revoke','challenge','challenge-status','challenge-cancel','proof','telemetry','pull','account-overview','pets','diagnostics','license','support-tickets','support-ticket','support-create','support-reply','title-challenge','title-check','title-cancel','character-unlink'],true))stop(400,'Acción no válida.');
+rate('all',150,60);if(random_int(1,100)===1)foreach(glob($root.'/limit-*')?:[] as $old)if(filemtime($old)<time()-86400)@unlink($old);$body=[];
+if($method==='POST'){
+ if(!str_starts_with(strtolower($_SERVER['CONTENT_TYPE']??''),'application/json'))stop(415,'Se requiere JSON.');$raw=file_get_contents('php://input',false,null,0,131073);if(strlen($raw)>131072)stop(413,'Solicitud demasiado grande.');try{$body=json_decode($raw,true,24,JSON_THROW_ON_ERROR);}catch(Throwable){stop(400,'JSON no válido.');}if(!is_array($body))stop(400,'Solicitud no válida.');
+}elseif($method!=='GET')stop(405,'Método no permitido.');
+try{
+ $db=new PDO($cfg['db']['dsn'],$cfg['db']['user'],$cfg['db']['password'],[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_EMULATE_PREPARES=>false]);
+ $device=null;$user=null;$lock=null;
+ $deviceChallenge=in_array($action,['challenge','challenge-status','challenge-cancel','title-challenge','title-check','title-cancel'],true)&&trim((string)($_SERVER['HTTP_AUTHORIZATION']??''))!=='';
+ if(in_array($action,['redeem','proof','telemetry','pull','pets','diagnostics','license','support-tickets','support-ticket','support-create','support-reply'],true)||$deviceChallenge){
+  if($action!=='redeem'){
+   $token=preg_replace('/^Bearer /i','',(string)($_SERVER['HTTP_AUTHORIZATION']??''));if(!preg_match('/^[a-f0-9]{64}$/D',$token))stop(401,'Token de dispositivo no válido.');$device=readRecord('token-'.hash('sha256',$token));if(!$device||($device['revoked']??true))stop(401,'Dispositivo desconectado.');
+   // Serialize revocation, replay checks and all activity for the same device.
+   $lock=fopen($root.'/device-lock-'.$device['id'],'c');flock($lock,LOCK_EX);$device=readRecord('token-'.hash('sha256',$token));if(!$device||$device['revoked'])stop(401,'Dispositivo desconectado.');
+   $q=$db->prepare('SELECT id,auth_version,status FROM companion_users WHERE id=?');$q->execute([$device['userId']]);$user=$q->fetch(PDO::FETCH_ASSOC);if(!$user||$user['status']!=='active'||(int)$user['auth_version']!==$device['authVersion'])stop(401,'Vuelve a conectar el dispositivo.');
+  }
+ }else{
+  ini_set('session.use_strict_mode','1');ini_set('session.save_path',$private.'/sessions');session_name('__Host-aion_session');session_set_cookie_params(['path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);session_start();
+  if(!isset($_SESSION['uid'])||time()-($_SESSION['born']??0)>43200||time()-($_SESSION['last']??0)>7200)stop(401,'Inicia sesión en Mi cuenta.');
+  $q=$db->prepare('SELECT id,auth_version,status FROM companion_users WHERE id=?');$q->execute([$_SESSION['uid']]);$user=$q->fetch(PDO::FETCH_ASSOC);if(!$user||$user['status']!=='active'||(int)$user['auth_version']!==($_SESSION['auth_version']??0))stop(401,'La sesión caducó.');
+  if($method==='POST'&&(($_SERVER['HTTP_ORIGIN']??'')!==$cfg['origin']||!hash_equals($_SESSION['csrf']??'',(string)($_SERVER['HTTP_X_CSRF_TOKEN']??''))))stop(403,'Origen o sesión no válido.');session_write_close();
+ }
+ define('DAEVA_COMPANION_CONTEXT',true);require __DIR__.'/companion-characters.php';require __DIR__.'/companion-account.php';require __DIR__.'/companion-operations.php';
+ if($action==='pair'){
+  expectedMethod('POST');rate('pair'.$user['id'],5,900);$code=strtoupper(bin2hex(random_bytes(6)));writeRecord('pair-'.hash('sha256',$code),['userId'=>$user['id'],'authVersion'=>(int)$user['auth_version'],'expires'=>time()+300,'used'=>false,'name'=>mb_substr((string)($body['deviceName']??'FullAIon2Companion'),0,80)]);reply(['code'=>$code,'expiresIn'=>300]);
+ }
+ if($action==='redeem'){
+  expectedMethod('POST');rate('redeem',8,900);$code=strtoupper(preg_replace('/[\s-]/','',(string)($body['code']??'')));if(!preg_match('/^[A-F0-9]{12}$/D',$code))stop(400,'Código no válido.');$key='pair-'.hash('sha256',$code);$h=fopen($root.'/'.$key.'.lock','c');flock($h,LOCK_EX);$pair=readRecord($key);if(!$pair||$pair['used']||$pair['expires']<time())stop(401,'Código caducado o utilizado.');$q=$db->prepare('SELECT auth_version FROM companion_users WHERE id=?');$q->execute([$pair['userId']]);if((int)$q->fetchColumn()!==$pair['authVersion'])stop(401,'La cuenta cambió. Solicita otro código.');
+  $token=bin2hex(random_bytes(32));$id=bin2hex(random_bytes(16));$device=['id'=>$id,'name'=>$pair['name'],'userId'=>$pair['userId'],'authVersion'=>$pair['authVersion'],'createdAt'=>gmdate('c'),'lastSeen'=>null,'lastSequence'=>0,'revoked'=>false];writeRecord('token-'.hash('sha256',$token),$device);writeRecord('device-'.$id,['hash'=>hash('sha256',$token),'userId'=>$device['userId']]);$pair['used']=true;writeRecord($key,$pair);reply(['accountId'=>$device['userId'],'deviceId'=>$id,'accessToken'=>$token,'tokenType'=>'Bearer','scope'=>['telemetry:write','companion:read','link:submit'],'storeIn'=>'Windows Credential Manager']);
+ }
+ if($action==='devices'){
+  expectedMethod('GET');$list=[];foreach(glob($root.'/device-*.json')?:[] as $p){$entry=json_decode(file_get_contents($p),true);if(($entry['userId']??'')!==$user['id'])continue;$d=readRecord('token-'.$entry['hash']);if($d)$list[]=array_intersect_key($d,array_flip(['id','name','createdAt','lastSeen','revoked']));}reply(['devices'=>$list]);
+ }
+ if($action==='revoke'){
+  expectedMethod('POST');$id=idValue($body['deviceId']??null);$entry=readRecord('device-'.$id);if(!$entry||$entry['userId']!==$user['id'])stop(404,'Dispositivo no encontrado.');$h=fopen($root.'/device-lock-'.$id,'c');flock($h,LOCK_EX);$d=readRecord('token-'.$entry['hash']);$d['revoked']=true;writeRecord('token-'.$entry['hash'],$d);reply(['revoked'=>true]);
+ }
+ if($action==='challenge'){
+  expectedMethod('POST');
+  $ref=charRef($body['character']??null);$prior=readRecord('link-'.hash('sha256',json_encode($ref)));if($prior&&($prior['userId']??'')===$user['id'])stop(409,'Este personaje ya está verificado. No necesitas otra prueba.');
+  // Refuse before spending an attempt or asking the player to perform a sequence
+  // that this deployment cannot validate. Existing evidence remains untouched.
+  if(empty($cfg['captureVerifierPublicKey']))stop(503,'La prueba de ataques ya no se usa. Verifica tu personaje cambiando un título en el juego: en Mi perfil de la web o en Configuración → Cuenta de FullAIon2Companion. Tus pruebas recibidas se conservan.');
+  rate('challenge'.$user['id'],3,3600);$ref=charRef($body['character']??null);$id=bin2hex(random_bytes(16));$pattern=array_fill(0,7,5000);$x=['id'=>$id,'userId'=>$user['id'],'character'=>$ref,'pattern'=>$pattern,'nonce'=>bin2hex(random_bytes(24)),'created'=>time(),'expires'=>time()+600,'status'=>'pending','evidence'=>null];writeRecord('challenge-'.$id,$x);reply(['challengeId'=>$id,'character'=>$ref,'pattern'=>$pattern,'nonce'=>$x['nonce'],'expiresIn'=>600,'target'=>'training-dummy','status'=>'pending']);
+ }
+ if($action==='challenge-status'){
+  expectedMethod('GET');$x=readRecord('challenge-'.idValue($_GET['challengeId']??null));if(!$x||$x['userId']!==$user['id'])stop(404,'Prueba no encontrada.');$status=$x['status']==='pending'&&$x['expires']<time()?'expired':$x['status'];$ready=!empty($cfg['captureVerifierPublicKey']);reply(['status'=>$status,'verified'=>$status==='verified','verificationReady'=>$ready,'reason'=>$status==='observed'&&!$ready?'capture_verifier_unavailable':null,'message'=>['pending'=>'Esperando evidencia de FullAIon2Companion.','expired'=>'La prueba caducó. Solicita una nueva.','observed'=>$ready?'Patrón recibido. Falta la validación de un capturador de confianza; el personaje aún no está vinculado.':'Tus ocho ataques fueron recibidos. Falta configurar el verificador de captura del servidor; tu personaje todavía no está vinculado. No repitas la prueba.','cancelled'=>'Prueba cancelada. La evidencia se conserva; no se reanudará automáticamente.','verified'=>'Personaje vinculado mediante el capturador autorizado.'][$status]??'Prueba recibida.']);
+ }
+ if($action==='challenge-cancel'){
+  expectedMethod('POST');$id=idValue($body['challengeId']??null);$h=fopen($root.'/challenge-'.$id.'.lock','c');flock($h,LOCK_EX);$x=readRecord('challenge-'.$id);if(!$x||$x['userId']!==$user['id'])stop(404,'Prueba no encontrada.');if($x['status']==='verified')stop(409,'El personaje ya está verificado. No hay una prueba pendiente que cancelar.');
+  if($x['status']!=='cancelled'){$x['status']='cancelled';$x['cancelledAt']=gmdate('c');$x['cancelledByDevice']=$device['id']??null;writeRecord('challenge-'.$id,$x);}reply(['status'=>'cancelled','verified'=>false,'message'=>'Prueba cancelada. La evidencia se conserva; no se reanudará automáticamente.']);
+ }
+ if($action==='proof'){
+  expectedMethod('POST');$id=idValue($body['challengeId']??null);$h=fopen($root.'/challenge-'.$id.'.lock','c');flock($h,LOCK_EX);$x=readRecord('challenge-'.$id);if(!$x||$x['userId']!==$device['userId'])stop(404,'Prueba no encontrada.');if($x['status']!=='pending'||$x['expires']<time())stop(409,'Prueba caducada o utilizada.');
+  $e=$body['evidence']??null;if(!is_array($e)||!hash_equals($x['nonce'],(string)($e['nonce']??''))||charRef($e['character']??null)!==$x['character']||($e['targetKind']??'')!=='training-dummy')stop(400,'La evidencia no corresponde a esta prueba.');$times=$e['attackOffsetsMs']??null;if(!is_array($times)||!array_is_list($times)||count($times)!==8)stop(400,'Se requieren ocho ataques.');foreach($times as $v)if(!is_int($v)||$v<0||$v>120000)stop(400,'Tiempo de ataque no válido.');for($i=0;$i<7;$i++)if(abs(($times[$i+1]-$times[$i])-$x['pattern'][$i])>800)stop(400,'El patrón de pausas no coincide.');
+  // A bearer token proves device pairing, never character ownership. Only a separate
+  // trusted capture verifier's signature can approve a character link.
+  $verified=false;$pub=$cfg['captureVerifierPublicKey']??null;$signed=json_encode($e,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);$signature=base64_decode((string)($body['verifierSignature']??''),true);if(is_string($pub)&&$signature!==false&&$signature!=='')$verified=openssl_verify($signed,$signature,$pub,OPENSSL_ALGO_SHA256)===1;
+  if($verified){$ck=hash('sha256',json_encode($x['character']));$lh=fopen($root.'/link-'.$ck.'.lock','c');flock($lh,LOCK_EX);$prior=readRecord('link-'.$ck);if($prior&&$prior['userId']!==$user['id'])stop(409,'El personaje ya está vinculado a otra cuenta.');}
+  $x['status']=$verified?'verified':'observed';$x['evidence']=['deviceId'=>$device['id'],'receivedAt'=>gmdate('c'),'digest'=>hash('sha256',$signed),'attackOffsetsMs'=>$times];writeRecord('challenge-'.$id,$x);if($verified){writeRecord('link-'.$ck,['userId'=>$user['id'],'character'=>$x['character'],'verifiedAt'=>gmdate('c'),'deviceId'=>$device['id']]);}reply(['status'=>$x['status'],'verified'=>$verified]);
+ }
+ if($action==='telemetry'){
+  expectedMethod('POST');$seq=$body['sequence']??null;if(!is_int($seq)||$seq<1||$seq>2147483647)stop(400,'Secuencia no válida.');if($seq<=$device['lastSequence'])stop(409,'Secuencia ya recibida.');$events=$body['events']??null;if(!is_array($events)||!array_is_list($events)||count($events)<1||count($events)>50)stop(400,'Envía entre 1 y 50 eventos.');
+  foreach($events as $e){if(!is_array($e)||!in_array($e['type']??'',['target','combat','death','position','heartbeat'],true)||!is_string($e['at']??null)||!preg_match('/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,3})?Z$/D',$e['at']))stop(400,'Evento no válido.');$at=strtotime($e['at']);if(!$at||abs(time()-$at)>86400)stop(400,'Fecha de evento fuera de rango.');if(strlen(json_encode($e))>2000)stop(400,'Evento demasiado grande.');
+   $allowed=['type','at','entityId','eventId','sourceId','targetId','name','serverId','region','npcId','skillId','damage','healing','critical','backAttack','perfect','parry','double','blocked','mapId','x','y','kind','targetKind'];foreach(array_keys($e) as $k)if(!in_array($k,$allowed,true))stop(400,'Campo de telemetría no admitido.');foreach(['critical','backAttack','perfect','parry','double','blocked'] as $k)if(isset($e[$k])&&!is_bool($e[$k]))stop(400,'Indicador de combate no válido.');foreach(['damage','healing','npcId','skillId'] as $k)if(isset($e[$k])&&(!is_int($e[$k])||$e[$k]<0||$e[$k]>2147483647))stop(400,'Valor de combate no válido.');foreach(['entityId','eventId','sourceId','targetId','name'] as $k)if(isset($e[$k])&&(!is_string($e[$k])||strlen($e[$k])>150))stop(400,'Identificador de evento no válido.');if($e['type']==='combat'&&(!isset($e['eventId'],$e['sourceId'],$e['targetId'])||(!isset($e['damage'])&&!isset($e['healing']))))stop(400,'Combate incompleto.');if($e['type']==='death'&&!isset($e['eventId'],$e['entityId']))stop(400,'Baja incompleta.');if($e['type']==='target'&&!isset($e['entityId']))stop(400,'Objetivo incompleto.');if($e['type']==='position'&&(!is_numeric($e['x']??null)||!is_numeric($e['y']??null)||!is_finite((float)$e['x'])||!is_finite((float)$e['y'])||abs($e['x'])>1e9||abs($e['y'])>1e9||!preg_match('/^[\w-]{1,40}$/D',(string)($e['mapId']??''))))stop(400,'Posición no válida.');
+  }
+  $previous=readRecord('events-'.$device['id'])??['events'=>[]];$seen=[];foreach($previous['events'] as $prior)if(isset($prior['eventId']))$seen[$prior['eventId']]=true;foreach($events as $event)if(isset($event['eventId'])){if(isset($seen[$event['eventId']]))stop(409,'Evento ya recibido.');$seen[$event['eventId']]=true;}$merged=array_slice(array_merge($previous['events'],$events),-200);writeRecord('events-'.$device['id'],['sequence'=>$seq,'receivedAt'=>gmdate('c'),'trustedCapture'=>false,'events'=>$merged]);$device['lastSequence']=$seq;$device['lastSeen']=gmdate('c');writeRecord('token-'.hash('sha256',$token),$device);reply(['accepted'=>count($events),'sequence'=>$seq,'trustedCapture'=>false]);
+ }
+ if($action==='pets'){
+  // A character's pet collection from the capture (the game's own login list, kept current by the live frames) plus
+  // its daily history. Stored as account progress, so it reaches the web like the rest; history merges by day.
+  expectedMethod('POST');rate('pets'.$device['id'],120,3600);
+  $c=$body['character']??null;$name=is_array($c)?(string)($c['name']??''):'';if(mb_strlen($name)<1||mb_strlen($name)>40||preg_match('/[\x00-\x1f\/\\<>"]/u',$name)||!preg_match('/^\d{4,5}$/',(string)($c['serverId']??''))||!in_array($c['region']??'',['la','eu','nae','naw','as'],true))stop(400,'Personaje no válido.');
+  $pets=$body['pets']??null;if(!is_array($pets)||!array_is_list($pets)||count($pets)>400)stop(400,'Lista de mascotas no válida.');
+  foreach($pets as $p)if(!is_array($p)||!array_is_list($p)||count($p)!==3||!is_int($p[0])||$p[0]<1000||$p[0]>99999||!is_int($p[1])||$p[1]<0||$p[1]>3||!is_int($p[2])||$p[2]<0||$p[2]>999)stop(400,'Mascota no válida.');
+  $hist=$body['history']??[];if(!is_array($hist)||!array_is_list($hist)||count($hist)>400)stop(400,'Historial no válido.');
+  $days=[];foreach($hist as $h){if(!is_array($h)||count($h)!==6||!is_string($h[0])||!preg_match('/^\d{4}-\d\d-\d\d$/D',$h[0]))stop(400,'Día no válido.');for($i=1;$i<6;$i++)if(!is_int($h[$i])||$h[$i]<0||$h[$i]>($i===5?100000:400))stop(400,'Día no válido.');$days[$h[0]]=array_slice($h,1);}
+  $active=$body['active']??null;if($active!==null&&(!is_int($active)||$active<0||$active>99999))stop(400,'Mascota activa no válida.');
+  foreach(['capturedAt','listAt'] as $k)if(isset($body[$k])&&(!is_string($body[$k])||!preg_match('/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/D',$body[$k])))stop(400,'Fecha no válida.');
+  $key='pets:'.(int)$c['serverId'].':'.bin2hex(mb_strtolower($name));
+  $db->beginTransaction();$q=$db->prepare('SELECT revision,auth_version FROM companion_users WHERE id=? FOR UPDATE');$q->execute([$user['id']]);$locked=$q->fetch(PDO::FETCH_ASSOC);if(!$locked||(int)$locked['auth_version']!==$device['authVersion']){$db->rollBack();stop(401,'Vuelve a conectar el dispositivo.');}
+  $q=$db->prepare('SELECT value_json FROM companion_progress WHERE user_id=? AND entry_key=? AND deleted=0');$q->execute([$user['id'],$key]);$prior=json_decode((string)$q->fetchColumn(),true);
+  if(!$prior){$q=$db->prepare('SELECT COUNT(*) FROM companion_progress WHERE user_id=?');$q->execute([$user['id']]);if((int)$q->fetchColumn()>=100000){$db->rollBack();stop(409,'Has alcanzado el límite de progreso de la cuenta.');}}
+  $merged=is_array($prior['history']??null)?$prior['history']:[];foreach($days as $d=>$v)$merged[$d]=$v;ksort($merged);$merged=array_slice($merged,-730,null,true);
+  $value=['name'=>$name,'serverId'=>(int)$c['serverId'],'region'=>$c['region'],'capturedAt'=>$body['capturedAt']??gmdate('Y-m-d\TH:i:s\Z'),'listAt'=>$body['listAt']??null,'active'=>$active,'pets'=>$pets,'history'=>(object)$merged,'deviceId'=>$device['id'],'receivedAt'=>gmdate('c')];
+  $revision=(int)$locked['revision']+1;$q=$db->prepare('INSERT INTO companion_progress (user_id,entry_key,value_json,deleted,revision) VALUES (?,?,?,0,?) ON DUPLICATE KEY UPDATE value_json=VALUES(value_json),deleted=0,revision=VALUES(revision),updated_at=CURRENT_TIMESTAMP');$q->execute([$user['id'],$key,json_encode($value,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR),$revision]);
+  $q=$db->prepare('UPDATE companion_users SET revision=? WHERE id=?');$q->execute([$revision,$user['id']]);$db->commit();
+  $device['lastSeen']=gmdate('c');writeRecord('token-'.hash('sha256',$token),$device);
+  reply(['saved'=>true,'owned'=>count(array_filter($pets,fn($p)=>$p[1]>=1)),'days'=>count($merged),'version'=>$revision]);
+ }
+ if($action==='pull'){
+  expectedMethod('GET');$q=$db->prepare('SELECT entry_key,value_json FROM companion_progress WHERE user_id=? AND deleted=0 AND (entry_key LIKE ? OR entry_key LIKE ? OR entry_key LIKE ? OR entry_key LIKE ? OR entry_key LIKE ?)');$q->execute([$user['id'],'pref:%','farm:%','route:%','build:%','ref:%']);$progress=[];foreach($q->fetchAll(PDO::FETCH_ASSOC) as $r)$progress[$r['entry_key']]=json_decode($r['value_json'],true);$links=[];$details=[];foreach(glob($root.'/link-*.json')?:[] as $p){$l=json_decode(file_get_contents($p),true);if(($l['userId']??'')===$user['id']){$links[]=$l['character'];$details[]=['character'=>$l['character'],'characterName'=>$l['approval']['characterName']??null,'method'=>$l['approval']['kind']??'capture','verifiedAt'=>$l['verifiedAt']??null];}}$device['lastSeen']=gmdate('c');writeRecord('token-'.hash('sha256',$token),$device);reply(['announcements'=>opsNotices($db,'desktop'),'releases'=>(object)opsReleases($db),'lastSequence'=>$device['lastSequence'],'activeChallenges'=>companionChallenges($user['id']),'apiVersion'=>1,'product'=>'FullAIon2Companion','accountId'=>$user['id'],'deviceId'=>$device['id'],'serverTime'=>gmdate('c'),'progress'=>(object)$progress,'linkedCharacters'=>$links,'linkedDetails'=>$details,'titleChallenges'=>titleChallenges($user['id']),'characterLimit'=>CHARACTER_LIMIT,'resources'=>['events'=>'/data/events.json','maps'=>'/data/atlas-index.json','catalog'=>'/data/game/catalog.json','characters'=>'/api/?type=character'],'verificationReady'=>!empty($cfg['captureVerifierPublicKey']),'subscription'=>companionAccess()]);
+ }
+}catch(Throwable $e){error_log('FullAIon2Companion: '.$e->getCode());stop(503,'No se pudo completar la operación.');}

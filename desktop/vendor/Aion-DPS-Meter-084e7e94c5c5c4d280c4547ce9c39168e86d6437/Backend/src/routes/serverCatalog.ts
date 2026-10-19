@@ -1,0 +1,36 @@
+import { and, asc, eq } from "drizzle-orm";
+import type { FastifyInstance } from "fastify";
+import { db } from "../db/client.js";
+import { serverCatalog } from "../db/schema.js";
+import { gameFromQuery } from "./instances.js";
+import { REGION_EXCLUDED_CLASSES } from "../constants.js";
+
+/** The curated name+version list the client's character registration UI picks from - see
+ * schema.ts's serverCatalog remarks for why this is separate from the fingerprint-based
+ * `servers` table. `?game=` is accepted for compatibility (only aion2 exists). */
+export async function serverCatalogRoutes(app: FastifyInstance) {
+  app.get<{ Querystring: { game?: string } }>("/api/server-catalog", async (request, reply) => {
+    const game = gameFromQuery(request.query.game, reply);
+    if (game === null) {
+      return;
+    }
+    const rows = db
+      .select({
+        id: serverCatalog.id,
+        name: serverCatalog.name,
+        slug: serverCatalog.slug,
+        version: serverCatalog.version,
+        kind: serverCatalog.kind,
+        game: serverCatalog.game,
+        region: serverCatalog.region,
+        faction: serverCatalog.faction,
+      })
+      .from(serverCatalog)
+      .where(and(eq(serverCatalog.active, true), eq(serverCatalog.game, game)))
+      .orderBy(asc(serverCatalog.kind), asc(serverCatalog.region), asc(serverCatalog.faction), asc(serverCatalog.name))
+      .all();
+    // Which of the game's classes this server lacks (see constants.ts) - the client's class picker
+    // hides them for characters registered on that server.
+    return reply.send(rows.map((r) => ({ ...r, excludedClasses: (r.region ? REGION_EXCLUDED_CLASSES[r.region] : undefined) ?? [] })));
+  });
+}

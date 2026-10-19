@@ -1,0 +1,11 @@
+import fs from 'node:fs/promises';import {load} from 'cheerio';
+const read=async p=>JSON.parse(await fs.readFile(p,'utf8')),root='public/data/game/encyclopedia';
+const index=await read(root+'/index.json'),names=new Map(index.entries.filter(x=>x.detail==='items').map(x=>[Number(x.id),x.name]));
+const $=load(await fs.readFile('research/dbaion/glossary-audit.html','utf8'));
+const glossary=$('main tr[data-cat]').map((_,e)=>{const td=$(e).find('td');return {category:$(e).attr('data-cat'),name:td.eq(0).text().trim(),originalName:td.eq(0).text().trim(),korean:td.eq(3).text().trim()};}).get();
+const p=load(await fs.readFile('research/dbaion/promo-audit.html','utf8'));
+const promotions=p('main article[data-until]').map((_,e)=>({code:p(e).find('[data-code]').attr('data-code'),expiresAt:p(e).attr('data-until'),rewards:p(e).find('.pr-rew a').map((_,a)=>{const id=Number(p(a).attr('href').match(/\d+/)?.[0]);return {id,name:names.get(id)||p(a).find('span').text(),count:Number(p(a).find('b').text().replace(/\D/g,''))};}).get(),source:'https://dbaion2.ru/en/promo/'})).get();
+const servers=await read('research/dbaion/servers-full.json');
+const g=load(await fs.readFile('research/dbaion/guilds-audit.html','utf8'));
+const guilds=g('main [data-region][data-race]').map((_,e)=>({name:g(e).find('h2,h3').first().text().trim(),region:g(e).attr('data-region'),race:g(e).attr('data-race'),server:g(e).attr('data-server'),source:'https://dbaion2.ru/en/guilds/'})).get();
+await fs.writeFile(root+'/resources.json',JSON.stringify({importedAt:new Date().toISOString(),source:'https://dbaion2.ru/en/',glossary,promotions,servers,guilds}));console.log({glossary:glossary.length,promotions:promotions.length,servers:servers.servers.length,guilds:guilds.length});

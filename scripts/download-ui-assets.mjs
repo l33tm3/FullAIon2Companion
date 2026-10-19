@@ -1,0 +1,7 @@
+import fs from 'node:fs/promises';
+import crypto from 'node:crypto';
+const base='https://assets.playnccdn.com/static-aion2/characters/img/';
+const paths=[...['str','dex','agi','con','wis','int'].map(x=>`info/stat_${x}.png`),...['justice','freedom','illusion','life','time','destruction','death','wisdom','destiny','space'].map(x=>`info/stat_lords_${x}.png`),...['gladiator','templar','ranger','assassin','sorcerer','elementalist','cleric','chanter'].map(x=>`class/class_icon_${x}.png`),...['common','rare','legend','unique'].flatMap(x=>[`daevanion/board_icon_${x}.png`,`daevanion/board_icon_${x}_open.png`]),...['gladiator','templar','ranger','assassin','sorcerer','elementalist','cleric','chanter'].map(x=>`daevanion/board_icon_start_${x}.png`)];
+await fs.mkdir('public/assets/ui',{recursive:true});const manifest=[];
+for(const path of paths){const response=await fetch(base+path);if(!response.ok){console.log('No disponible',path,response.status);continue;}const bytes=Buffer.from(await response.arrayBuffer());const name=path.split('/').pop();await fs.writeFile('public/assets/ui/'+name,bytes);manifest.push({source:base+path,path:'/assets/ui/'+name,bytes:bytes.length,sha256:crypto.createHash('sha256').update(bytes).digest('hex')});}
+await fs.writeFile('public/data/ui-assets-manifest.json',JSON.stringify({fetchedAt:new Date().toISOString(),files:manifest},null,2));console.log('UI oficial:',manifest.length,'iconos');

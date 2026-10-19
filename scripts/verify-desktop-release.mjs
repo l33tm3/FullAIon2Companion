@@ -1,0 +1,24 @@
+import fs from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import assert from 'node:assert/strict';
+const origin='https://governanceai.me';
+const manifest=JSON.parse(await fs.readFile('output/desktop-release-manifest.json','utf8'));
+const publicResponse=await fetch(origin+'/api/operations.php?action=public',{cache:'no-store'});
+assert.equal(publicResponse.status,200);
+const publicData=await publicResponse.json();
+const release=publicData.releases.stable;
+assert.equal(release.id,manifest.id);
+assert.equal(release.version,manifest.version);
+assert.equal(release.sha256,manifest.sha256);
+assert.equal(release.bytes,manifest.bytes);
+const response=await fetch(new URL(release.url,origin),{cache:'no-store'});
+assert.equal(response.status,200);
+assert.match(response.headers.get('content-disposition'),/FullAIon2Companion/);
+const hash=createHash('sha256');let bytes=0;
+for await(const chunk of response.body){bytes+=chunk.length;hash.update(chunk);}
+assert.equal(bytes,manifest.bytes);assert.equal(hash.digest('hex'),manifest.sha256);
+const anonymous=await fetch(origin+'/api/companion.php?action=license',{method:'POST',headers:{'content-type':'application/json'},body:'{"character":{"region":"la","serverId":2401,"characterId":"official_reference_for_test="}}'});
+assert.equal(anonymous.status,401);
+const report={checkedAt:new Date().toISOString(),ok:true,publishedVersion:release.version,channel:release.channel,bytes,sha256:manifest.sha256,downloadUrl:new URL(release.url,origin).href,downloadIntegrityConfirmed:true,anonymousLicenseRejected:true};
+await fs.writeFile('output/desktop-release-check.json',JSON.stringify(report,null,2));
+console.log(JSON.stringify(report,null,2));
