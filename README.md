@@ -7,7 +7,7 @@
 **A free overlay and companion app for AION 2: DPS meter, boss timers, soul hunting, minimap, market prices, rankings and much more, on top of your game.**
 
 [![Download](https://img.shields.io/github/v/release/l33tm3/FullAIon2Companion?label=Download&logo=windows&color=2ea44f)](https://github.com/l33tm3/FullAIon2Companion/releases/latest)
-[![VirusTotal](https://img.shields.io/badge/VirusTotal-VT__RESULT-VT__COLOR?logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/file/18b23018c8e87a7b5669d28c52a974c16a9e97b96f3657ce869d3015d7e7ad17)
+[![VirusTotal](https://img.shields.io/badge/VirusTotal-1%2F64-yellowgreen?logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/file/18b23018c8e87a7b5669d28c52a974c16a9e97b96f3657ce869d3015d7e7ad17)
 [![Donate with PayPal](https://img.shields.io/badge/Donate-PayPal-e36cb8?logo=paypal&logoColor=white)](https://paypal.me/martincito45)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 ![Windows 10/11 64-bit](https://img.shields.io/badge/Windows-10%20%7C%2011%20x64-0078d6?logo=windows)
@@ -30,7 +30,7 @@ FullAIon2Companion reads the AION 2 traffic that already reaches your PC and sho
 |---|---|
 | **Latest version** | [**FullAIon2Companion 1.0.20**](https://github.com/l33tm3/FullAIon2Companion/releases/latest) (Windows 10/11, 64-bit, ~99 MB) |
 | **SHA-256** | `18b23018c8e87a7b5669d28c52a974c16a9e97b96f3657ce869d3015d7e7ad17` |
-| **VirusTotal** | [![VirusTotal](https://img.shields.io/badge/VirusTotal-VT__RESULT-VT__COLOR?logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/file/18b23018c8e87a7b5669d28c52a974c16a9e97b96f3657ce869d3015d7e7ad17) — the report for this exact installer |
+| **VirusTotal** | [![VirusTotal](https://img.shields.io/badge/VirusTotal-1%2F64-yellowgreen?logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/file/18b23018c8e87a7b5669d28c52a974c16a9e97b96f3657ce869d3015d7e7ad17) — 1 of 64 engines: DeepInstinct's machine-learning engine flags it, the other 63 report it clean. Unsigned installers often trip such heuristics; the full source of this installer is in this repository. |
 | **Also on** | [governanceai.me](https://governanceai.me/#home?download=1) |
 
 **Requirements**
