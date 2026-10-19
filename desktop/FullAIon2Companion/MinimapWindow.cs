@@ -339,7 +339,7 @@ public sealed class MinimapWindow : Window
     {
         double halfW = ViewW / 2 / z, halfH = ViewH / 2 / z;
         // Redraw only after moving a fifth of the view (or on zoom, size or filter changes): hundreds of elements.
-        string key = $"{map}|{z}|{ViewW:0}|{ViewH:0}|{string.Join(",", settings.MinimapFilters)}|{Math.Round(cx / (halfW / 2.5))}|{Math.Round(cy / (halfH / 2.5))}";
+        string key = $"{map}|{z}|{ViewW:0}|{ViewH:0}|{string.Join(",", settings.MinimapFilters)}|{Math.Round(cx / (halfW / 2.5))}|{Math.Round(cy / (halfH / 2.5))}|{L.Language}";
         if (key == markerKey) return;
         markerKey = key;
         markers.Children.Clear();
@@ -366,12 +366,12 @@ public sealed class MinimapWindow : Window
             double size = (useIcons && m.Icon is not null ? 18 : 7) * Math.Clamp(settings.MinimapIconScale, .6, 2) / z;
             if (useIcons && m.Icon is { } file && IconOf(file) is { } bitmap) element = new Image { Source = bitmap, Width = size, Height = size };
             else { size = 7 * Math.Clamp(settings.MinimapIconScale, .6, 2) / z; element = new Ellipse { Width = size, Height = size, Fill = color, Stroke = Brushes.Black, StrokeThickness = .8 / z }; }
-            element.ToolTip = m.Name == m.Category ? m.Name : $"{m.Name} · {m.Category}";
+            element.ToolTip = m.Name == m.Category ? L.T(m.Name) : $"{m.Name} · {L.T(m.Category)}";
             ToolTipService.SetInitialShowDelay(element, 80);
             Canvas.SetLeft(element, m.X - size / 2); Canvas.SetTop(element, m.Y - size / 2);
             markers.Children.Add(element);
         }
-        legend.Text = counts.Count == 0 ? "" : "A la vista: " + string.Join(" · ", Layers.Where(l => counts.ContainsKey(l.Key)).Select(l => $"{l.Label} {counts[l.Key]}"));
+        legend.Text = counts.Count == 0 ? "" : "A la vista: " + string.Join(" · ", Layers.Where(l => counts.ContainsKey(l.Key)).Select(l => $"{L.T(l.Label)} {counts[l.Key]}"));
     }
 
     // ---- Live layer: the creatures the game announced and the troop members' last places.

@@ -799,3 +799,301 @@ Abriendo PayPal…	Opening PayPal…	Abrindo o PayPal…
 Gracias por apoyarnos: la donación se hace en PayPal, en tu navegador.	Thank you for your support: the donation is made on PayPal, in your browser.	Obrigado pelo apoio: a doação é feita no PayPal, no seu navegador.
 Perfil público de NCSOFT. Consultar esta ficha no verifica que el personaje sea tuyo.	NCSOFT public profile. Looking it up does not verify the character is yours.	Perfil público da NCSOFT. Consultar esta ficha não verifica que o personagem é seu.
 La cuenta sirve para guardar tu progreso: todo es gratis. Desconectar aquí no revoca el token: eso se hace desde Mi cuenta en la web.	Your account keeps your progress: everything is free. Disconnecting here does not revoke the token: that is done from My account on the website.	A conta serve para guardar seu progresso: tudo é grátis. Desconectar aqui não revoga o token: isso é feito em Minha conta no site.
+Comprobando licencia…	Checking license…	Verificando licença…
+Subiendo tus mascotas…	Uploading your pets…	Enviando seus mascotes…
+Descargando preferencias…	Downloading preferences…	Baixando preferências…
+Vinculando dispositivo…	Linking device…	Vinculando dispositivo…
+Buscando actualizaciones…	Checking for updates…	Procurando atualizações…
+Descargando actualización…	Downloading update…	Baixando atualização…
+Abriendo tu perfil…	Opening your profile…	Abrindo seu perfil…
+Esta acción sigue en curso. Espera su respuesta.	This action is still in progress. Wait for its answer.	Esta ação ainda está em andamento. Aguarde a resposta.
+El programa no está conectado a este panel. Vuelve a abrirlo.	The program is not connected to this panel. Open it again.	O programa não está conectado a este painel. Abra-o de novo.
+Aplicando cambio…	Applying change…	Aplicando alteração…
+Acción completada.	Done.	Ação concluída.
+Realizando acción…	Working…	Executando ação…
+Desglose del combate	Fight breakdown	Detalhamento do combate
+Mostrar u ocultar el overlay	Show or hide the overlay	Mostrar ou ocultar o overlay
+Modo mover del overlay	Overlay move mode	Modo mover do overlay
+Panel del objetivo (botín / jugador)	Target panel (loot / player)	Painel do alvo (saque / jogador)
+Abrir o cerrar este panel	Open or close this panel	Abrir ou fechar este painel
+Nuevo combate	New fight	Novo combate
+Mostrar u ocultar el minimapa	Show or hide the minimap	Mostrar ou ocultar o minimapa
+Pulsa la combinación…	Press the combination…	Pressione a combinação…
+Usa Ctrl, Alt o Win + letra, número o F1-F24	Use Ctrl, Alt or Win + a letter, number or F1-F24	Use Ctrl, Alt ou Win + letra, número ou F1-F24
+Sin definir	Not set	Não definido
+mostrar/ocultar	show/hide	mostrar/ocultar
+mover/fijar	move/lock	mover/fixar
+botín	loot	saque
+panel	panel	painel
+Almas que faltan	Souls left	Almas restantes
+Muertes estimadas	Estimated kills	Abates estimados
+tras 10 muertes	after 10 kills	após 10 abates
+Muertes en esta sesión	Kills this session	Abates nesta sessão
+Almas en esta sesión	Souls this session	Almas nesta sessão
+Tasa observada	Observed rate	Taxa observada
+Fuente	Source	Fonte
+Ingresado a mano	Entered by hand	Inserido à mão
+Criaturas que dan sus almas: sin datos en el catálogo	Creatures that drop its souls: no data in the catalog	Criaturas que dão suas almas: sem dados no catálogo
+Quitar del overlay	Remove from the overlay	Remover do overlay
+Fijar en el overlay	Pin to the overlay	Fixar no overlay
+Máx.	Max	Máx.
+Ninguna mascota con ese filtro.	No pet matches that filter.	Nenhum mascote com esse filtro.
+Tasa	Rate	Taxa
+Seguir	Follow	Seguir
+Todavía no hay almas hoy. Aparecerán aquí en cuanto caiga la primera.	No souls yet today. They will show up here as soon as the first one drops.	Ainda não há almas hoje. Aparecerão aqui assim que cair a primeira.
+Elige una mascota de la lista	Choose a pet from the list	Escolha um mascote da lista
+No hay criaturas identificadas con este filtro. Entra en otra zona para recibir sus apariciones.	No identified creatures with this filter. Enter another zone to receive its spawns.	Nenhuma criatura identificada com este filtro. Entre em outra zona para receber suas aparições.
+Combate observado	Observed fight	Combate observado
+Esperando la ficha de tu personaje	Waiting for your character's data	Aguardando a ficha do seu personagem
+Reanudar	Resume	Retomar
+Ocultar overlay	Hide overlay	Ocultar overlay
+Fijar overlay	Lock overlay	Fixar overlay
+Alerta de habilidades: silenciada	Skill alerts: muted	Alerta de habilidades: silenciado
+Sin golpes atribuidos	No hits attributed	Nenhum golpe atribuído
+Habilidad	Skill	Habilidade
+Golpes	Hits	Golpes
+Cuando el juego envíe la ficha de tu personaje, aparecerán las habilidades con su icono y daño.	When the game sends your character's data, the skills will show up with their icon and damage.	Quando o jogo enviar a ficha do seu personagem, as habilidades aparecerão com seu ícone e dano.
+Criatura	Creature	Criatura
+Identidad recibida	Identity received	Identidade recebida
+Servidor pendiente	Server pending	Servidor pendente
+Vida observada	Observed HP	Vida observada
+Referencia: mayor vida recibida; no confirma vida máxima.	Reference: highest HP received; it does not confirm max HP.	Referência: maior vida recebida; não confirma a vida máxima.
+Ficha, botín y apariciones →	Card, loot and spawns →	Ficha, saque e aparições →
+El perfil oficial se consulta solo con nombre y servidor confirmados.	The official profile is looked up only with a confirmed name and server.	O perfil oficial só é consultado com nome e servidor confirmados.
+Desactivar envío de telemetría	Turn off telemetry	Desativar envio de telemetria
+Elige los eventos que quieres escuchar.	Choose the events you want to hear.	Escolha os eventos que você quer ouvir.
+Tramas	Frames	Quadros
+Eventos de daño	Damage events	Eventos de dano
+Errores	Errors	Erros
+Retransmisiones	Retransmissions	Retransmissões
+Saltos TCP	TCP gaps	Saltos TCP
+Zona	Zone	Zona
+ID local	Local ID	ID local
+Ficha pendiente	Card pending	Ficha pendente
+Esta criatura todavía no está en el catálogo local.	This creature is not in the local catalog yet.	Esta criatura ainda não está no catálogo local.
+Dónde aparece	Where it appears	Onde aparece
+Sin apariciones en el catálogo	No spawns in the catalog	Sem aparições no catálogo
+Botín registrado	Recorded loot	Saque registrado
+La ficha importada no contiene una tabla de botín.	The imported card has no loot table.	A ficha importada não contém uma tabela de saque.
+Datos del catálogo local de Daeva Companion. Las probabilidades corresponden a la fuente del catálogo, no a esta captura.	Data from Daeva Companion's local catalog. The chances come from the catalog's source, not from this capture.	Dados do catálogo local do Daeva Companion. As probabilidades correspondem à fonte do catálogo, não a esta captura.
+Token revocado	Token revoked	Token revogado
+Sin token	No token	Sem token
+Dispositivo no conectado	Device not connected	Dispositivo não conectado
+Cargando tu perfil oficial…	Loading your official profile…	Carregando seu perfil oficial…
+Pulsa «Mi perfil» en la barra superior para consultar tu personaje.	Press «My profile» in the top bar to look up your character.	Clique em «Meu perfil» na barra superior para consultar seu personagem.
+Arma principal	Main weapon	Arma principal
+Arma secundaria	Off-hand weapon	Arma secundária
+Torso	Chest	Torso
+Piernas	Legs	Pernas
+Casco	Helmet	Elmo
+Hombros	Shoulders	Ombros
+Guantes	Gloves	Luvas
+Botas	Boots	Botas
+Capa	Cape	Capa
+Cinturón	Belt	Cinto
+Collar	Necklace	Colar
+Pendiente 1	Earring 1	Brinco 1
+Pendiente 2	Earring 2	Brinco 2
+Anillo 1	Ring 1	Anel 1
+Anillo 2	Ring 2	Anel 2
+Brazalete 1	Bracelet 1	Bracelete 1
+Brazalete 2	Bracelet 2	Bracelete 2
+Runa 1	Rune 1	Runa 1
+Runa 2	Rune 2	Runa 2
+Amuleto	Amulet	Amuleto
+Alas	Wings	Asas
+Sin legión	No legion	Sem legião
+Poder de combate	Combat power	Poder de combate
+Nivel de objeto	Item level	Nível de item
+Última lectura	Last read	Última leitura
+Equipo	Gear	Equipamento
+Equipo pendiente de la fuente oficial.	Gear pending from the official source.	Equipamento pendente da fonte oficial.
+La fuente oficial no devolvió posiciones para este personaje.	The official source returned no rankings for this character.	A fonte oficial não retornou posições para este personagem.
+Sin notas de versión.	No release notes.	Sem notas de versão.
+Gladiador	Gladiator	Gladiador
+Templario	Templar	Templário
+Cazador	Ranger	Caçador
+Asesino	Assassin	Assassino
+Hechicero	Sorcerer	Feiticeiro
+Espiritista	Spiritmaster	Espiritualista
+Clérigo	Cleric	Clérigo
+Cantor	Chanter	Cantor
+¿Borrar este combate del historial?	Delete this fight from the history?	Apagar este combate do histórico?
+Combate borrado.	Fight deleted.	Combate apagado.
+Mazmorra o sin mapa	Dungeon or no map	Masmorra ou sem mapa
+Sin fuentes conocidas en el catálogo.	No known sources in the catalog.	Sem fontes conhecidas no catálogo.
+Ha aparecido · visto por ti	It has spawned · seen by you	Apareceu · visto por você
+0 = sin límite	0 = no limit	0 = sem limite
+Suscripción	Subscription	Assinatura
+Esperando tu posición…	Waiting for your position…	Aguardando sua posição…
+¿Borrar tus pines y rutas de este mapa?	Delete your pins and routes on this map?	Apagar seus pins e rotas deste mapa?
+Acercar	Zoom in	Aproximar
+Alejar	Zoom out	Afastar
+Aldeas	Villages	Vilarejos
+Almacenamiento	Storage	Armazém
+Alquimia	Alchemy	Alquimia
+Armería	Armorsmithing	Forja de armaduras
+Artesanía	Handicrafting	Artesanato
+Bastiones	Strongholds	Bastiões
+Caza	Hunting	Caça
+Ciudadanos	Citizens	Cidadãos
+Cocina	Cooking	Culinária
+Comerciante de artículos	General Goods Merchant	Comerciante de artigos
+Comida	Food	Comida
+Corrientes	Updrafts	Correntes de ar
+Encargos de región	Regional Quests	Missões regionais
+Especial	Special	Especial
+Espíritu	Spirit	Espírito
+Evento	Event	Evento
+Grieta Espacio-Tiempo	Spacetime Rift	Fenda Espaço-Tempo
+Herrajes	Blacksmithing	Ferraria
+Hito	Landmark	Marco
+Jefes con nombre	Named Bosses	Chefes nomeados
+Mazmorra sellada	Sealed Dungeon	Masmorra selada
+Mazmorras	Dungeons	Masmorras
+Mercader	Merchant	Mercador
+Mineral	Ore	Minério
+Misiones de historia	Story Quests	Missões de história
+Monolitos	Monoliths	Monólitos
+Monstruos	Monsters	Monstros
+Monstruos salvajes	Wild Monsters	Monstros selvagens
+Objetos	Objects	Objetos
+Otros PNJ	Other NPCs	Outros PNJs
+PNJ Shugo	Shugo NPCs	PNJs Shugo
+Planta	Plant	Planta
+Portal	Portal	Portal
+Puertas y pasajes	Doors & Passages	Portas e passagens
+Punto de interés	Point of Interest	Ponto de interesse
+Recurso	Resource	Recurso
+Teletransporte	Teleport	Teleporte
+Terrenos de caza	Hunting Grounds	Áreas de caça
+Torre de teletransporte del Abismo	Abyss Teleport Tower	Torre de teleporte do Abismo
+Zonas	Zones	Zonas
+Tropa	Troop	Tropa
+Cubos	Cubes	Cubos
+Rastros	Traces	Rastros
+Reshanta Inferior del Caos	Chaotic Lower Reshanta	Reshanta Inferior do Caos
+Reshanta Medio del Caos	Chaotic Middle Reshanta	Reshanta Intermediária do Caos
+Reshanta Intermedia del Caos	Chaotic Middle Reshanta	Reshanta Intermediária do Caos
+Reshanta Caótica Superior	Chaotic Upper Reshanta	Reshanta Caótica Superior
+Grieta espacio-temporal	Spatial Rift	Fenda Espacial
+Invasión dimensional	Dimensional Invasion	Invasão Dimensional
+Festival de Shugo	Shugo Festival	Festival Shugo
+Asedio de artefactos	Artifact Siege	Cerco de Artefatos
+Reinicio diario	Daily Reset	Reinício diário
+Reinicio semanal	Weekly Reset	Reinício semanal
+Arena de tácticas	Arena of Tactics	Arena de Táticas
+Evento de Atreia	Atreia event	Evento de Atreia
+Aviso de fiabilidad: "Buscando tráfico del juego", "teletranspórtate para…".	Reliability notice: "Looking for game traffic", "teleport to…".	Aviso de confiabilidade: "Procurando tráfego do jogo", "teletransporte-se para…".
+La descarga llega solo desde governanceai.me y se comprueba su tamaño y su huella SHA-256 antes de ofrecer abrirla. La huella prueba que el archivo es el publicado, no quién lo publicó. Nada se instala sin tu clic. «Actualizar ahora» instala en silencio: la app se cierra y vuelve a abrirse sola, y tus datos se conservan.	The download comes only from governanceai.me, and its size and SHA-256 fingerprint are checked before offering to open it. The fingerprint proves the file is the published one, not who published it. Nothing is installed without your click. «Update now» installs silently: the app closes and opens again by itself, and your data is kept.	O download vem só de governanceai.me, e o tamanho e a impressão digital SHA-256 são verificados antes de oferecer abri-lo. A impressão digital prova que o arquivo é o publicado, não quem o publicou. Nada é instalado sem o seu clique. «Atualizar agora» instala em silêncio: o app fecha e reabre sozinho, e seus dados são mantidos.
+Ej.: no detecta la red con mi VPN	E.g.: it does not detect the network with my VPN	Ex.: não detecta a rede com minha VPN
+Buscar en el mapa	Search the map	Buscar no mapa
+Aviso de cubo oculto	Hidden cube alert	Aviso de cubo oculto
+Sonido de cubo oculto	Hidden cube sound	Som de cubo oculto
+La captura se limita a la conexión de AION 2. Tus combates quedan en este equipo.	Capture is limited to the AION 2 connection. Your fights stay on this PC.	A captura se limita à conexão do AION 2. Seus combates ficam neste PC.
+Vuelve al juego; el panel queda en la barra de tareas y el overlay sigue activo	Back to the game; the panel stays in the taskbar and the overlay stays on	Volta ao jogo; o painel fica na barra de tarefas e o overlay continua ativo
+Cierra FullAIon2Companion y su overlay	Closes FullAIon2Companion and its overlay	Fecha o FullAIon2Companion e seu overlay
+← Volver al panel	← Back to the panel	← Voltar ao painel
+Vuelve al panel de FullAIon2Companion	Back to the FullAIon2Companion panel	Volta ao painel do FullAIon2Companion
+De vuelta en el panel.	Back in the panel.	De volta ao painel.
+Comenzó un nuevo registro de combate	A new fight log started	Começou um novo registro de combate
+El panel todavía está iniciando. Intenta otra vez en unos segundos.	The panel is still starting. Try again in a few seconds.	O painel ainda está iniciando. Tente de novo em alguns segundos.
+No se pudo cargar la página. Revisa tu conexión.	The page could not be loaded. Check your connection.	Não foi possível carregar a página. Verifique sua conexão.
+La captura aún no identificó tu personaje. Entra al juego o cambia de zona para recibir su ficha.	The capture has not identified your character yet. Enter the game or change zone to receive its data.	A captura ainda não identificou seu personagem. Entre no jogo ou mude de zona para receber a ficha.
+El enlace externo se ha bloqueado en el panel del juego	The external link was blocked in the game panel	O link externo foi bloqueado no painel do jogo
+La grabación terminó sin guardar nada.	The recording ended without saving anything.	A gravação terminou sem salvar nada.
+App vinculada con tu cuenta.	App linked to your account.	App vinculado à sua conta.
+No hay una versión publicada en este canal	There is no published version on this channel	Não há uma versão publicada neste canal
+Ya tienes la última versión	You already have the latest version	Você já tem a versão mais recente
+El instalador descargado no coincide con el publicado; se borró. Vuelve a intentarlo.	The downloaded installer does not match the published one; it was deleted. Try again.	O instalador baixado não corresponde ao publicado; foi apagado. Tente de novo.
+Vincula el dispositivo para consultar las versiones publicadas	Link the device to check the published versions	Vincule o dispositivo para consultar as versões publicadas
+No hay versiones publicadas en este canal	There are no published versions on this channel	Não há versões publicadas neste canal
+Tienes la última versión de este canal	You have the latest version on this channel	Você tem a versão mais recente deste canal
+La captura aún no vio la ficha de tu personaje en esta sesión: cambia de zona o teletranspórtate una vez. No vale el nombre configurado ni uno deducido.	The capture has not seen your character's data this session: change zone or teleport once. The configured name or a guessed one does not count.	A captura ainda não viu a ficha do seu personagem nesta sessão: mude de zona ou teletransporte-se uma vez. O nome configurado ou um deduzido não vale.
+La captura todavía no confirmó el servidor de tu personaje.	The capture has not confirmed your character's server yet.	A captura ainda não confirmou o servidor do seu personagem.
+La captura siguió al juego a su nueva conexión	The capture followed the game to its new connection	A captura seguiu o jogo para a nova conexão
+Idioma no disponible	Language not available	Idioma não disponível
+Puedes mover el overlay	You can move the overlay	Você pode mover o overlay
+Overlay fijado	Overlay locked	Overlay fixado
+Registro de combate pausado	Fight log paused	Registro de combate pausado
+Registro de combate reanudado	Fight log resumed	Registro de combate retomado
+No hay combates guardados con ese filtro.	No saved fights match that filter.	Nenhum combate salvo com esse filtro.
+Ese combate ya no está en el historial.	That fight is no longer in the history.	Esse combate não está mais no histórico.
+Puedes fijar hasta 6 mascotas en el overlay.	You can pin up to 6 pets to the overlay.	Você pode fixar até 6 mascotes no overlay.
+Sin fuentes conocidas.	No known sources.	Sem fontes conhecidas.
+Sesión de farmeo reiniciada.	Farming session reset.	Sessão de farm reiniciada.
+Combate borrado del historial.	Fight deleted from the history.	Combate apagado do histórico.
+Sonido de prueba reproducido	Test sound played	Som de teste reproduzido
+Alerta de habilidad de jefe reproducida	Boss skill alert played	Alerta de habilidade de chefe reproduzido
+Vincula el dispositivo para subir tus mascotas.	Link the device to upload your pets.	Vincule o dispositivo para enviar seus mascotes.
+Aún no hay colección: entra al juego con el personaje para que llegue la lista	No collection yet: enter the game with the character so the list arrives	Ainda não há coleção: entre no jogo com o personagem para que a lista chegue
+Vincula el dispositivo antes de compartir	Link the device before sharing	Vincule o dispositivo antes de compartilhar
+Mapa de Atreia abierto.	Atreia map opened.	Mapa de Atreia aberto.
+Atlas de la web abierto en el panel.	Website atlas opened in the panel.	Atlas do site aberto no painel.
+Siguiendo la mascota	Following the pet	Acompanhando o mascote
+Grupo olvidado: se volverá a detectar cuando el juego lo envíe	Group forgotten: it will be detected again when the game sends it	Grupo esquecido: será detectado de novo quando o jogo o enviar
+Seguimiento de mascota detenido	Pet tracking stopped	Acompanhamento de mascote parado
+Usa Ctrl, Alt o Win junto a una letra, un número o F1-F24	Use Ctrl, Alt or Win with a letter, a number or F1-F24	Use Ctrl, Alt ou Win com uma letra, um número ou F1-F24
+Atajo quitado	Shortcut removed	Atalho removido
+En la web: Cuenta → Suscripción. El pago se hace allí; Plus se activa aquí cuando el servidor confirme la licencia de tu personaje.	On the website: Account → Subscription. Payment is made there; Plus turns on here when the server confirms your character's license.	No site: Conta → Assinatura. O pagamento é feito lá; o Plus é ativado aqui quando o servidor confirmar a licença do seu personagem.
+Vincula la app con tu cuenta (Mi cuenta) para escribir al soporte	Link the app to your account (My account) to write to support	Vincule o app à sua conta (Minha conta) para escrever ao suporte
+Consultas actualizadas	Requests refreshed	Consultas atualizadas
+Consulta abierta	Request opened	Consulta aberta
+Consulta cerrada	Request closed	Consulta fechada
+Consulta enviada	Request sent	Consulta enviada
+Respuesta enviada	Reply sent	Resposta enviada
+Escribe un asunto de al menos 5 letras	Write a subject of at least 5 letters	Escreva um assunto de pelo menos 5 letras
+Cuéntanos qué pasó en el mensaje	Tell us what happened in the message	Conte-nos o que aconteceu na mensagem
+Escribe tu respuesta (al menos 5 letras)	Write your reply (at least 5 letters)	Escreva sua resposta (pelo menos 5 letras)
+No hay una versión más nueva en este canal	There is no newer version on this channel	Não há uma versão mais nova neste canal
+Descarga primero la versión nueva	Download the new version first	Baixe primeiro a versão nova
+No se pudo empezar la grabación.	The recording could not start.	Não foi possível iniciar a gravação.
+Esperando conexión de AION 2	Waiting for the AION 2 connection	Aguardando a conexão do AION 2
+Abre AION 2 y entra con tu personaje	Open AION 2 and enter with your character	Abra o AION 2 e entre com seu personagem
+Falta el archivo de protocolo	The protocol file is missing	Falta o arquivo de protocolo
+Tu VPN pasa el juego por un proxy local: reinstala Npcap marcando «Support loopback traffic» para poder leerlo	Your VPN routes the game through a local proxy: reinstall Npcap ticking «Support loopback traffic» to read it	Sua VPN passa o jogo por um proxy local: reinstale o Npcap marcando «Support loopback traffic» para poder lê-lo
+todos los adaptadores (VPN o red virtual)	all adapters (VPN or virtual network)	todos os adaptadores (VPN ou rede virtual)
+VPN (proxy local)	VPN (local proxy)	VPN (proxy local)
+Npcap no muestra ningún adaptador de red: reinstala Npcap	Npcap shows no network adapter: reinstall Npcap	O Npcap não mostra nenhum adaptador de rede: reinstale o Npcap
+No se pudo abrir el adaptador de red del juego	The game's network adapter could not be opened	Não foi possível abrir o adaptador de rede do jogo
+conectado a la nueva conexión del juego	connected to the game's new connection	conectado à nova conexão do jogo
+El juego no tiene conexión con el servidor (desconexión, carga o selección de personaje) · se reconectará sola	The game has no connection to the server (disconnect, loading or character selection) · it will reconnect by itself	O jogo não tem conexão com o servidor (desconexão, carregamento ou seleção de personagem) · vai reconectar sozinho
+Captura detenida	Capture stopped	Captura parada
+Token guardado · comprobando conexión con tu cuenta	Token saved · checking the connection to your account	Token salvo · verificando a conexão com sua conta
+El código debe tener 12 caracteres	The code must have 12 characters	O código deve ter 12 caracteres
+Desconectado en este equipo · para revocar el token usa Mi cuenta → Aplicación de escritorio en la web	Disconnected on this PC · to revoke the token use My account → Desktop app on the website	Desconectado neste PC · para revogar o token use Minha conta → Aplicativo de desktop no site
+La cuenta o el dispositivo no coinciden	The account or the device do not match	A conta ou o dispositivo não correspondem
+Sin conexión con tu cuenta · se reintentará	No connection to your account · it will retry	Sem conexão com sua conta · vai tentar de novo
+Diagnóstico pendiente · sin conexión	Diagnostics pending · offline	Diagnóstico pendente · sem conexão
+La dirección de descarga no es la del sitio: no se descarga.	The download address is not the site's: it is not downloaded.	O endereço de download não é o do site: não será baixado.
+La versión publicada no trae tamaño o huella SHA-256 válidos.	The published version has no valid size or SHA-256 fingerprint.	A versão publicada não traz tamanho ou impressão digital SHA-256 válidos.
+La descarga ya no está disponible; se conserva tu versión actual.	The download is no longer available; your current version is kept.	O download não está mais disponível; sua versão atual é mantida.
+El archivo descargado no coincide con la versión publicada (tamaño o SHA-256): se descartó.	The downloaded file does not match the published version (size or SHA-256): it was discarded.	O arquivo baixado não corresponde à versão publicada (tamanho ou SHA-256): foi descartado.
+Sin subir	Not uploaded	Não enviado
+Vincula el dispositivo en Mi cuenta para guardarlo en la web	Link the device in My account to save it on the website	Vincule o dispositivo em Minha conta para salvá-lo no site
+Sin conexión · reintento en 5 min	Offline · retry in 5 min	Sem conexão · nova tentativa em 5 min
+Telemetría enviada · captura sin verificar	Telemetry sent · capture not verified	Telemetria enviada · captura não verificada
+Lote con eventos ya recibidos descartado	Batch with events already received discarded	Lote com eventos já recebidos descartado
+Demasiadas solicitudes · esperando para reenviar	Too many requests · waiting to resend	Solicitações demais · aguardando para reenviar
+Sin conexión · el lote se reenviará	Offline · the batch will be resent	Sem conexão · o lote será reenviado
+Vincula el dispositivo primero	Link the device first	Vincule o dispositivo primeiro
+Respuesta de una vinculación anterior descartada	Answer from an earlier link discarded	Resposta de uma vinculação anterior descartada
+El dispositivo fue desconectado desde tu cuenta · genera un código nuevo en la web para volver a vincular	The device was disconnected from your account · generate a new code on the website to link again	O dispositivo foi desconectado pela sua conta · gere um código novo no site para vincular de novo
+No se pudo leer el Administrador de credenciales de Windows	Could not read the Windows Credential Manager	Não foi possível ler o Gerenciador de Credenciais do Windows
+Token de dispositivo no válido	Invalid device token	Token de dispositivo inválido
+No se pudo guardar el token en el Administrador de credenciales de Windows	Could not save the token in the Windows Credential Manager	Não foi possível salvar o token no Gerenciador de Credenciais do Windows
+No se pudo quitar la credencial de este dispositivo	Could not remove this device's credential	Não foi possível remover a credencial deste dispositivo
+al día	up to date	em dia
+guardada	saved	salva
+estable	stable	estável
+muertes	kills	abates
+kinah en botín	kinah in loot	kinah em saque
+arriba	above	acima
+abajo	below	abaixo
+Intelecto	Intellect	Intelecto
+Naturaleza	Nature	Natureza
+Salvaje	Wild	Selvagem
+Transformación	Transformation	Transformação
+esperando tu posición	waiting for your position	aguardando sua posição
+Close popup	Close popup	Fechar
+Sin objetivo definido	No goal set	Sem objetivo definido

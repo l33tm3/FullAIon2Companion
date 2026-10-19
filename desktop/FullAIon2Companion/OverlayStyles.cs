@@ -587,7 +587,7 @@ public sealed partial class OverlayWindow
             medalDps.Text = s.LocalId > 0 ? Short(s.Dps) : "—"; medalDps.Foreground = fighting ? Brushes.White : Bright;
             medalDamage.Text = Short(s.Damage); medalHeal.Text = Short(s.Healing); medalKills.Text = s.ConfirmedKills.ToString("N0");
             bandIcon.Source = selfIcon.Source; bandIcon.Visibility = bandIcon.Source is null ? Visibility.Collapsed : Visibility.Visible;
-            bandName.Text = string.Join(" · ", new[] { s.Character, selfClassName }.Where(x => x is { Length: > 0 })).ToUpperInvariant();
+            bandName.Text = string.Join(" · ", new[] { s.Character, selfClassName is null ? null : L.T(selfClassName) }.Where(x => x is { Length: > 0 })).ToUpperInvariant();
             bandState.Text = clock.Text.Length > 0 ? $"{state.Text} · {clock.Text}" : state.Text;
         }
     }

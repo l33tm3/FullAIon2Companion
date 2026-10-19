@@ -1,3 +1,50 @@
+^(\d+) objetos · (\d+) únicos o mejores · botín de su variante Nv\. (\d+)$	$1 items · $2 unique or better · loot of its Lv. $3 variant	$1 itens · $2 únicos ou melhores · saque da variante Nv. $3
+^Tienes la (\S+) · (.+) MB · publicada el (.+)$	You have $1 · $2 MB · published $3	Você tem a $1 · $2 MB · publicada em $3
+^Multigolpe (\d+)% · Parada (\d+)% · Bloqueo (\d+)% · Esquiva (\d+)% · Muertes: (\d+) · Curación: (\S+) · HPS: (\S+) · (\d+) lanzamientos · (\d+) golpes$	Multi-hit $1% · Parry $2% · Block $3% · Dodge $4% · Deaths: $5 · Healing: $6 · HPS: $7 · $8 casts · $9 hits	Multigolpe $1% · Aparo $2% · Bloqueio $3% · Esquiva $4% · Mortes: $5 · Cura: $6 · HPS: $7 · $8 lançamentos · $9 golpes
+^(\d+) lanzamientos · (\d+) golpes$	$1 casts · $2 hits	$1 lançamentos · $2 golpes
+^Golpes ([\d.,  ]+)$	Hits $1	Golpes $1
+^Crít (\d+%)$	Crit $1	Crít $1
+^Espalda (\d+%)$	Back $1	Costas $1
+^Frente (\d+%)$	Front $1	Frente $1
+^Perfecto (\d+%)$	Perfect $1	Perfeito $1
+^Doble (\d+%)$	Double $1	Duplo $1
+^Media ([\d.,  ]+)$	Avg $1	Média $1
+^Máx ([\d.,  ]+)$	Max $1	Máx $1
+^(\d+:\d\d) · Golpe más grande: (.+) ([\d.,  ]+)$	$1 · Biggest hit: $2 $3	$1 · Maior golpe: $2 $3
+^(\d+:\d\d) · Muere (.+)$	$1 · $2 dies	$1 · $2 morre
+^No se pudo guardar la imagen: (.+)$	Couldn't save the image: $1	Não foi possível salvar a imagem: $1
+^Entidad (\d+)(  .+)?$	Entity $1$2	Entidade $1$2
+^NCSOFT · hace (\d+) min$	NCSOFT · $1 min ago	NCSOFT · há $1 min
+^NCSOFT · hace (\d+) h$	NCSOFT · $1 h ago	NCSOFT · há $1 h
+^PIEDRAS DE MANÁ · (\d+)/(\d*)$	MANASTONES · $1/$2	PEDRAS DE MANÁ · $1/$2
+^Tu PC (\S+) vs (\S+) \(([+-]?\d+%)\) · ventaja en (.+) · desventaja en (.+)$	Your CP $1 vs $2 ($3) · ahead in $4 · behind in $5	Seu PC $1 vs $2 ($3) · vantagem em $4 · desvantagem em $5
+^Tu PC (\S+) vs (\S+) \(([+-]?\d+%)\) · ventaja en (.+)$	Your CP $1 vs $2 ($3) · ahead in $4	Seu PC $1 vs $2 ($3) · vantagem em $4
+^Tu PC (\S+) vs (\S+) \(([+-]?\d+%)\) · desventaja en (.+)$	Your CP $1 vs $2 ($3) · behind in $4	Seu PC $1 vs $2 ($3) · desvantagem em $4
+^fuera de alcance, puede que ya no esté · a tu altura · hace (\d+:\d\d)$	out of range, it may be gone · at your height · $1 ago	fora de alcance, pode já não estar · na sua altura · há $1
+^fuera de alcance, puede que ya no esté · (\d+) m arriba · hace (\d+:\d\d)$	out of range, it may be gone · $1 m above · $2 ago	fora de alcance, pode já não estar · $1 m acima · há $2
+^fuera de alcance, puede que ya no esté · (\d+) m abajo · hace (\d+:\d\d)$	out of range, it may be gone · $1 m below · $2 ago	fora de alcance, pode já não estar · $1 m abaixo · há $2
+^fuera de alcance, puede que ya no esté · hace (\d+:\d\d)$	out of range, it may be gone · $1 ago	fora de alcance, pode já não estar · há $1
+^a tu altura · hace (\d+:\d\d)$	at your height · $1 ago	na sua altura · há $1
+^(\d+) m arriba · hace (\d+:\d\d)$	$1 m above · $2 ago	$1 m acima · há $2
+^(\d+) m abajo · hace (\d+:\d\d)$	$1 m below · $2 ago	$1 m abaixo · há $2
+^· a tu altura$	· at your height	· na sua altura
+^· (\d+) m arriba$	· $1 m above	· $1 m acima
+^· (\d+) m abajo$	· $1 m below	· $1 m abaixo
+^hoy 1 alma · (\d+) muertes(.*)$	today 1 soul · $1 kills$2	hoje 1 alma · $1 abates$2
+^🐾 \+1 (.+) · 1 alma hoy$	🐾 +1 $1 · 1 soul today	🐾 +1 $1 · 1 alma hoje
+^🐾 (.+) · Nv\. (\d+) · (\d+)/(\d+) · faltan (\d+) \(~(\d+) muertes\)$	🐾 $1 · Lv. $2 · $3/$4 · $5 left (~$6 kills)	🐾 $1 · Nv. $2 · $3/$4 · faltam $5 (~$6 abates)
+^Últimas: (.+)$	Latest: $1	Últimas: $1
+^(.+) · ([\d.,  ]+) muertes · ([\d.,  ]+) almas · ([\d.,  ]+) kinah$	$1 · $2 kills · $3 souls · $4 kinah	$1 · $2 abates · $3 almas · $4 kinah
+^([♛◈✦]) ahora$	$1 now	$1 agora
+^◈ GRIETA$	◈ RIFT	◈ FENDA
+^Grieta · (\d+:\d\d)$	Rift · $1	Fenda · $1
+^(.+)  \(deducido\)$	$1  (inferred)	$1  (deduzido)
+^Habilidad (\d+)$	Skill $1	Habilidade $1
+^◆ Cubo (\d+) m$	◆ Cube $1 m	◆ Cubo $1 m
+^(.+) · élite$	$1 · elite	$1 · elite
+^(.+) · ahora$	$1 · now	$1 · agora
+^(.+) · grupo (\d+) · hace (\d+) s$	$1 · group $2 · $3 s ago	$1 · grupo $2 · há $3 s
+^Ver notas de versiones anteriores \((\d+)\)$	See earlier release notes ($1)	Ver notas de versões anteriores ($1)
 ^Efecto activo · quedan (.+) de (.+)$	Active effect · $1 of $2 left	Efeito ativo · faltam $1 de $2
 ^En recarga · faltan (.+) de (.+)$	Cooling down · $1 of $2 left	Em recarga · faltam $1 de $2
 ^Lista para usar · recarga de (.+)$	Ready to use · $1 cooldown	Pronta para usar · recarga de $1

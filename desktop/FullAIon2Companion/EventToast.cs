@@ -56,6 +56,7 @@ public sealed class EventToast : Window
         var bar = new Border { Height = 3, Background = Teal, CornerRadius = new CornerRadius(2), HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 10, 0, 0), Width = 300 };
         var body = new StackPanel(); body.Children.Add(row); body.Children.Add(bar);
         var card = new Border { Background = Card, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(14, 12, 14, 10), Margin = new Thickness(0, 0, 0, 8), Child = body, Opacity = 0 };
+        L.Apply(card); // shown before the next L.ApplyAll
         cards.Add((card, left, bar, at, DateTime.Now.AddSeconds(Seconds)));
         stack.Children.Add(card);
         card.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(220)));
@@ -97,7 +98,8 @@ public sealed class EventToast : Window
         foreach (var c in cards.ToList())
         {
             double secondsLeft = (c.At - DateTimeOffset.Now).TotalSeconds;
-            c.Left.Text = secondsLeft <= 0 ? "Ya" : secondsLeft < 60 ? $"{secondsLeft:0} s" : $"{Math.Ceiling(secondsLeft / 60):0} min";
+            // Every 250 ms, more often than L.ApplyAll: translated here.
+            c.Left.Text = secondsLeft <= 0 ? L.T("Ya") : secondsLeft < 60 ? $"{secondsLeft:0} s" : $"{Math.Ceiling(secondsLeft / 60):0} min";
             double life = Math.Clamp((c.Until - now).TotalSeconds / Seconds, 0, 1);
             c.Bar.Width = Math.Max(0, (c.Card.ActualWidth - 30) * life);
             if (life <= 0)

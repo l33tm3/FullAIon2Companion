@@ -84,7 +84,7 @@ public sealed class NewsWindow : Window
         if (older.Children.Count > 0)
         {
             var more = new TextBlock { Text = $"Ver notas de versiones anteriores ({older.Children.Count})", FontSize = 11.5, Foreground = Paint("#71DED6"), Cursor = Cursors.Hand, Margin = new Thickness(0, 8, 0, 0), TextDecorations = TextDecorations.Underline };
-            more.MouseLeftButtonUp += (_, _) => { bool open = older.Visibility == Visibility.Visible; older.Visibility = open ? Visibility.Collapsed : Visibility.Visible; more.Text = open ? $"Ver notas de versiones anteriores ({older.Children.Count})" : "Ocultar notas anteriores"; };
+            more.MouseLeftButtonUp += (_, _) => { bool open = older.Visibility == Visibility.Visible; older.Visibility = open ? Visibility.Collapsed : Visibility.Visible; more.Text = L.T(open ? $"Ver notas de versiones anteriores ({older.Children.Count})" : "Ocultar notas anteriores"); };
             stack.Children.Add(more); stack.Children.Add(older);
         }
         return new Border { Background = Paint("#101C26"), BorderBrush = accent, BorderThickness = new Thickness(3, 1, 1, 1), CornerRadius = new CornerRadius(8), Padding = new Thickness(12, 10, 12, 12), Margin = new Thickness(0, 0, 0, 10), Child = stack };

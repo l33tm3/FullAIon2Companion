@@ -159,3 +159,35 @@ selecciona una criatura	select a creature	selecione uma criatura
 COMBATE	COMBAT	COMBATE
 clase	class	classe
 criatura	creature	criatura
+Detalle del combate	Fight details	Detalhe do combate
+Habilidades	Skills	Habilidades
+Mostrar:	Show:	Mostrar:
+Curación total	Total healing	Cura total
+Crítico	Critical	Crítico
+Espalda	Back	Costas
+Frente	Front	Frente
+Perfecto	Perfect	Perfeito
+Doble	Double	Duplo
+Perfecto*	Perfect*	Perfeito*
+Doble*	Double*	Duplo*
+Multigolpe	Multi-hit	Multigolpe
+Media	Average	Média
+Estimado: se confirmará comparando con el analizador de combate del juego (Ctrl+X)	Estimated: to be confirmed against the game's combat analyzer (Ctrl+X)	Estimado: será confirmado comparando com o analisador de combate do jogo (Ctrl+X)
+Guarda el detalle como imagen (Imágenes, carpeta FullAIon2Companion) y la copia al portapapeles	Saves the details as an image (Pictures, FullAIon2Companion folder) and copies it to the clipboard	Salva o detalhe como imagem (Imagens, pasta FullAIon2Companion) e copia para a área de transferência
+Actualizando…	Updating…	Atualizando…
+PAREJO	EVEN	EQUILIBRADO
+ESTADÍSTICAS	STATS	ESTATÍSTICAS
+ADICIONALES	ADDITIONAL	ADICIONAIS
+NCSOFT · ahora	NCSOFT · now	NCSOFT · agora
+Arquero	Ranger	Caçador
+Espiritualista	Spiritmaster	Espiritualista
+MÁX.	MAX	MÁX.
+ahora	now	agora
+Ya	Now	Já
+Grieta	Rift	Fenda
+fuera de alcance, puede que ya no esté	out of range, it may be gone	fora de alcance, pode já não estar
+Ocultar notas anteriores	Hide earlier notes	Ocultar notas anteriores
+Ataque del jefe	Boss attack	Ataque do chefe
+Tu objetivo	Your target	Seu alvo
+Arrastra para mover el asistente de combate	Drag to move the combat assistant	Arraste para mover o assistente de combate
+Texto del nivel máximo: tu nivel aún no llegó del perfil oficial	Max-level text: your level hasn't arrived from the official profile yet	Texto do nível máximo: seu nível ainda não chegou do perfil oficial

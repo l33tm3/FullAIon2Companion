@@ -14,7 +14,9 @@ const HIDDEN_FIRST=['minerales','plantas','od','cubos','rastros'];
 // data/atlas-npcs/<map>.json (scripts/build-companion-atlas-npcs.py) and its card from data/npc/<id>.json.
 const CRESTS={C:'cc416897be8a43e9eb6e.png',F:'ddb1f29d5d0e5a9b2786.png',N:'8ed4cb5ffa18466b5825.png',V:'74b78b71948ea757eff1.png'},RACES={C:'Cogni',F:'Fera',N:'Natura',V:'Varian'};
 const GRADES={NormalMonster:'Normal',EliteMonster:'Élite',HeroMonster:'Héroe',LegendMonster:'Leyenda'},RANK={Epic:0,Unique:1,Legend:2,Rare:3,Special:4,Common:5};
-const NAMES={Merchant:'Mercader',Armorsmithing:'Armería',Alchemy:'Alquimia',Teleport:'Teletransporte','Otros PNC':'Otros PNJ','NPC Shugo':'PNJ Shugo'};
+const NAMES={Merchant:'Mercader',Armorsmithing:'Armería',Alchemy:'Alquimia',Teleport:'Teletransporte','Otros PNC':'Otros PNJ','NPC Shugo':'PNJ Shugo','Puertas &quot; Pasajes &quot;':'Puertas y pasajes'};
+// Numbers and dates in the panel's language (app.js).
+const loc=()=>typeof uiLoc==='function'?uiLoc():'es-CL';
 const $=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const plain=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
 const store={get(k,f){try{const v=localStorage.getItem('atlas:'+k);return v===null?f:JSON.parse(v);}catch{return f;}},set(k,v){try{localStorage.setItem('atlas:'+k,JSON.stringify(v));}catch{}}};
@@ -31,7 +33,9 @@ function init(){
  if(map){map.invalidateSize();return;}
  if(!window.L||!$('atlas-map'))return;
  const crs=L.extend({},L.CRS.Simple,{transformation:new L.Transformation(1/16,0,1/16,0)});
- map=L.map('atlas-map',{crs,minZoom:1,maxZoom:7,preferCanvas:true,attributionControl:false,maxBounds:[[-400,-400],[4496,4496]],maxBoundsViscosity:.8}).setView([2048,2048],3);
+ map=L.map('atlas-map',{crs,minZoom:1,maxZoom:7,preferCanvas:true,attributionControl:false,zoomControl:false,maxBounds:[[-400,-400],[4496,4496]],maxBoundsViscosity:.8}).setView([2048,2048],3);
+ // Leaflet's own zoom buttons say «Zoom in/out»: in Spanish, so the panel's translation reaches them.
+ L.control.zoom({zoomInTitle:'Acercar',zoomOutTitle:'Alejar'}).addTo(map);
  // Icons drawn on the canvas, like the website's Atlas: thousands of markers stay fast.
  renderer=L.canvas({padding:.3,tolerance:4});const basic=renderer._updateCircle.bind(renderer);
  renderer._updateCircle=l=>{const path=l.options.sprite;if(!path)return basic(l);let img=sprites.get(path);
@@ -108,7 +112,7 @@ function draw(named){
    count++;if((q||focused)&&hits.length<300)hits.push({title,name,at:[y,x],marker:m});
   });
  }
- $('atlas-count').textContent=`${count.toLocaleString('es-CL')} puntos visibles`;
+ $('atlas-count').textContent=`${count.toLocaleString(loc())} puntos visibles`;
  const results=$('atlas-results');results.hidden=!q&&!f;
  const list=hits.slice(0,40).map((h,i)=>`<button type="button" data-atlas-hit="${i}"><b>${esc(h.title)}</b><small>${esc(h.name)}</small></button>`).join('');
  results.innerHTML=q?(hits.length?list:'<p class="muted">Nada con ese nombre en este mapa.</p>')
@@ -213,7 +217,8 @@ function position(fix){
  me=fix&&fix.type==='daeva-position'?fix:null;const status=$('atlas-me-status'),button=$('atlas-me');if(!status)return;
  status.hidden=!me;status.classList.toggle('waiting',!me?.map);button.classList.toggle('unavailable',!me?.map);
  status.textContent=!me?'':me.map?`Tú · ${me.mapName}${me.stale?' · última posición':me.exact?'':' · posición aproximada'}`:me.note||'Esperando tu posición…';
- button.title=me?.map?'Centrar en mí':'Centrar en mí · '+(me?.note||'esperando tu posición');
+ // A title set after the page was translated: the panel's translation does not see attribute changes.
+ button.title=(typeof i18nText==='function'?i18nText:x=>x)(me?.map?'Centrar en mí':'Centrar en mí · '+(me?.note||'esperando tu posición'));
  if(!map||!data||!open())return;
  if(me?.map&&(follow||!meShown)){meShown=true;void showMe(true);return;}
  drawMe(false);
@@ -231,7 +236,7 @@ function events(d){
  const sound=$('atlas-sound');sound.textContent=d.settings?.Sounds?'Sonido activado':'Activar sonido';sound.classList.toggle('active',!!d.settings?.Sounds);
  const rows=(d.events||[]).slice(0,30),keys=rows.map(e=>e.Id+':'+e.At+':'+e.Alert).join('|');
  if(keys!==eventKeys){eventKeys=keys;list.innerHTML=rows.length?rows.map(e=>{const at=local(new Date(e.At).getTime());
-  return `<div class="atlas-event" data-color="${esc(e.Color)}"><div><b>${esc(e.Name)}</b><small>${pad(at.getUTCHours())}:${pad(at.getUTCMinutes())} · ${at.getUTCDate()}-${at.toLocaleDateString('es-CL',{month:'short',timeZone:'UTC'}).replace('.','')}</small></div><strong data-remaining>${countdown(e.Remaining)}</strong><label class="atlas-switch" title="Aviso para ${esc(e.Name)}"><input type="checkbox" ${e.Alert?'checked':''} data-event="${esc(e.Id)}" aria-label="Aviso para ${esc(e.Name)}"><i></i></label></div>`;}).join(''):'<p class="muted">Sin eventos próximos.</p>';
+  return `<div class="atlas-event" data-color="${esc(e.Color)}"><div><b>${esc(e.Name)}</b><small>${pad(at.getUTCHours())}:${pad(at.getUTCMinutes())} · ${at.getUTCDate()}-${at.toLocaleDateString(loc(),{month:'short',timeZone:'UTC'}).replace('.','')}</small></div><strong data-remaining>${countdown(e.Remaining)}</strong><label class="atlas-switch" title="Aviso para ${esc(e.Name)}"><input type="checkbox" ${e.Alert?'checked':''} data-event="${esc(e.Id)}" aria-label="Aviso para ${esc(e.Name)}"><i></i></label></div>`;}).join(''):'<p class="muted">Sin eventos próximos.</p>';
   // The panel's policy blocks style attributes: the colour goes through the style object.
   list.querySelectorAll('[data-color]').forEach(el=>el.style.setProperty('--event',el.dataset.color));}
  else list.querySelectorAll('[data-remaining]').forEach((el,i)=>{const v=countdown(rows[i].Remaining);if(el.textContent!==v)el.textContent=v;});

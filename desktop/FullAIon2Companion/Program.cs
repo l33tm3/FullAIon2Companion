@@ -19,6 +19,14 @@ public static class Program
         // --replay <recording> <state-directory>: the same, so a replay never writes into the running companion's data.
         if (args.FirstOrDefault() == "--replay" && args.Length > 2)
             testDirectory = Path.GetFullPath(args[2]);
+        // --lang es|en|pt, anywhere after the command: the windows' texts (and skill names) in that language, for the tests
+        // that draw them. Taken out of the arguments, so each test reads its own as before.
+        int langAt = Array.IndexOf(args, "--lang");
+        if (langAt > 0 && langAt + 1 < args.Length && args[langAt + 1] is "es" or "en" or "pt")
+        {
+            L.Language = AionDPS.Aion2.Protocol.Aion2SkillNames.Language = args[langAt + 1];
+            args = [.. args.Where((_, i) => i != langAt && i != langAt + 1)];
+        }
         Directory.CreateDirectory(DataDirectory);
         try
         {
@@ -540,6 +548,7 @@ public static class Program
                 var w = new NewsWindow();
                 w.Show([new NewsItem("update:1.0.11", "update", "Versión 1.0.11", notes, "info", "Tienes la 1.0.10 · 97.8 MB · publicada el 13/10/2026"), new NewsItem("notice:1", "notice", "Mantenimiento el jueves", "El servidor estará en mantenimiento de 9:00 a 11:00.", "warning")], "1.0.10");
                 w.UpdateLayout();
+                if (L.Language != "es") { L.Apply(w); w.UpdateLayout(); }
                 var content = (System.Windows.FrameworkElement)w.Content;
                 var bitmap = new System.Windows.Media.Imaging.RenderTargetBitmap((int)content.ActualWidth, (int)content.ActualHeight, 96, 96, System.Windows.Media.PixelFormats.Pbgra32); bitmap.Render(content);
                 var png = new System.Windows.Media.Imaging.PngBitmapEncoder(); png.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(bitmap));
@@ -831,7 +840,7 @@ public static class Program
                         {
                             var card = new SkillCardWindow(); card.Load(tile, level, 1); overlay.ThemeWindow(card);
                             var content = (System.Windows.FrameworkElement)card.Content; card.Content = null; card.Close();
-                            content.VerticalAlignment = System.Windows.VerticalAlignment.Top; row.Children.Add(content);
+                            content.VerticalAlignment = System.Windows.VerticalAlignment.Top; row.Children.Add(content); L.Apply(content);
                             if (style == "clasico") { lines.Add($"— {tile.Name} (nivel {level?.ToString() ?? "?"})"); lines.AddRange(Texts(content).Select(t => "  " + t)); }
                         }
                         var stage = new System.Windows.Controls.Border { Padding = new System.Windows.Thickness(10), Child = row,
@@ -1135,6 +1144,7 @@ public static class Program
                 {
                     var host = new System.Windows.Controls.Border { Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(36, 46, 38)), Padding = new System.Windows.Thickness(12), Child = e };
                     host.Measure(new System.Windows.Size(double.PositiveInfinity, double.PositiveInfinity)); host.Arrange(new System.Windows.Rect(host.DesiredSize)); host.UpdateLayout();
+                    if (L.Language != "es") { L.Apply(host); host.Measure(new System.Windows.Size(double.PositiveInfinity, double.PositiveInfinity)); host.Arrange(new System.Windows.Rect(host.DesiredSize)); host.UpdateLayout(); }
                     var bmp = new System.Windows.Media.Imaging.RenderTargetBitmap((int)host.ActualWidth * 2, (int)host.ActualHeight * 2, 192, 192, System.Windows.Media.PixelFormats.Pbgra32); bmp.Render(host);
                     var png = new System.Windows.Media.Imaging.PngBitmapEncoder(); png.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(bmp));
                     using var f = File.Create(Path.GetFullPath(path)); png.Save(f);
@@ -1207,14 +1217,16 @@ public static class Program
                 string outPng = args.Length > 3 ? Path.GetFullPath(args[3]) : Path.Combine(DataDirectory, "breakdown-test.png");
                 testDirectory = Path.Combine(Path.GetTempPath(), "fa2c-replay-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(testDirectory);
                 using var engine = new CaptureEngine();
+                AionDPS.Aion2.Protocol.Aion2SkillNames.Language = L.Language; // the engine resets it to Spanish, as MainWindow sets it after
                 foreach (var line in File.ReadLines(args[1])) { var seg = JsonSerializer.Deserialize<SegmentLog>(line)!; engine.Ingest(new(seg.Timestamp, seg.Source, seg.Destination, seg.Sequence, Convert.FromBase64String(seg.Payload), seg.FromServer)); }
                 var first = engine.Breakdown(0, null, false);
-                int who = args.Length > 2 ? int.Parse(args[2]) : first?.Players.FirstOrDefault()?.Id ?? 0;
+                int who = args.Length > 2 && int.Parse(args[2]) is int asked and not 0 ? asked : first?.Players.FirstOrDefault()?.Id ?? 0;
                 var window = new BreakdownWindow(engine.Breakdown, new AppSettings());
                 window.Fill(who, null, args.Length > 4 ? args[4] : null);
                 var content = (System.Windows.FrameworkElement)window.Content; window.Content = null;
                 var host = new System.Windows.Controls.Border { Width = 860, Height = 600, Background = System.Windows.Media.Brushes.DimGray, Child = content };
                 host.Measure(new System.Windows.Size(860, 600)); host.Arrange(new System.Windows.Rect(0, 0, 860, 600)); host.UpdateLayout();
+                if (L.Language != "es") { L.Apply(host); host.Measure(new System.Windows.Size(860, 600)); host.Arrange(new System.Windows.Rect(0, 0, 860, 600)); host.UpdateLayout(); }
                 var bitmap = new System.Windows.Media.Imaging.RenderTargetBitmap(860, 600, 96, 96, System.Windows.Media.PixelFormats.Pbgra32); bitmap.Render(host);
                 var png = new System.Windows.Media.Imaging.PngBitmapEncoder(); png.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(bitmap));
                 using (var file = File.Create(outPng)) png.Save(file);

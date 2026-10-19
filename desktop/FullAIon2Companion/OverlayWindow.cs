@@ -108,11 +108,12 @@ public sealed partial class OverlayWindow : Window
             var chip = (Border)headerTimers.Children[i + 1]; var text = (TextBlock)chip.Child;
             var left = at - now;
             string clock = left <= TimeSpan.Zero ? "ahora" : left.TotalHours >= 1 ? $"{(int)left.TotalHours}:{left.Minutes:00}:{left.Seconds:00}" : $"{left.Minutes}:{left.Seconds:00}";
-            text.Text = $"{icon} {name} {clock}";
+            // Set after L.ApplyAll in the same tick (MainWindow), so translated here or the Spanish would stay on screen.
+            text.Text = L.T($"{icon} {name} {clock}");
             var brush = Paint(color);
             text.Foreground = left <= TimeSpan.FromMinutes(5) ? Brushes.White : brush;
             chip.BorderBrush = brush; chip.Background = left <= TimeSpan.FromMinutes(5) ? Paint("#55" + color.TrimStart('#')) : Paint("#33131E27");
-            chip.ToolTip = $"{name} · {at:HH:mm}";
+            chip.ToolTip = L.T($"{name} · {at:HH:mm}");
         }
         ShowHeaderRow();
     }
@@ -146,14 +147,15 @@ public sealed partial class OverlayWindow : Window
         cubeArrow.RenderTransform = new RotateTransform((v.Bearing ?? 0) - 90);
         var ago = DateTime.Now - c.At;
         string height = v.Height is double h ? Math.Abs(h) < 2 ? "a tu altura" : h > 0 ? $"{h:0} m arriba" : $"{-h:0} m abajo" : "";
-        string shortly = c.LeftRangeAt is not null ? "· fuera de alcance" : height.Length > 0 ? "· " + height : $"· hace {(int)ago.TotalMinutes}:{ago.Seconds:00}";
+        // Every 200 ms (the assistant's tick), more often than L.ApplyAll: the texts go through L.T here, or they would flicker.
+        string shortly = L.T(c.LeftRangeAt is not null ? "· fuera de alcance" : height.Length > 0 ? "· " + height : $"· hace {(int)ago.TotalMinutes}:{ago.Seconds:00}");
         cubeDetail.Text = layout != "clasico" ? shortly
-            : string.Join(" · ", new[] { c.LeftRangeAt is null ? "" : "fuera de alcance, puede que ya no esté", height, $"hace {(int)ago.TotalMinutes}:{ago.Seconds:00}" }.Where(x => x.Length > 0));
+            : L.T(string.Join(" · ", new[] { c.LeftRangeAt is null ? "" : "fuera de alcance, puede que ya no esté", height, $"hace {(int)ago.TotalMinutes}:{ago.Seconds:00}" }.Where(x => x.Length > 0)));
         cubePillText.Inlines.Clear();
-        cubePillText.Inlines.Add(new System.Windows.Documents.Run("Cubo ") { Foreground = Paint("#E4D4FF") });
+        cubePillText.Inlines.Add(new System.Windows.Documents.Run(L.T("Cubo") + " ") { Foreground = Paint("#E4D4FF") });
         cubePillText.Inlines.Add(new System.Windows.Documents.Run(cubeDistance.Text) { Foreground = Brushes.White, FontWeight = FontWeights.SemiBold });
         cubeInlineText.Inlines.Clear();
-        cubeInlineText.Inlines.Add(new System.Windows.Documents.Run("Cubo oculto") { Foreground = Paint("#E4D4FF") });
+        cubeInlineText.Inlines.Add(new System.Windows.Documents.Run(L.T("Cubo oculto")) { Foreground = Paint("#E4D4FF") });
         cubeInlineText.Inlines.Add(new System.Windows.Documents.Run(" " + shortly) { Foreground = Muted });
         cubeInlineDistance.Text = cubeDistance.Text;
     }
@@ -863,7 +865,7 @@ public sealed partial class OverlayWindow : Window
         else
         {
             timer.Visibility = Visibility.Visible;
-            timer.Text = $"{e.Name}  ·  {Clock(e.Remaining)}";
+            timer.Text = $"{L.T(e.Name)}  ·  {Clock(e.Remaining)}";
             timer.Foreground = e.Remaining <= settings.LeadMinutes * 60 ? Alert : Gold;
             timer.Margin = new Thickness(0, 6, 0, 0);
         }
@@ -1067,7 +1069,7 @@ public sealed partial class OverlayWindow : Window
             : $"{(card.CombatPower >= 1000 ? $"{card.CombatPower / 1000.0:0.0}K" : card.CombatPower.ToString("N0"))}   {(card.ItemLevel?.ToString("N0") ?? "—")}";
         var right = Label(numbers, 10.5, self ? Brushes.White : RowText);
         DockPanel.SetDock(right, Dock.Right); row.Children.Add(right);
-        var left = Label(card is null ? name : $"{name}  ·  {card.ClassName}", 10.5, self ? Teal : RowText);
+        var left = Label(card is null ? name : $"{name}  ·  {L.T(card.ClassName)}", 10.5, self ? Teal : RowText);
         if (self) left.FontWeight = FontWeights.SemiBold;
         row.Children.Add(left);
         return row;

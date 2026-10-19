@@ -12,7 +12,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 ![Windows 10/11 64-bit](https://img.shields.io/badge/Windows-10%20%7C%2011%20x64-0078d6?logo=windows)
 
-[**Download**](#download) · [**Features**](#features) · [**Donate**](#support-the-project) · [**Build from source**](#build-from-source) · [Website](https://governanceai.me)
+[**Download**](#download) · [**Features**](#features) · [**Donate**](#support-the-project) · [**Build from source**](#build-from-source) · [Website](https://governanceai.me/?lang=en#home)
 
 <img src="docs/images/overlay-pulido.webp" alt="The overlay during a boss fight: boss card, DPS, group ranking, loot table and a hidden cube" width="900">
 
@@ -31,7 +31,7 @@ FullAIon2Companion reads the AION 2 traffic that already reaches your PC and sho
 | **Latest version** | [**FullAIon2Companion 1.0.20**](https://github.com/l33tm3/FullAIon2Companion/releases/latest) (Windows 10/11, 64-bit, ~99 MB) |
 | **SHA-256** | `18b23018c8e87a7b5669d28c52a974c16a9e97b96f3657ce869d3015d7e7ad17` |
 | **VirusTotal** | [![VirusTotal](https://img.shields.io/badge/VirusTotal-1%2F64-yellowgreen?logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/file/18b23018c8e87a7b5669d28c52a974c16a9e97b96f3657ce869d3015d7e7ad17) — 1 of 64 engines: DeepInstinct's machine-learning engine flags it, the other 63 report it clean. Unsigned installers often trip such heuristics; the full source of this installer is in this repository. |
-| **Also on** | [governanceai.me](https://governanceai.me/#home?download=1) |
+| **Also on** | [governanceai.me](https://governanceai.me/?lang=en#home?download=1) |
 
 **Requirements**
 
@@ -182,7 +182,7 @@ FullAIon2Companion and the Daeva Companion website are free, and they will stay 
 | `desktop/FullAIon2Companion` | The desktop app: C# / WPF on .NET 10, the panel is HTML/JS in WebView2 (`ui/`), translations in `i18n/` |
 | `desktop/vendor` | Aion-DPS-Meter (MIT): AION 2 protocol decoding, capture and skill data |
 | `desktop/installer` | Inno Setup script of the installer |
-| `src`, `public` | The [Daeva Companion](https://governanceai.me) website (Astro + TypeScript) and its game database (`public/data`, `public/assets`) |
+| `src`, `public` | The [Daeva Companion](https://governanceai.me/?lang=en#home) website (English, Spanish and Portuguese) (Astro + TypeScript) and its game database (`public/data`, `public/assets`) |
 | `public/api` | The website's PHP API (accounts, app pairing, releases) |
 | `scripts` | Data import, image and build tools |
 | `tests` | Website tests |

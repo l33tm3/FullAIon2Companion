@@ -4,7 +4,9 @@ function petBadge(cat,cls){const k=PET_BADGES[String(cat||'').toLowerCase()];ret
 'use strict';
 let data=null,initialized=false;
 const $=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const number=v=>Number(v||0).toLocaleString('es-CL',{maximumFractionDigits:0}),time=v=>{v=Math.max(0,Math.floor(v));return v>=86400?`${Math.floor(v/86400)}d ${Math.floor(v%86400/3600)}h`:v>=3600?`${Math.floor(v/3600)}:${String(Math.floor(v%3600/60)).padStart(2,'0')}:${String(v%60).padStart(2,'0')}`:`${Math.floor(v/60)}:${String(v%60).padStart(2,'0')}`;};
+// Numbers, dates and times in the panel's language (uiLang is set further down; before that, Spanish).
+const uiLoc=()=>{try{return uiLang==='pt'?'pt-BR':uiLang==='en'?'en-GB':'es-CL';}catch{return 'es-CL';}};
+const number=v=>Number(v||0).toLocaleString(uiLoc(),{maximumFractionDigits:0}),time=v=>{v=Math.max(0,Math.floor(v));return v>=86400?`${Math.floor(v/86400)}d ${Math.floor(v%86400/3600)}h`:v>=3600?`${Math.floor(v/3600)}:${String(Math.floor(v%3600/60)).padStart(2,'0')}:${String(v%60).padStart(2,'0')}`:`${Math.floor(v/60)}:${String(v%60).padStart(2,'0')}`;};
 const pendingActions=new Map();let actionSequence=0;
 const actionLabels={'donate':'Abriendo PayPal…','license-check':'Comprobando licencia…','title-start':'Pidiendo la verificación…','title-check':'Comprobando en la web oficial…','title-cancel':'Cancelando la verificación…','pets-upload':'Subiendo tus mascotas…',pull:'Descargando preferencias…',pair:'Vinculando dispositivo…','pair-web':'Abriendo Daeva Companion…','update-check':'Buscando actualizaciones…','update-download':'Descargando actualización…','own-profile':'Abriendo tu perfil…'};
 function actionNotice(text,kind='info'){let el=$('action-feedback');if(!el){el=document.createElement('div');el.id='action-feedback';el.setAttribute('role','status');el.setAttribute('aria-live','polite');document.body.append(el);}el.textContent=text;el.dataset.kind=kind;el.hidden=false;}
@@ -24,7 +26,7 @@ if(location.hash.length>1)openTab(location.hash.slice(1));
 const hotkeyNames={breakdown:'Desglose del combate',overlay:'Mostrar u ocultar el overlay',move:'Modo mover del overlay',drops:'Panel del objetivo (botín / jugador)',panel:'Abrir o cerrar este panel',reset:'Nuevo combate',minimap:'Mostrar u ocultar el minimapa'};let capturing=null;
 function captureHotkey(row){capturing?.classList.remove('capturing');capturing=row;row.classList.add('capturing');row.querySelector('strong').textContent='Pulsa la combinación…';}
 document.addEventListener('keydown',e=>{if(!capturing)return;e.preventDefault();const row=capturing;const done=combo=>{row.classList.remove('capturing');capturing=null;if(combo!==null)send('hotkey',{action:row.dataset.hotkey,combo});renderHotkeys(true);};if(e.key==='Escape')return done(null);if(e.key==='Delete'||e.key==='Backspace')return done('');if(['Control','Alt','Shift','Meta'].includes(e.key))return;const k=/^Key[A-Z]$/.test(e.code)?e.code.slice(3):/^Digit\d$/.test(e.code)?e.code.slice(5):/^F\d{1,2}$/.test(e.code)?e.code:null;if(!k||!(e.ctrlKey||e.altKey||e.metaKey)){row.querySelector('strong').textContent='Usa Ctrl, Alt o Win + letra, número o F1-F24';return;}done([e.ctrlKey&&'Ctrl',e.altKey&&'Alt',e.shiftKey&&'Shift',e.metaKey&&'Win',k].filter(Boolean).join('+'));});
-function renderHotkeys(force){if(!data||capturing&&!force)return;const keys=data.settings.Hotkeys||{};const html=Object.entries(hotkeyNames).map(([a,label])=>`<button class="hotkey" data-hotkey="${a}"><span>${label}</span><strong>${esc(keys[a]||'Sin definir')}</strong></button>`).join('');if($('hotkeys').dataset.html!==html){$('hotkeys').innerHTML=html;$('hotkeys').dataset.html=html;}$('overlay-keys').textContent=['overlay','move','drops','panel'].filter(a=>keys[a]).map(a=>`${keys[a]} ${({overlay:'mostrar/ocultar',move:'mover/fijar',drops:'botín',panel:'panel'})[a]}`).join(' · ');}
+function renderHotkeys(force){if(!data||capturing&&!force)return;const keys=data.settings.Hotkeys||{};const html=Object.entries(hotkeyNames).map(([a,label])=>`<button class="hotkey" data-hotkey="${a}"><span>${label}</span><strong>${esc(keys[a]||'Sin definir')}</strong></button>`).join('');if($('hotkeys').dataset.html!==html){$('hotkeys').innerHTML=html;$('hotkeys').dataset.html=html;}$('overlay-keys').textContent=['overlay','move','drops','panel'].filter(a=>keys[a]).map(a=>`${keys[a]} ${i18nText(({overlay:'mostrar/ocultar',move:'mover/fijar',drops:'botín',panel:'panel'})[a])}`).join(' · ');}
 const toggles={shareDiagnostics:'ShareDiagnostics',minimapFiltersOpen:'MinimapFiltersOpen',eventToasts:'EventToasts',bossPaceBars:'BossPaceBars',troopAll:'OverlayTroopAll',syncPets:'SyncPets',showOd:'OverlayShowOd',showPet:'OverlayShowPet',showFarm:'OverlayShowFarm',showLootPrices:'OverlayShowLootPrices',showRanking:'OverlayShowRanking',showHeaderTimers:'OverlayShowHeaderTimers',assistant:'AssistantVisible',cubeAlerts:'CubeAlerts',cubeSound:'CubeSound',assistantBuffs:'AssistantShowBuffs',assistantCooldowns:'AssistantShowCooldowns',assistantSound:'AssistantSound',fieldBossAlerts:'FieldBossAlerts',partyOnly:'PartyOnly',focusOnly:'OverlayAttachToGame',showParty:'OverlayShowParty',showCasts:'OverlayShowCasts',showEvent:'OverlayShowEvent',showDrops:'OverlayDrops',showMinimap:'MinimapVisible',bossSounds:'BossSounds',eventSounds:'Sounds'};
 const fields={'cfg-channel':'UpdateChannel','cfg-mmopacity':'MinimapOpacity','cfg-mmicons':'MinimapIconScale','cfg-toastcorner':'EventToastCorner','cfg-bosspace':'BossPacePlace','cfg-bossvoice':'BossAlertVoice','cfg-odmax':'OdMax','cfg-region':'RegionOffset','cfg-idle':'CombatIdleSeconds','cfg-bossonly':'BossOnlyDamage','cfg-opacity':'OverlayOpacity','cfg-scale':'OverlayScale','cfg-assistscale':'AssistantScale','cfg-castplace':'CastAlertPlace','cfg-lead':'LeadMinutes','cfg-volume':'Volume'};
 let petOptions=false;
@@ -35,7 +37,7 @@ function renderPets(d){if(!petOptions&&d.petList){$('pet-options').innerHTML=d.p
  <p class="footnote">Criaturas que dan sus almas: ${p.Monsters.map(esc).join(' · ')||'sin datos en el catálogo'}</p>`;}
 let petFilter='',petLevel='all',petRace='',petPage=0;const petPageSize=12;
 function renderCollection(c,sync){if($('cfg-pet-sync')&&sync&&sync!=='Sin subir')$('cfg-pet-sync').textContent='Mascotas: '+sync;$('pet-sync-status').textContent=sync&&sync!=='Sin subir'?sync:'Sube la colección y su historial diario a tu cuenta (Mi cuenta → Mascotas) cuando el dispositivo está vinculado.';if(!c){$('pet-col-meta').textContent='Esperando la lista del juego';return;}
-const ago=c.ListAt?new Date(c.ListAt):null;$('pet-col-meta').textContent=`${c.Character} · ${c.Live?'al día':'guardada'}${ago?' · lista del juego '+ago.toLocaleString('es',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):''}`;
+const ago=c.ListAt?new Date(c.ListAt):null;$('pet-col-meta').textContent=`${c.Character} · ${c.Live?'al día':'guardada'}${ago?' · lista del juego '+ago.toLocaleString(uiLoc(),{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):''}`;
 const pct=Math.round(c.Owned/c.Total*100);const cats=Object.entries(c.ByCategory).map(([k,v])=>`<div class="pet-cat${petRace===k?' on':petRace?' off':''}" data-pet-race="${esc(k)}" role="button" tabindex="0" title="${petRace===k?'Quitar el filtro':'Ver solo '+esc(k)}">${petBadge(k,'pet-cat-badge')}<b>${v[0]}/${v[1]}</b><div class="bar"><i style="width:${v[1]?v[0]/v[1]*100:0}%"></i></div></div>`).join('');
 const hist=c.History.slice(-14);const maxO=Math.max(1,...hist.map(h=>h.Owned));const spark=hist.length>1?`<div class="pet-hist" title="Mascotas obtenidas por día (últimos ${hist.length} días)">${hist.map(h=>`<i style="height:${Math.max(6,h.Owned/maxO*100)}%" title="${h.Date}: ${h.Owned} mascotas · Nv3 ${h.L3} · ${h.Souls} almas"></i>`).join('')}</div>`:'';
 const pinned=new Set((data?.settings?.PinnedPets)||[]);const soon=p=>p.Threshold>0&&p.Threshold-p.Progress<=5;
@@ -47,10 +49,10 @@ const host=$('pet-collection');if(host.dataset.html===html+pager)return;const fo
 document.addEventListener('click',e=>{const r=e.target.closest('[data-pet-race]');if(r){petRace=petRace===r.dataset.petRace?'':r.dataset.petRace;petPage=0;renderCollection(data?.petCollection,data?.petsSync);return;}const b=e.target.closest('[data-pet-page]');if(b&&!b.disabled){petPage+=Number(b.dataset.petPage);renderCollection(data?.petCollection,data?.petsSync);}});
 function renderPetDay(rows){const html=rows.length?'<div class="pet-row pet-row-head"><span>Mascota</span><span>Almas</span><span>Muertes</span><span>Tasa</span><span></span></div>'+rows.map(r=>`<div class="pet-row"><span>${esc(r.Name)}</span><span>${r.Souls}</span><span>${r.Kills}</span><span>${r.SoulsPerKill!=null?(r.SoulsPerKill*100).toFixed(1)+'%':'—'}</span><button data-pet-follow="${esc(r.Name)}">Seguir</button></div>`).join(''):'<div class="empty">Todavía no hay almas hoy. Aparecerán aquí en cuanto caiga la primera.</div>';if($('pet-day').dataset.html!==html){$('pet-day').innerHTML=html;$('pet-day').dataset.html=html;}}
 document.addEventListener('click',e=>{const f=e.target.closest('[data-pet-follow]');if(f){$('pet-name').value=f.dataset.petFollow;$('pet-progress').focus();}});
-$('pet-track').onclick=()=>{const name=$('pet-name').value.trim().toLowerCase();const pet=(data?.petList||[]).find(x=>x.name.toLowerCase()===name);if(!pet){$('pet-name').setCustomValidity('Elige una mascota de la lista');$('pet-name').reportValidity();return;}$('pet-name').setCustomValidity('');send('pet-track',{id:pet.id,level:Number($('pet-level').value),progress:Number($('pet-progress').value)});};
+$('pet-track').onclick=()=>{const name=$('pet-name').value.trim().toLowerCase();const pet=(data?.petList||[]).find(x=>x.name.toLowerCase()===name);if(!pet){$('pet-name').setCustomValidity(i18nText('Elige una mascota de la lista'));$('pet-name').reportValidity();return;}$('pet-name').setCustomValidity('');send('pet-track',{id:pet.id,level:Number($('pet-level').value),progress:Number($('pet-progress').value)});};
 function renderSettings(d){renderPets(d);const s=d.settings;document.querySelectorAll('[data-style]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.style===(s.OverlayStyle||'clasico')));document.querySelectorAll('[data-toggle]').forEach(el=>el.setAttribute('aria-checked',!!s[toggles[el.dataset.toggle]]));for(const[id,key]of Object.entries(fields)){const el=$(id);if(el&&document.activeElement!==el){el.value=String(s[key]);const out=$(id+'-out');if(out)out.textContent=Math.round(s[key]*100)+'%';}}$('cfg-version').textContent=d.version;$('event-summary').textContent=`${s.Sounds?'Avisos con sonido activados':'Avisos con sonido desactivados'} · ${s.LeadMinutes} min antes y al inicio · marca los eventos que quieres escuchar.`;renderHotkeys(false);}
 $('farm-goal').onchange=e=>send('goal',{value:Number(e.target.value)});$('pair-button').onclick=()=>{send('pair',{code:$('pair-code').value});$('pair-code').value='';};$('mob-search').oninput=renderMobs;$('close-dialog').onclick=()=>$('npc-dialog').close();
-function eventRow(e){return `<div class="event-row" style="--event:${esc(e.Color)}"><div><b>${esc(e.Name)}</b><small>${new Date(e.At).toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit',timeZone:'UTC'})} UTC · ${new Date(e.At).toLocaleDateString('es-CL',{day:'numeric',month:'short'})}</small></div><strong>${time(e.Remaining)}</strong><input type="checkbox" ${e.Alert?'checked':''} data-event="${esc(e.Id)}" aria-label="Aviso para ${esc(e.Name)}"></div>`;}
+function eventRow(e){return `<div class="event-row" style="--event:${esc(e.Color)}"><div><b>${esc(e.Name)}</b><small>${new Date(e.At).toLocaleTimeString(uiLoc(),{hour:'2-digit',minute:'2-digit',timeZone:'UTC'})} UTC · ${new Date(e.At).toLocaleDateString(uiLoc(),{day:'numeric',month:'short'})}</small></div><strong>${time(e.Remaining)}</strong><input type="checkbox" ${e.Alert?'checked':''} data-event="${esc(e.Id)}" aria-label="Aviso para ${esc(e.Name)}"></div>`;}
 function renderMobs(){if(!data)return;const q=$('mob-search').value.toLocaleLowerCase('es');const mobs=data.mobs.filter(m=>m.name.toLocaleLowerCase('es').includes(q));$('mobs').innerHTML=mobs.map(m=>`<button class="mob-card" data-npc="${m.id}">${icon(m.record?.icon,m.name)}<div><b>${esc(m.name)}</b><small>${m.count} cerca${m.record?.level?' · Nv. '+m.record.level:''}${m.record?.creatureName?' · '+esc(m.record.creatureName):''}</small></div></button>`).join('')||'<div class="empty">No hay criaturas identificadas con este filtro. Entra en otra zona para recibir sus apariciones.</div>';}
 window.renderCompanion=d=>{
  data=d;renderOwnProfile(d.profile);$('build-version').textContent='VERSIÓN '+d.version;const s=d.snapshot,known=s.LocalId>0;
@@ -67,9 +69,9 @@ window.renderCompanion=d=>{
  renderSettings(d);$('share-toggle').textContent=d.settings.ShareTelemetry?'Desactivar envío de telemetría':'Activar envío de telemetría';$('cloud-status').textContent=d.companion;renderOps(d);renderCastKinds(d.settings);renderCloud(d.cloud);$('alert').textContent=d.alert||'Elige los eventos que quieres escuchar.';
  $('diagnostics').innerHTML=[['Tramas',s.Frames],['Eventos de daño',s.DamageEvents],['Errores',s.DecodeErrors],['Retransmisiones',s.Retransmissions],['Saltos TCP',s.Gaps],['Zona',s.Zone||'Pendiente'],['ID local',s.LocalId||'Pendiente']].map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('');
  if(!initialized){$('farm-goal').value=d.settings.FarmGoal;initialized=true;}
- renderMobs();$('clock').textContent=new Date().toLocaleTimeString('es-CL');
+ renderMobs();$('clock').textContent=new Date().toLocaleTimeString(uiLoc());
 };
-window.showNpc=(n,sib)=>{if(n&&sib&&!(n.drops||[]).length){n={...n,drops:sib.drops,dropsFrom:sib.level};}if(!n){$('npc-detail').innerHTML='<h2>Ficha pendiente</h2><p class="muted">Esta criatura todavía no está en el catálogo local.</p>';}else{$('npc-detail').innerHTML=`<div class="target-identity">${icon(n.icon,n.name)}<div><span class="eyebrow">CRIATURA · ${n.id}</span><h2>${esc(n.name)}</h2><small>Nv. ${n.level} · ${esc(n.gradeName||'')} · ${esc(n.creatureName||'')}</small></div></div><h3 style="margin-top:25px">Dónde aparece</h3><p class="muted">${(n.where||[]).map(x=>esc(x.name)).join(' · ')||'Sin apariciones en el catálogo'}</p><button data-atlas-find="${esc(n.name)}" data-atlas-map="${esc((n.maps||[])[0]||'')}" style="margin:12px 0">Ver en el mapa</button><h3 style="margin:15px 0">Botín registrado ${n.drops?.length?'· '+n.drops.length:''}</h3>${n.dropsFrom?`<p class="notice">Esta variante no trae tabla propia en el catálogo: se muestra la de la misma criatura de Nv. ${n.dropsFrom}.</p>`:''}${(n.drops||[]).slice(0,100).map(x=>`<div class="drop">${icon(x.icon,x.name)}<b class="grade-${esc(x.grade)}">${esc(x.name)}</b><strong>${Number(x.chance).toLocaleString('es-CL',{maximumFractionDigits:2})}%</strong></div>`).join('')||'<p class="muted">La ficha importada no contiene una tabla de botín.</p>'}<p class="footnote">Datos del catálogo local de Daeva Companion. Las probabilidades corresponden a la fuente del catálogo, no a esta captura.</p>`;}$('npc-dialog').showModal();};
+window.showNpc=(n,sib)=>{if(n&&sib&&!(n.drops||[]).length){n={...n,drops:sib.drops,dropsFrom:sib.level};}if(!n){$('npc-detail').innerHTML='<h2>Ficha pendiente</h2><p class="muted">Esta criatura todavía no está en el catálogo local.</p>';}else{$('npc-detail').innerHTML=`<div class="target-identity">${icon(n.icon,n.name)}<div><span class="eyebrow">CRIATURA · ${n.id}</span><h2>${esc(n.name)}</h2><small>Nv. ${n.level} · ${esc(n.gradeName||'')} · ${esc(n.creatureName||'')}</small></div></div><h3 style="margin-top:25px">Dónde aparece</h3><p class="muted">${(n.where||[]).map(x=>esc(x.name)).join(' · ')||'Sin apariciones en el catálogo'}</p><button data-atlas-find="${esc(n.name)}" data-atlas-map="${esc((n.maps||[])[0]||'')}" style="margin:12px 0">Ver en el mapa</button><h3 style="margin:15px 0">Botín registrado ${n.drops?.length?'· '+n.drops.length:''}</h3>${n.dropsFrom?`<p class="notice">Esta variante no trae tabla propia en el catálogo: se muestra la de la misma criatura de Nv. ${n.dropsFrom}.</p>`:''}${(n.drops||[]).slice(0,100).map(x=>`<div class="drop">${icon(x.icon,x.name)}<b class="grade-${esc(x.grade)}">${esc(x.name)}</b><strong>${Number(x.chance).toLocaleString(uiLoc(),{maximumFractionDigits:2})}%</strong></div>`).join('')||'<p class="muted">La ficha importada no contiene una tabla de botín.</p>'}<p class="footnote">Datos del catálogo local de Daeva Companion. Las probabilidades corresponden a la fuente del catálogo, no a esta captura.</p>`;}$('npc-dialog').showModal();};
 
 // Cuenta: device state chips and the ownership challenge.
 function renderCloud(c){if(!c)return;const t=c.title,pull=c.pull;const chip=(id,on,txt)=>{const el=$(id);el.className=on?'on':'';el.textContent=txt;};
@@ -85,7 +87,7 @@ $('verify-state').textContent=t.Badge;$('verify-state').dataset.state=t.State;
 const ch=t.Character;$('verify-character').innerHTML=ch?`<span>Personaje</span><b>${esc(t.CharacterName||'Personaje identificado')}</b><small>Región ${esc(ch.region.toUpperCase())} · servidor ${ch.serverId} · ID ${esc(ch.characterId.slice(0,4))}…${esc(ch.characterId.slice(-10))}</small>`:'';
 $('verify-message').textContent=t.Text;
 const pend=t.State==='pending';$('verify-title').hidden=!pend;
-if(pend){$('verify-title-name').textContent=t.CurrentTitle?`«${t.CurrentTitle}»`:'—';$('verify-title-category').textContent=t.CategoryLabel||'—';$('verify-title-expiry').textContent=t.ExpiresAtUtc?'Caduca a las '+new Date(t.ExpiresAtUtc).toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'}):'';}
+if(pend){$('verify-title-name').textContent=t.CurrentTitle?`«${t.CurrentTitle}»`:'—';$('verify-title-category').textContent=t.CategoryLabel||'—';$('verify-title-expiry').textContent=t.ExpiresAtUtc?'Caduca a las '+new Date(t.ExpiresAtUtc).toLocaleTimeString(uiLoc(),{hour:'2-digit',minute:'2-digit'}):'';}
 const res=$('verify-result');res.hidden=!t.Message;res.textContent=t.Message||'';
 $('title-start').hidden=!['unverified','full'].includes(t.State);$('title-start').disabled=!t.CanStart||isPending('title-start');
 $('title-check').hidden=!pend;$('title-check').disabled=!t.CanCheck||isPending('title-check');
@@ -95,10 +97,10 @@ $('verify-linked').innerHTML=t.Linked&&t.Linked.length?`<h5>Tus personajes verif
 function renderOwnProfile(p){const host=$('own-profile-content');if(!host)return;const signature=JSON.stringify(p);if(host.dataset.profile===signature)return;host.dataset.profile=signature;const card=p?.card;if(!card){host.innerHTML=`<div class="empty">${esc(p?.error||(p?'Cargando tu perfil oficial…':'Pulsa «Mi perfil» en la barra superior para consultar tu personaje.'))}</div>`;return;}
 const SLOT_ES={MainHand:'Arma principal',SubHand:'Arma secundaria',Torso:'Torso',Pants:'Piernas',Helmet:'Casco',Shoulder:'Hombros',Gloves:'Guantes',Boots:'Botas',Cape:'Capa',Belt:'Cinturón',Necklace:'Collar',Earring1:'Pendiente 1',Earring2:'Pendiente 2',Ring1:'Anillo 1',Ring2:'Anillo 2',Bracelet1:'Brazalete 1',Bracelet2:'Brazalete 2',Rune1:'Runa 1',Rune2:'Runa 2',Amulet:'Amuleto',Arcana1:'Arcana 1',Arcana2:'Arcana 2',Arcana3:'Arcana 3',Arcana4:'Arcana 4',Arcana5:'Arcana 5',Wing:'Alas'};const slotName=s=>SLOT_ES[s]||s||'';
 const pic=url=>url&&/^https:\/\//.test(url)?`<img src="${esc(url)}" alt="" loading="lazy">`:'';
-host.innerHTML=`<div class="own-profile-head">${pic(card.Portrait)}<div><h2>${esc(card.Name)}</h2><p>${esc(card.ClassName)} · Nv. ${card.Level} · ${esc(card.Server)}</p><p>${esc(card.Legion||'Sin legión')}${card.Title?' · '+esc(card.Title):''}</p></div></div><div class="metrics"><div class="metric main"><span>Poder de combate</span><strong>${number(card.CombatPower)}</strong></div><div class="metric"><span>Nivel de objeto</span><strong>${card.ItemLevel?number(card.ItemLevel):'—'}</strong></div><div class="metric"><span>Última lectura</span><strong class="profile-date">${esc(new Date(card.FetchedAt).toLocaleTimeString('es-CL'))}</strong></div></div><h3>Equipo</h3><div class="own-profile-gear">${(card.Gear||[]).map(g=>`<div class="own-profile-item">${pic(g.Icon)}<div><b class="grade-${esc(g.Grade)}">${esc(g.Name)}${g.Enchant?' +'+g.Enchant:''}</b><small>${esc(slotName(g.Slot))}</small></div></div>`).join('')||'<p>Equipo pendiente de la fuente oficial.</p>'}</div><h3>Clasificación</h3><p class="profile-rankings">${(card.Rankings||[]).map(esc).join(' · ')||'La fuente oficial no devolvió posiciones para este personaje.'}</p><p class="footnote">Perfil público de NCSOFT. Consultar esta ficha no verifica que el personaje sea tuyo.</p>`;}
+host.innerHTML=`<div class="own-profile-head">${pic(card.Portrait)}<div><h2>${esc(card.Name)}</h2><p>${esc(card.ClassName)} · Nv. ${card.Level} · ${esc(card.Server)}</p><p>${esc(card.Legion||'Sin legión')}${card.Title?' · '+esc(card.Title):''}</p></div></div><div class="metrics"><div class="metric main"><span>Poder de combate</span><strong>${number(card.CombatPower)}</strong></div><div class="metric"><span>Nivel de objeto</span><strong>${card.ItemLevel?number(card.ItemLevel):'—'}</strong></div><div class="metric"><span>Última lectura</span><strong class="profile-date">${esc(new Date(card.FetchedAt).toLocaleTimeString(uiLoc()))}</strong></div></div><h3>Equipo</h3><div class="own-profile-gear">${(card.Gear||[]).map(g=>`<div class="own-profile-item">${pic(g.Icon)}<div><b class="grade-${esc(g.Grade)}">${esc(g.Name)}${g.Enchant?' +'+g.Enchant:''}</b><small>${esc(slotName(g.Slot))}</small></div></div>`).join('')||'<p>Equipo pendiente de la fuente oficial.</p>'}</div><h3>Clasificación</h3><p class="profile-rankings">${(card.Rankings||[]).map(esc).join(' · ')||'La fuente oficial no devolvió posiciones para este personaje.'}</p><p class="footnote">Perfil público de NCSOFT. Consultar esta ficha no verifica que el personaje sea tuyo.</p>`;}
 
 // Versions, notices, diagnostics and the minimap section.
-function renderOps(d){const u=d.update;if(u){$('update-status').textContent=u.status;const card=$('update-card');card.hidden=!(u.newer&&u.latest);if(u.latest){$('update-title').textContent=`Versión ${u.latest.Version} (${u.channel==='stable'?'estable':'beta'})`;$('update-meta').textContent=`Tienes la ${u.current} · ${(u.latest.Bytes/1048576).toFixed(1)} MB`+(u.latest.created?` · publicada ${new Date(u.latest.created).toLocaleDateString('es')}`:'');$('update-notes').textContent=u.latest.Notes||'Sin notas de versión.';}$('update-open').hidden=!u.downloaded;$('update-download').hidden=!!u.downloaded;}
+function renderOps(d){const u=d.update;if(u){$('update-status').textContent=u.status;const card=$('update-card');card.hidden=!(u.newer&&u.latest);if(u.latest){$('update-title').textContent=`Versión ${u.latest.Version} (${u.channel==='stable'?'estable':'beta'})`;$('update-meta').textContent=`Tienes la ${u.current} · ${(u.latest.Bytes/1048576).toFixed(1)} MB`+(u.latest.created?` · publicada ${new Date(u.latest.created).toLocaleDateString(uiLoc())}`:'');$('update-notes').textContent=u.latest.Notes||'Sin notas de versión.';}$('update-open').hidden=!u.downloaded;$('update-download').hidden=!!u.downloaded;}
 const ann=(d.announcements||[]);const html=ann.map(a=>`<div class="announcement ${['warning','maintenance','critical'].includes(a.Level)?'warn':''}"><b>${esc(a.Title)}</b><span>${esc(a.Body)}</span></div>`).join('');if($('announcements').dataset.html!==html){$('announcements').innerHTML=html;$('announcements').dataset.html=html;}
 if(d.diagnostics)$('diag-status').textContent=d.diagnostics;
 for(const id of ['cfg-mmopacity','cfg-mmicons']){const o=$(id+'-out');const el=$(id);if(o&&el)o.textContent=id==='cfg-mmicons'?`${Math.round(el.value*100)}%`:`${Math.round(el.value*100)}%`;}
@@ -113,7 +115,7 @@ let historyVersion=-1,historyOpen=null,historyTimer=null;
 const CLASS_ES={Gladiator:'Gladiador',Templar:'Templario',Ranger:'Cazador',Assassin:'Asesino',Sorcerer:'Hechicero',Spiritmaster:'Espiritista',Elementalist:'Espiritista',Cleric:'Clérigo',Chanter:'Cantor'};
 const big=n=>{n=Number(n)||0;return n>=1e9?(n/1e9).toFixed(2)+'B':n>=1e6?(n/1e6).toFixed(2)+'M':n>=1e3?(n/1e3).toFixed(1)+'k':String(Math.round(n));};
 const clock=s=>{s=Math.max(0,Math.round(Number(s)||0));return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;};
-const when=d=>{const t=new Date(d);return t.toLocaleDateString('es-CL',{day:'2-digit',month:'2-digit'})+' '+t.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});};
+const when=d=>{const t=new Date(d);return t.toLocaleDateString(uiLoc(),{day:'2-digit',month:'2-digit'})+' '+t.toLocaleTimeString(uiLoc(),{hour:'2-digit',minute:'2-digit'});};
 function askHistory(){send('history-list',{query:$('history-query')?.value||'',bosses:!!$('history-bosses')?.checked});}
 window.renderHistory=list=>{const host=$('history-list');if(!host)return;
  host.innerHTML=list.length?list.map(f=>`<button class="history-row${f.Id===historyOpen?' active':''}" data-fight="${esc(f.Id)}"><span class="h-target">${f.Boss?'<i class="h-boss">JEFE</i>':''}<b>${esc(f.Target)}</b><small>${esc(f.Place)} · ${when(f.Start)}</small></span><span class="h-num"><b>${big(f.GroupDps)}</b><small>DPS grupo</small></span><span class="h-num"><b>${clock(f.Seconds)}</b><small>${f.Killed?'derrotado':'duración'}</small></span></button>`).join(''):'<p class="empty">No hay combates con ese filtro.</p>';};
@@ -130,7 +132,7 @@ window.showFight=f=>{const s=f.Summary;historyOpen=s.Id;document.querySelectorAl
  $('history-detail').onclick=e=>{const r=e.target.closest('[data-player]');if(r)showSkills(Number(r.dataset.player));};
  showSkills(Math.max(0,f.Players.findIndex(p=>p.Self)));};
 document.addEventListener('click',e=>{const row=e.target.closest('[data-fight]');if(row)send('history-open',{id:row.dataset.fight});
- const del=e.target.closest('[data-history-delete]');if(del&&confirm('¿Borrar este combate del historial?')){send('history-delete',{id:del.dataset.historyDelete});historyOpen=null;$('history-detail').innerHTML='<p class="empty">Combate borrado.</p>';setTimeout(askHistory,300);}
+ const del=e.target.closest('[data-history-delete]');if(del&&confirm(i18nText('¿Borrar este combate del historial?'))){send('history-delete',{id:del.dataset.historyDelete});historyOpen=null;$('history-detail').innerHTML='<p class="empty">Combate borrado.</p>';setTimeout(askHistory,300);}
  if(e.target.closest('[data-tab="history"]'))askHistory();});
 document.addEventListener('input',e=>{if(e.target.id==='history-query'){clearTimeout(historyTimer);historyTimer=setTimeout(askHistory,350);}});
 document.addEventListener('change',e=>{if(e.target.id==='history-bosses')askHistory();});
@@ -173,6 +175,106 @@ let i18nDict={en:{},pt:{}},uiLang='es',i18nBusy=false;
 const i18nOrig=new WeakMap();
 // Dynamic phrases with numbers: [regex over the Spanish text, English, Portuguese].
 const I18N_PATTERNS=[
+ // Combate, objetivo y cabecera
+ [/^(.+) · identidad recibida en el juego$/,'$1 · identity received in the game','$1 · identidade recebida no jogo'],
+ [/^(.+) · identidad deducida de la captura$/,'$1 · identity deduced from the capture','$1 · identidade deduzida da captura'],
+ [/^(\d+(?::\d\d){1,2}|\d+d \d+h) de combate observado$/,'$1 of combat observed','$1 de combate observado'],
+ [/^(\d+) habilidades$/,'$1 skills','$1 habilidades'],
+ [/^(\d+) ms · ([\d.,]+) segmentos · ([\d.,]+) tramas · ([\d.,]+) eventos$/,'$1 ms · $2 segments · $3 frames · $4 events','$1 ms · $2 segmentos · $3 quadros · $4 eventos'],
+ [/^([\d.,]+) segmentos · ([\d.,]+) tramas · ([\d.,]+) eventos$/,'$1 segments · $2 frames · $3 events','$1 segmentos · $2 quadros · $3 eventos'],
+ [/^VERSIÓN (.+)$/,'VERSION $1','VERSÃO $1'],
+ [/^Captura activa · (.+)$/,'Capture active · $T1','Captura ativa · $T1'],
+ [/^CRIATURA · (\d+)$/,'CREATURE · $1','CRIATURA · $1'],
+ [/^Botín registrado · (\d+)$/,'Recorded loot · $1','Saque registrado · $1'],
+ [/^Esta variante no trae tabla propia en el catálogo: se muestra la de la misma criatura de Nv\. (\d+)\.$/,'This variant has no table of its own in the catalog: the one of the same creature at Lv. $1 is shown.','Esta variante não traz tabela própria no catálogo: é mostrada a da mesma criatura de Nv. $1.'],
+ [/^(\d+) cerca · Nv\. (\d+) · (.+)$/,'$1 nearby · Lv. $2 · $T3','$1 por perto · Nv. $2 · $T3'],
+ [/^(\d+) cerca · Nv\. (\d+)$/,'$1 nearby · Lv. $2','$1 por perto · Nv. $2'],
+ [/^(\d+) cerca · (.+)$/,'$1 nearby · $T2','$1 por perto · $T2'],
+ [/^(\d+) cerca$/,'$1 nearby','$1 por perto'],
+ [/^Nv\. (\d+) · (\d+)\/(\d+)$/,'Lv. $1 · $2/$3','Nv. $1 · $2/$3'],
+ [/^Nv\. (\d+) · MÁX\.$/,'Lv. $1 · MAX','Nv. $1 · MÁX.'],
+ [/^Nv\. ([\d?]+) · (.+) · (.+)$/,'Lv. $1 · $T2 · $T3','Nv. $1 · $T2 · $T3'],
+ [/^Nv\. ([\d?]+) · (.+)$/,'Lv. $1 · $T2','Nv. $1 · $T2'],
+ [/^(.+) · Nv\. (\d+) · (.+)$/,'$T1 · Lv. $2 · $3','$T1 · Nv. $2 · $3'],
+ [/^(\d+) por completar$/,'$1 to go','$1 restantes'],
+ [/^Avisos con sonido activados · (\d+) min antes y al inicio · marca los eventos que quieres escuchar\.$/,'Sound alerts on · $1 min before and at the start · tick the events you want to hear.','Avisos com som ativados · $1 min antes e no início · marque os eventos que você quer ouvir.'],
+ [/^Avisos con sonido desactivados · (\d+) min antes y al inicio · marca los eventos que quieres escuchar\.$/,'Sound alerts off · $1 min before and at the start · tick the events you want to hear.','Avisos com som desativados · $1 min antes e no início · marque os eventos que você quer ouvir.'],
+ [/^Otra aplicación ya usa (.+)\. Elige otra combinación en Configuración > Atajos\.$/,'Another app already uses $1. Choose another combination in Settings > Shortcuts.','Outro aplicativo já usa $1. Escolha outra combinação em Configurações > Atalhos.'],
+ [/^Novedades \((\d+)\)$/,'News ($1)','Novidades ($1)'],
+ // Mascotas
+ [/^Mascotas obtenidas por día \(últimos (\d+) días\)$/,'Pets obtained per day (last $1 days)','Mascotes obtidos por dia (últimos $1 dias)'],
+ [/^(\d{4}-\d\d-\d\d): (\d+) mascotas · Nv3 (\d+) · (\d+) almas$/,'$1: $2 pets · Lv3 $3 · $4 souls','$1: $2 mascotes · Nv3 $3 · $4 almas'],
+ [/^Ver solo (.+)$/,'Show only $T1','Ver só $T1'],
+ [/^(.+) · (al día|guardada) · lista del juego (.+)$/,"$1 · $T2 · game's list $3",'$1 · $T2 · lista do jogo $3'],
+ [/^(.+) · (al día|guardada)$/,'$1 · $T2','$1 · $T2'],
+ [/^([\d.,]+)% por muerte$/,'$1% per kill','$1% por abate'],
+ [/^Criaturas que dan sus almas: (.+)$/,'Creatures that drop its souls: $1','Criaturas que dão suas almas: $1'],
+ [/^Mascotas: (.+)$/,'Pets: $T1','Mascotes: $T1'],
+ [/^(.+) fijada en el overlay\.$/,'$1 pinned to the overlay.','$1 fixado no overlay.'],
+ [/^(.+) ya no está fijada\.$/,'$1 is no longer pinned.','$1 não está mais fixado.'],
+ [/^(\d+) criaturas dan almas de (.+)\.$/,'$1 creatures drop souls of $2.','$1 criaturas dão almas de $2.'],
+ // Historial
+ [/^(✔ Derrotado|Sin muerte confirmada) · vida máxima (\S+) · 1 jugador$/,'$T1 · max HP $2 · 1 player','$T1 · vida máxima $2 · 1 jogador'],
+ [/^(✔ Derrotado|Sin muerte confirmada) · vida máxima (\S+) · (\d+) jugadores$/,'$T1 · max HP $2 · $3 players','$T1 · vida máxima $2 · $3 jogadores'],
+ [/^(✔ Derrotado|Sin muerte confirmada) · 1 jugador$/,'$T1 · 1 player','$T1 · 1 jogador'],
+ [/^(✔ Derrotado|Sin muerte confirmada) · (\d+) jugadores$/,'$T1 · $2 players','$T1 · $2 jogadores'],
+ [/^Combate exportado en (.+)$/,'Fight exported to $1','Combate exportado em $1'],
+ // Jefes de campo
+ [/^Murió a las (.+) · abre la lista del mapa para saber su reaparición$/,'Died at $1 · open the map list to learn its respawn','Morreu às $1 · abra a lista do mapa para saber o renascimento'],
+ [/^Aparece hacia las (.+) · estimado por su última muerte$/,'Spawns around $1 · estimated from its last death','Aparece por volta das $1 · estimado pela última morte'],
+ // Objetivos
+ [/^Reto de (\d+) min$/,'$1 min challenge','Desafio de $1 min'],
+ [/^¡Objetivo cumplido en (.+)!$/,'Goal reached in $1!','Objetivo cumprido em $1!'],
+ [/^Quedan (.+) · vas a tiempo: terminas en (.+)$/,'$1 left · on pace: you finish in $2','Faltam $1 · no ritmo: você termina em $2'],
+ [/^Quedan (.+) · a este ritmo te faltan (.+)$/,'$1 left · at this pace you need $2 more','Faltam $1 · neste ritmo faltam $2'],
+ [/^Quedan (.+) · sin ritmo aún$/,'$1 left · no pace yet','Faltam $1 · sem ritmo ainda'],
+ [/^A este ritmo, (.+) restantes$/,'At this pace, $1 left','Neste ritmo, faltam $1'],
+ [/^([\d.,]+) \/ ([\d.,]+) (muertes|kinah en botín|kinah)$/,'$1 / $2 $T3','$1 / $2 $T3'],
+ // Cubos
+ [/^(\d+) m (arriba|abajo)$/,'$1 m $T2','$1 m $T2'],
+ [/^desde las (.+)$/,'since $1','desde as $1'],
+ [/^(.+) · desde las (.+)$/,'$T1 · since $2','$T1 · desde as $2'],
+ [/^(.+) · (-?\d+), (-?\d+) · altura (-?\d+) · detectado a (\d+) m$/,'$1 · $2, $3 · height $4 · detected at $5 m','$1 · $2, $3 · altura $4 · detectado a $5 m'],
+ [/^(.+) · (-?\d+), (-?\d+) · altura (-?\d+)$/,'$1 · $2, $3 · height $4','$1 · $2, $3 · altura $4'],
+ // Recursos y Mercado
+ [/^(.+) · en juego$/,'$1 · in game','$1 · em jogo'],
+ [/^Actualizado a las (.+)$/,'Updated at $1','Atualizado às $1'],
+ [/^Actualizado (.+)$/,'Updated $1','Atualizado $1'],
+ [/^(Sudamérica|Norteamérica Este|Norteamérica Oeste|Europa|Asia) · (Asmodianos|Elios)$/,'$T1 · $T2','$T1 · $T2'],
+ // Versiones
+ [/^Versión (.+) \((estable|beta)\)$/,'Version $1 ($T2)','Versão $1 ($T2)'],
+ [/^Tienes la (.+) · ([\d.,]+) MB · publicada (?:el )?(.+)$/,'You have $1 · $2 MB · published $3','Você tem a $1 · $2 MB · publicada em $3'],
+ [/^Tienes la (.+) · ([\d.,]+) MB$/,'You have $1 · $2 MB','Você tem a $1 · $2 MB'],
+ [/^Hay una versión nueva: (.+)$/,'A new version is available: $1','Há uma versão nova: $1'],
+ [/^Versión (.+) disponible$/,'Version $1 available','Versão $1 disponível'],
+ [/^Versión (.+) descargada y verificada \(tamaño y SHA-256\)$/,'Version $1 downloaded and verified (size and SHA-256)','Versão $1 baixada e verificada (tamanho e SHA-256)'],
+ [/^Instalando (.+): la app se cerrará y volverá a abrirse sola en unos segundos\.$/,'Installing $1: the app will close and open again by itself in a few seconds.','Instalando $1: o app vai fechar e reabrir sozinho em alguns segundos.'],
+ [/^No se pudo descargar \(HTTP (\d+)\)\.$/,'Could not download (HTTP $1).','Não foi possível baixar (HTTP $1).'],
+ // Mensajes del programa (MainWindow, CompanionClient)
+ [/^Buscando el perfil público de (.+)…$/,'Looking up the public profile of $1…','Buscando o perfil público de $1…'],
+ [/^Perfil de (.+) abierto\. Los datos oficiales se completan al recibirlos\.$/,"$1's profile opened. The official data fills in as it arrives.",'Perfil de $1 aberto. Os dados oficiais são completados ao recebê-los.'],
+ [/^Buscando la ficha oficial de (.+)…$/,'Looking up the official card of $1…','Buscando a ficha oficial de $1…'],
+ [/^Preferencias y estado descargados\. (.+)$/,'Preferences and status downloaded. $T1','Preferências e estado baixados. $T1'],
+ [/^(.+) ya está asignado a otra acción$/,'$1 is already assigned to another action','$1 já está atribuído a outra ação'],
+ [/^Atajo guardado: (.+)$/,'Shortcut saved: $1','Atalho salvo: $1'],
+ [/^Esta acción no está disponible: (.+)$/,'This action is not available: $1','Esta ação não está disponível: $1'],
+ [/^Diagnóstico enviado · (.+)$/,'Diagnostics sent · $1','Diagnóstico enviado · $1'],
+ [/^Diagnóstico rechazado: (.+)$/,'Diagnostics rejected: $T1','Diagnóstico rejeitado: $T1'],
+ [/^Subida a tu cuenta · (.+)$/,'Uploaded to your account · $1','Enviado para sua conta · $1'],
+ [/^No se pudo subir · (.+) · reintento en 5 min$/,'Could not upload · $T1 · retry in 5 min','Não foi possível enviar · $T1 · nova tentativa em 5 min'],
+ [/^No se pudo subir · (.+)$/,'Could not upload · $T1','Não foi possível enviar · $T1'],
+ [/^Lote de telemetría rechazado: (.+)$/,'Telemetry batch rejected: $T1','Lote de telemetria rejeitado: $T1'],
+ [/^Nv\. ([\d?]+) ·$/,'Lv. $1 ·','Nv. $1 ·'],
+ // Soporte: tema o autor y fecha
+ [/^(Cuenta|Aplicación|Mapa|Datos del juego|Suscripción|Otro) · (.+)$/,'$T1 · $2','$T1 · $2'],
+ [/^Equipo de soporte · (.+)$/,'Support team · $1','Equipe de suporte · $1'],
+ // Botín agrupado del Atlas, como en el overlay (i18n/patterns.tsv)
+ [/^Equipo de ([^()]+)$/,'Armor · $1','Equipamento de $1'],
+ [/^Equipo del ([^()]+)$/,'Armor · $1','Equipamento do $1'],
+ [/^Armas de ([^()]+)$/,'Weapons · $1','Armas de $1'],
+ [/^Armas del ([^()]+)$/,'Weapons · $1','Armas do $1'],
+ [/^Equipo (olvidado|terrestre|sediento de sangre)$/,'Armor · $1','Equipamento · $1'],
+ [/^Armas (olvidadas|terrestres|sedientas de sangre)$/,'Weapons · $1','Armas · $1'],
  [/^ID (\d+) · Datos del cliente$/,'ID $1 · Client data','ID $1 · Dados do cliente'],
  [/^(.+) · (\d+) ubicaciones$/,'$1 · $2 places','$1 · $2 locais'],
  [/^(\d+) piezas$/,'$1 pieces','$1 peças'],
@@ -196,8 +298,10 @@ const I18N_PATTERNS=[
  [/^Clasificación (\d+)$/,'Ranking $1','Classificação $1'],
  [/^Grabando… (\d+:\d\d)$/,'Recording… $1','Gravando… $1'],
  [/^Grabación guardada: (.+) \(([\d.,]+) MB\), en la carpeta de datos\.$/,'Recording saved: $1 ($2 MB), in the data folder.','Gravação salva: $1 ($2 MB), na pasta de dados.'],
- [/^No se grabó: (.+)$/,'Not recorded: $1','Não gravado: $1'],
- [/^· (\d+) lugar(es)?$/,'· $1 place$2','· $1 lugar$2'],
+ [/^No se grabó: (.+)$/,'Not recorded: $T1','Não gravado: $T1'],
+ [/^No se encontró la conexión del juego: entra al juego con el personaje y vuelve a grabar\. \((.+)\)$/,'The game connection was not found: enter the game with the character and record again. ($T1)','A conexão do jogo não foi encontrada: entre no jogo com o personagem e grave de novo. ($T1)'],
+ [/^· 1 lugar$/,'· 1 place','· 1 lugar'],
+ [/^· (\d+) lugares$/,'· $1 places','· $1 lugares'],
  [/^(\d+) pin(es)? · (\d+) ruta(s)? en este mapa · también en el minimapa$/,'$1 pin(s) · $3 route(s) on this map · also on the minimap','$1 pin(s) · $3 rota(s) neste mapa · também no minimapa'],
  [/^Clic en cada punto de la ruta \((\d+)\) · doble clic o Enter para terminar · Esc para cancelar$/,'Click each point of the route ($1) · double click or Enter to finish · Esc to cancel','Clique em cada ponto da rota ($1) · duplo clique ou Enter para terminar · Esc para cancelar'],
  [/^(\d+) puntos · También se ve en el minimapa del overlay\.$/,'$1 points · Also shown on the overlay minimap.','$1 pontos · Também aparece no minimapa do overlay.'],
@@ -208,20 +312,21 @@ const I18N_PATTERNS=[
  [/^· tienes ([\d.,]+)$/,'· you have $1','· você tem $1'],
  [/^([\d.,]+) en venta$/,'$1 on sale','$1 à venda'],
  [/^Se muestran 300 de ([\d.,]+): afina la búsqueda o la categoría\.$/,'Showing 300 of $1: narrow the search or the category.','Mostrando 300 de $1: refine a busca ou a categoria.'],
- [/^No se pudo actualizar el Mercado \((.+)\)\. Se muestran los datos de las (.+)\.$/,'Could not update the Market ($1). Showing the data of $2.','Não foi possível atualizar o Mercado ($1). Mostrando os dados das $2.'],
- [/^No se pudo actualizar el Mercado \((.+)\)\.$/,'Could not update the Market ($1).','Não foi possível atualizar o Mercado ($1).'],
+ [/^No se pudo actualizar el Mercado \((.+)\)\. Se muestran los datos de las (.+)\.$/,'Could not update the Market ($T1). Showing the data of $2.','Não foi possível atualizar o Mercado ($T1). Mostrando os dados das $2.'],
+ [/^No se pudo actualizar el Mercado \((.+)\)\.$/,'Could not update the Market ($T1).','Não foi possível atualizar o Mercado ($T1).'],
+ [/^(.+): no respondió con datos \(HTTP (\d+)\)\.?$/,'$1: did not answer with data (HTTP $2).','$1: não respondeu com dados (HTTP $2).'],
  [/^(.+) · no es tu servidor$/,'$1 · not your server','$1 · não é seu servidor'],
  [/^(.+) · tu servidor$/,'$1 · your server','$1 · seu servidor'],
  [/^Precio guardado: (.+) a ([\d.,]+) kinah en este servidor\.$/,'Price saved: $1 at $2 kinah on this server.','Preço salvo: $1 a $2 kinah neste servidor.'],
  [/^Precio de (.+) borrado\.$/,'Price of $1 cleared.','Preço de $1 apagado.'],
  [/^Mascota · (.+)$/,'Pet · $1','Mascote · $1'],
  [/^Nv\. (\d+)$/,'Lv. $1','Nv. $1'],
- [/^Aviso para (.+)$/,'Alert for $1','Aviso para $1'],
- [/^Tú · (.+) · posición aproximada$/,'You · $1 · approximate position','Você · $1 · posição aproximada'],
- [/^Tú · (.+) · última posición$/,'You · $1 · last known position','Você · $1 · última posição'],
- [/^Tú · ([^·]+)$/,'You · $1','Você · $1'],
+ [/^Aviso para (.+)$/,'Alert for $T1','Aviso para $T1'],
+ [/^Tú · (.+) · posición aproximada$/,'You · $T1 · approximate position','Você · $T1 · posição aproximada'],
+ [/^Tú · (.+) · última posición$/,'You · $T1 · last known position','Você · $T1 · última posição'],
+ [/^Tú · ([^·]+)$/,'You · $T1','Você · $T1'],
  [/^([\d.,]+) puntos visibles$/,'$1 visible points','$1 pontos visíveis'],
- [/^Centrar en mí · (.+)$/,'Center on me · $1','Centralizar em mim · $1'],
+ [/^Centrar en mí · (.+)$/,'Center on me · $T1','Centralizar em mim · $T1'],
  [/^Caduca a las (.+)$/,'Expires at $1','Expira às $1'],
  [/^Tus personajes verificados \((\d+)\/(\d+)\)$/,'Your verified characters ($1/$2)','Seus personagens verificados ($1/$2)'],
  [/^Ya tienes (\d+) personajes verificados, el máximo por cuenta\. Quita uno en Mi perfil de la web para añadir este\.$/,'You already have $1 verified characters, the maximum per account. Remove one in My profile on the website to add this one.','Você já tem $1 personagens verificados, o máximo por conta. Remova um em Meu perfil no site para adicionar este.'],
@@ -243,19 +348,26 @@ const I18N_PATTERNS=[
  [/^El servidor de seguridad del hosting o tu red devolvió una página en lugar de datos \(HTTP (\d+), «(.+)»\)$/,"The hosting's security server or your network returned a page instead of data (HTTP $1, «$2»)",'O servidor de segurança da hospedagem ou a sua rede devolveu uma página em vez de dados (HTTP $1, «$2»)'],
  [/^El servidor de seguridad del hosting o tu red devolvió una página en lugar de datos \(HTTP (\d+)\)$/,"The hosting's security server or your network returned a page instead of data (HTTP $1)",'O servidor de segurança da hospedagem ou a sua rede devolveu uma página em vez de dados (HTTP $1)'],
  [/^No se pudo vincular \(HTTP (\d+)\)$/,'Could not link (HTTP $1)','Não foi possível vincular (HTTP $1)'],
+ // Last: a category and a quantity («Mascota · 1», the Atlas loot lines).
+ [/^(.+) · (\d+(?:–\d+)?)$/,'$T1 · $2','$T1 · $2'],
 ];
-function i18nText(s){if(uiLang==='es'||!s)return s;const d=i18nDict[uiLang]||{};const t=s.trim();if(!t)return s;
- if(d[t]!==undefined)return s.replace(t,d[t]);
- for(const [re,en,pt] of I18N_PATTERNS)if(re.test(t))return s.replace(t,t.replace(re,uiLang==='en'?en:pt));return s;}
+// In a pattern, $T1…$T9 is that group translated as well (an event, a status or a category inside a longer phrase).
+function i18nText(s,depth=0){if(uiLang==='es'||!s)return s;const d=i18nDict[uiLang]||{};const t=s.trim();if(!t)return s;
+ if(d[t]!==undefined)return s.replace(t,()=>d[t]);
+ for(const [re,en,pt] of I18N_PATTERNS){const m=t.match(re);if(!m)continue;
+  const out=(uiLang==='en'?en:pt).replace(/\$(T?)(\d)/g,(_,tr,i)=>{const v=m[+i]??'';return tr&&depth<3?i18nText(v,depth+1):v;});return s.replace(t,()=>out);}
+ return s;}
 function i18nNode(n){if(n.nodeType===3){const p=n.parentNode;if(!p||/^(SCRIPT|STYLE)$/.test(p.nodeName))return;
   if(!i18nOrig.has(n)||(n.nodeValue!==i18nOrig.get(n).out))i18nOrig.set(n,{src:n.nodeValue,out:null});
   const o=i18nOrig.get(n),v=i18nText(o.src);o.out=v;if(n.nodeValue!==v)n.nodeValue=v;return;}
  if(n.nodeType!==1)return;
- for(const a of ['placeholder','title','aria-label']){if(!n.hasAttribute(a))continue;const k='i18n'+a.replace('-','');
+ for(const a of n.tagName==='OPTGROUP'?['label']:['placeholder','title','aria-label']){if(!n.hasAttribute(a))continue;const k='i18n'+a.replace('-','');
   if(n.dataset[k]===undefined||n.getAttribute(a)!==n.dataset[k+'Out'])n.dataset[k]=n.getAttribute(a);const v=i18nText(n.dataset[k]);n.dataset[k+'Out']=v;n.setAttribute(a,v);}
  if(n.tagName==='OPTION'||n.tagName==='SELECT'){} // options are text nodes, handled below
  for(const c of n.childNodes)i18nNode(c);}
-function applyLanguage(lang){uiLang=lang||'es';document.documentElement.lang=uiLang==='pt'?'pt-BR':uiLang;i18nBusy=true;try{i18nNode(document.body);}finally{i18nBusy=false;}const sel=$('cfg-language');if(sel&&document.activeElement!==sel)sel.value=uiLang;}
+// Configuración → Estilos: each thumbnail is the overlay drawn in the panel's language (styles/en/, styles/pt/; Spanish in styles/).
+function styleThumbs(){const dir=uiLang==='en'||uiLang==='pt'?`styles/${uiLang}/`:'styles/';document.querySelectorAll('.style-card[data-style] img').forEach(img=>{const src=dir+img.closest('[data-style]').dataset.style+'.webp';if(img.getAttribute('src')!==src)img.setAttribute('src',src);});}
+function applyLanguage(lang){uiLang=lang||'es';document.documentElement.lang=uiLang==='pt'?'pt-BR':uiLang;i18nBusy=true;try{i18nNode(document.body);}finally{i18nBusy=false;}styleThumbs();const sel=$('cfg-language');if(sel&&document.activeElement!==sel)sel.value=uiLang;}
 new MutationObserver(list=>{if(i18nBusy||uiLang==='es')return;i18nBusy=true;try{for(const m of list){if(m.type==='characterData')i18nNode(m.target);else m.addedNodes.forEach(i18nNode);}}finally{i18nBusy=false;}})
  .observe(document.documentElement,{childList:true,subtree:true,characterData:true});
 fetch('/data/i18n.json').then(r=>r.json()).then(d=>{i18nDict=d;applyLanguage(data?.settings?.Language||uiLang);}).catch(()=>{});
@@ -311,7 +423,7 @@ function spanText(sec){sec=Math.max(0,Math.round(sec));const h=Math.floor(sec/36
 function renderGoal(d){if(!$('goal-view'))return;const s=d.settings,o=d.objective;const n=v=>Number(v||0).toLocaleString(goalLocale());
  if(!goalInit&&s){if(s.GoalTarget>0){$('goal-kind').value=s.GoalKind;$('goal-target').value=s.GoalTarget;$('goal-minutes').value=s.GoalMinutes;goalPresetButtons();}goalInit=true;}
  const put=v=>{const el=$('goal-view');if(el.dataset.html!==v){el.innerHTML=v;el.dataset.html=v;el.querySelectorAll('[data-width]').forEach(x=>x.style.width=x.dataset.width+'%');}};
- if(!o){$('goal-sub').textContent='Sin objetivo';put('<p class="empty">Define un objetivo para ver tu progreso, tu ritmo por hora y cuánto te falta.</p>');return;}
+ if(!o){$('goal-sub').textContent='Sin objetivo definido';put('<p class="empty">Define un objetivo para ver tu progreso, tu ritmo por hora y cuánto te falta.</p>');return;}
  const unit={kills:'muertes',kinah:'kinah',loot:'kinah en botín'}[o.Kind]||'';
  $('goal-sub').textContent=o.Minutes>0?`Reto de ${o.Minutes} min`:'Sin límite de tiempo';
  const line=o.Done?`¡Objetivo cumplido en ${spanText(o.Elapsed)}!`:o.ChallengeLeft!=null?(o.ChallengeLeft<=0?'Reto terminado: se acabó el tiempo':`Quedan ${spanText(o.ChallengeLeft)} · `+(o.EtaSeconds!=null?(o.OnPace?`vas a tiempo: terminas en ${spanText(o.EtaSeconds)}`:`a este ritmo te faltan ${spanText(o.EtaSeconds)}`):'sin ritmo aún')):o.EtaSeconds!=null?`A este ritmo, ${spanText(o.EtaSeconds)} restantes`:'Esperando el primer progreso';

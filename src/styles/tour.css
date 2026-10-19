@@ -60,6 +60,13 @@
 .footer-donate svg{width:15px;height:15px}
 .donate-card p{margin:0 0 14px;line-height:1.7}
 .donate-card small{display:block;margin-top:12px;color:var(--muted)}
+/* The language switcher in the top bar (src/scripts/site-i18n.ts). */
+.site-lang{display:inline-flex;align-items:center}
+.site-lang select{appearance:none;-webkit-appearance:none;background:#161e2d url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23aab4c4' fill='none' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 9px center;color:#dfe6ef;border:1px solid #3e506b;border-radius:8px;padding:7px 26px 7px 11px;font:600 13px/1 inherit;cursor:pointer;min-height:36px}
+.site-lang select:hover{border-color:#edca8799}
+@media (max-width:420px){body .header-download span{display:none}body .header-download{padding-left:10px;padding-right:10px}}
+@media (max-width:540px){.site-lang select{padding:6px 17px 6px 7px;background-position:right 5px center;font-size:12px;min-height:34px}.top-actions{gap:6px}}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media (min-width:901px){
  body #home-companion .download-introduction{grid-column:1;grid-row:1}
  body #home-companion #companion-releases{grid-column:2;grid-row:1/span 2}

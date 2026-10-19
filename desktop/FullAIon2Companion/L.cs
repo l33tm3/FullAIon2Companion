@@ -49,7 +49,17 @@ public static class L
         if (exact.TryGetValue(Language, out var d) && d.TryGetValue(key, out var hit)) return spanish.Replace(key, hit);
         foreach (var (re, en, pt) in patterns)
             if (re.IsMatch(key)) return Fragments(spanish.Replace(key, re.Replace(key, Language == "en" ? en : pt)));
+        Miss(key);
         return Fragments(spanish);
+    }
+    // Diagnostic: with FA2C_I18N_MISSES naming a file, each text without a translation is added to it once, so drawing the
+    // windows in English or Portuguese (the --lang tests) lists what is left in Spanish. Names and figures turn up too.
+    static readonly string? missFile = Environment.GetEnvironmentVariable("FA2C_I18N_MISSES");
+    static readonly HashSet<string> missed = [];
+    static void Miss(string key)
+    {
+        if (missFile is null || !missed.Add(key)) return;
+        try { File.AppendAllText(missFile, key.ReplaceLineEndings(" | ") + Environment.NewLine); } catch { }
     }
     // Pieces that turn up inside composed lines ("Combate · 0:38 · Nv. 54 · Heroico", "… · ~272 más").
     static readonly (Regex Re, string En, string Pt)[] fragments =

@@ -113,7 +113,9 @@ public sealed class BreakdownWindow : Window
         settings.BreakdownLeft = Math.Round(Left); settings.BreakdownTop = Math.Round(Top);
         settings.BreakdownWidth = Math.Round(Width); settings.BreakdownHeight = Math.Round(Height); settings.Save();
     }
-    void Refresh()
+    // Rebuilt every second: translated at once, or its Spanish would show until the next pass of L.ApplyAll (half a second).
+    void Refresh() { Rebuild(); if (L.Language != "es") L.Apply(this); }
+    void Rebuild()
     {
         var v = source(actor, target, healing);
         damageTab.IsChecked = !healing; healTab.IsChecked = healing;
@@ -169,7 +171,8 @@ public sealed class BreakdownWindow : Window
         // View tabs: skills, timeline, buffs, deaths, advice.
         views.Children.Clear();
         int deathCount = v.Extra?.Deaths.Count ?? 0;
-        foreach (var (key, label) in new[] { ("skills", "Habilidades"), ("timeline", "Cronología"), ("buffs", "Buffs"), ("deaths", deathCount > 0 ? $"Muertes ({deathCount})" : "Muertes"), ("advice", "Consejos") })
+        // «Muertes» always with its count: alone it is the overlay's kills, which the shared dictionary translates as such.
+        foreach (var (key, label) in new[] { ("skills", "Habilidades"), ("timeline", "Cronología"), ("buffs", "Buffs"), ("deaths", $"Muertes ({deathCount})"), ("advice", "Consejos") })
         {
             string k = key;
             views.Children.Add(Chip(label, view == k, () => { view = k; Refresh(); }));
@@ -209,7 +212,13 @@ public sealed class BreakdownWindow : Window
             if (show.Contains("multi")) parts.Add($"Multi {s.MultiPct:0}%");
             if (show.Contains("avg")) parts.Add($"Media {s.Average:N0}");
             if (show.Contains("max")) parts.Add($"Máx {s.Max:N0}");
-            if (parts.Count > 0) body.Children.Add(Text(string.Join("   ", parts), 10.5, Muted));
+            if (parts.Count > 0)
+            {
+                // One run per figure, so each one is translated on its own («Golpes 3» → «Hits 3»).
+                var figures = Text("", 10.5, Muted); figures.Inlines.Clear();
+                foreach (string part in parts) { if (figures.Inlines.Count > 0) figures.Inlines.Add(new System.Windows.Documents.Run("   ")); figures.Inlines.Add(new System.Windows.Documents.Run(part)); }
+                body.Children.Add(figures);
+            }
             head.Children.Add(body);
             table.Children.Add(new Border { Child = head, Padding = new Thickness(12, 7, 12, 7), BorderBrush = Line, BorderThickness = new Thickness(0, 0, 0, 1) });
         }

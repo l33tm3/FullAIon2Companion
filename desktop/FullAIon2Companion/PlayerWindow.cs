@@ -82,7 +82,7 @@ public sealed class PlayerWindow : Window
         {
             portrait.Source = Remote(p.Portrait);
             name.Text = p.Name;
-            line.Text = $"{p.ClassName} · Nv. {p.Level}{(p.Legion is null ? "" : " · " + p.Legion)} · {p.Server}";
+            line.Text = $"{L.T(p.ClassName)} · Nv. {p.Level}{(p.Legion is null ? "" : " · " + p.Legion)} · {p.Server}";
             power.Text = p.CombatPower >= 1000 ? $"{p.CombatPower / 1000.0:0.0}K" : p.CombatPower.ToString("N0");
             item.Text = p.ItemLevel?.ToString("N0") ?? "—";
             title.Text = p.Title ?? ""; title.Visibility = p.Title is null ? Visibility.Collapsed : Visibility.Visible;
@@ -149,11 +149,12 @@ public sealed class PlayerWindow : Window
     async void ShowDetail(FrameworkElement tile, PlayerCard card, GearRow g)
     {
         detailFor = g;
-        popup.PlacementTarget = tile; popup.Child = DetailCard(g, null, loading: true); popup.IsOpen = true;
+        // A popup is not in the windows L.ApplyAll walks: its card is translated here.
+        popup.PlacementTarget = tile; popup.Child = DetailCard(g, null, loading: true); L.Apply(popup.Child); popup.IsOpen = true;
         JsonElement? detail = null;
         try { detail = await PlayerProfiles.ItemDetail(card, g); } catch { }
         if (detailFor != g) return;
-        popup.Child = DetailCard(g, detail, loading: false);
+        popup.Child = DetailCard(g, detail, loading: false); L.Apply(popup.Child);
     }
     internal static UIElement DetailCard(GearRow g, JsonElement? d, bool loading)
     {
