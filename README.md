@@ -7,6 +7,7 @@
 **A free overlay and companion app for AION 2: DPS meter, boss timers, soul hunting, minimap, market prices, rankings and much more, on top of your game.**
 
 [![Download](https://img.shields.io/github/v/release/l33tm3/FullAIon2Companion?label=Download&logo=windows&color=2ea44f)](https://github.com/l33tm3/FullAIon2Companion/releases/latest)
+[![VirusTotal](https://img.shields.io/badge/VirusTotal-0%2F65-brightgreen?logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/file/2ff0039f7b18a8fdd1ee7e602c5183fb630e1f4a1b2a1c2d1248e464696c30da)
 [![Languages](https://img.shields.io/badge/Languages-EN%20%7C%20ES%20%7C%20PT%20%7C%20FR-8a6dd8)](#features)
 [![Donate with PayPal](https://img.shields.io/badge/Donate-PayPal-e36cb8?logo=paypal&logoColor=white)](https://paypal.me/martincito45)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -30,7 +31,7 @@ FullAIon2Companion reads the AION 2 traffic that already reaches your PC and sho
 |---|---|
 | **Latest version** | [**FullAIon2Companion 1.0.21**](https://github.com/l33tm3/FullAIon2Companion/releases/latest) (Windows 10/11, 64-bit, ~99 MB) |
 | **SHA-256** | `2ff0039f7b18a8fdd1ee7e602c5183fb630e1f4a1b2a1c2d1248e464696c30da` |
-| **VirusTotal** | The 1.0.21 report is coming. The previous installer, [1.0.20](https://www.virustotal.com/gui/file/18b23018c8e87a7b5669d28c52a974c16a9e97b96f3657ce869d3015d7e7ad17), got 1 of 64 engines: DeepInstinct's machine-learning engine flagged it, the other 63 reported it clean. Unsigned installers often trip such heuristics; the full source of this installer is in this repository. |
+| **VirusTotal** | [![VirusTotal](https://img.shields.io/badge/VirusTotal-0%2F65-brightgreen?logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/file/2ff0039f7b18a8fdd1ee7e602c5183fb630e1f4a1b2a1c2d1248e464696c30da) — no engine flags it (0 of 65). Unsigned installers sometimes trip machine-learning heuristics; the full source of this installer is in this repository. |
 | **Also on** | [governanceai.me](https://governanceai.me/?lang=en#home?download=1) |
 
 **Requirements**
@@ -39,7 +40,7 @@ FullAIon2Companion reads the AION 2 traffic that already reaches your PC and sho
 2. [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/) — already installed on most Windows 10/11 PCs.
 3. Run the installer, then open AION 2 and the app. The overlay appears over the game; the panel opens from its gear icon.
 
-> The installer is not signed with a publisher certificate yet, so Windows SmartScreen may warn you. Check the SHA-256 above before running it. The app updates itself from inside: *News → Update now*.
+> The installer is not signed with a publisher certificate yet, so Windows SmartScreen may warn you. Check the SHA-256 above and the VirusTotal report before running it. The app updates itself from inside: *News → Update now*.
 
 ---
 
