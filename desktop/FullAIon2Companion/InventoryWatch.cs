@@ -32,9 +32,22 @@ public sealed class InventoryWatch
     public static (string Name, string? Icon, string Grade, long Price) Info(int item)
     {
         if (!items.TryGetValue(item.ToString(), out var r) || r.ValueKind != JsonValueKind.Array) return ($"Objeto {item}", null, "", 0);
-        string es = r[0].GetString() ?? "", en = r[1].GetString() ?? "";
-        string name = L.Language != "es" && en.Length > 0 ? en : es.Length > 0 ? es : en;
-        return (name, r[2].GetString() is { Length: > 0 } i ? i : null, r[3].GetString() ?? "", r[4].TryGetInt64(out long p) ? p : 0);
+        return (NameOf(item), r[2].GetString() is { Length: > 0 } i ? i : null, r[3].GetString() ?? "", r[4].TryGetInt64(out long p) ? p : 0);
+    }
+    /// <summary>The item's name in that language from data/items.json ([es, en, icon, grade, price, pt, fr]), or null: the
+    /// Portuguese and French names are the gear's only (the vendor's table), souls, chests and materials have none.</summary>
+    public static string? OwnName(int item, string language)
+    {
+        if (!items.TryGetValue(item.ToString(), out var r) || r.ValueKind != JsonValueKind.Array) return null;
+        int column = language switch { "es" => 0, "en" => 1, "pt" => 5, "fr" => 6, _ => -1 };
+        return column >= 0 && column < r.GetArrayLength() && r[column].GetString() is { Length: > 0 } name ? name : null;
+    }
+    /// <summary>The item's name in the interface language, else in English. In Spanish, <paramref name="spanish"/> when given
+    /// (a loot table's own name), so the Spanish texts stay as the catalog wrote them.</summary>
+    public static string NameOf(int item, string spanish = "")
+    {
+        if (L.Language != "es" && (OwnName(item, L.Language) ?? OwnName(item, "en")) is string local) return local;
+        return spanish.Length > 0 ? spanish : OwnName(item, "es") ?? OwnName(item, "en") ?? $"Objeto {item}";
     }
 
     /// <summary>Whether the item is in data/items.json.</summary>

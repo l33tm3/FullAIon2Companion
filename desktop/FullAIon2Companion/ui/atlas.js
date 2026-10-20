@@ -127,18 +127,19 @@ function frame(){const q=$('atlas-search').value.trim();if(!q||!map)return;const
 // A marker's card: for a creature, its catalog record (level, grade, hunted or not, its pet soul, the best of its loot);
 // for anything else, its name and category. The hover card is short; the click one adds the button to the full card.
 const pct=c=>typeof c==='number'?(c>=1?`${Math.round(c*10)/10}%`:`${Math.round(c*100)/100}%`):'';
-async function npc(id){if(cards.has(id))return cards.get(id);let r=null;try{const res=await fetch('/data/npc/'+id+'.json');if(res.ok)r=await res.json();}catch{}cards.set(id,r);return r;}
+async function npc(id){if(cards.has(id))return cards.get(id);await itemTable();let r=null;try{const res=await fetch('/data/npc/'+id+'.json');if(res.ok)r=await res.json();}catch{}cards.set(id,r);return r;}
 // The loot as the overlay's card groups it: objects (souls, chests, materials) first, then the armour and the weapons
-// of one series and grade in one line («Equipo de tormenta ×7»), each by grade and then chance.
+// of one series and grade in one line («Equipo de tormenta ×7»), each by grade and then chance. Names and series in the
+// panel's language (itemName, localSeries in app.js); a series of one piece shows that piece there.
 function lootLines(drops){
  const lines=[],sets=new Map(),qty=d=>d.min&&d.max&&d.min!==d.max?`${d.min}–${d.max}`:String(d.max||d.min||1);
  for(const d of drops){const kind=Math.floor((d.id||0)/1e7);
-  if(kind!==11&&kind!==21){lines.push({gear:false,name:d.name,grade:d.grade,icon:d.icon,sub:`${d.category||''} · ${qty(d)}`,top:d.chance??0,count:1,odds:pct(d.chance)});continue;}
+  if(kind!==11&&kind!==21){lines.push({gear:false,name:itemName(d),grade:d.grade,icon:d.icon,sub:`${d.category||''} · ${qty(d)}`,top:d.chance??0,count:1,odds:pct(d.chance)});continue;}
   const cat=d.category||'',tail=d.name.toLowerCase().startsWith(cat.toLowerCase())?d.name.slice(cat.length).trim():d.name.replace(/^\S+\s/,'');
   const k=kind+':'+d.grade+':'+(d.id%100000);let g=sets.get(k);
-  if(!g){g={gear:true,name:(kind===21?'Equipo ':'Armas ')+tail,grade:d.grade,icon:d.icon,top:0,low:Infinity,count:0};sets.set(k,g);lines.push(g);}
-  g.count++;g.top=Math.max(g.top,d.chance??0);g.low=Math.min(g.low,d.chance??0);}
- for(const g of sets.values()){g.odds=g.count>1&&pct(g.low)!==pct(g.top)?`${pct(g.low).slice(0,-1)}–${pct(g.top)}`:pct(g.top);g.sub=g.count>1?`${g.count} piezas`:'1 pieza';}
+  if(!g){g={gear:true,name:(kind===21?'Equipo ':'Armas ')+tail,armour:kind===21,pieces:[],grade:d.grade,icon:d.icon,top:0,low:Infinity,count:0};sets.set(k,g);lines.push(g);}
+  g.count++;g.pieces.push(d);g.top=Math.max(g.top,d.chance??0);g.low=Math.min(g.low,d.chance??0);}
+ for(const g of sets.values()){if(uiLang!=='es')g.name=g.count>1?localSeries(g.armour,g.pieces)||g.name:itemName(g.pieces[0]);g.odds=g.count>1&&pct(g.low)!==pct(g.top)?`${pct(g.low).slice(0,-1)}–${pct(g.top)}`:pct(g.top);g.sub=g.count>1?`${g.count} piezas`:'1 pieza';}
  return lines.sort((a,b)=>(a.gear-b.gear)||(RANK[a.grade]??9)-(RANK[b.grade]??9)||b.top-a.top);
 }
 // A pet's marker (no creature of its own): whose soul it is, from assets/aion2/pets/pets.json.
@@ -168,7 +169,7 @@ function card(o,hover){
  if(n===undefined)return h+'<small class="muted">Cargando ficha…</small></div>';
  if(!n)return h+'<small class="muted">Sin ficha en el catálogo.</small></div>';
  const drops=Array.isArray(n.drops)?n.drops:[],soul=drops.find(d=>d.category==='Mascota');
- h+=`<div class="atlas-tags">${n.isMonster?'<span class="atlas-tag hunt">Cazable</span>':'<span class="atlas-tag">No cazable</span>'}${soul?`<span class="atlas-tag soul">${esc(soul.name.replace(/\s*\((Encuadernado|Vinculado)\)/,''))} · ${pct(soul.chance)}</span>`:''}</div>`;
+ h+=`<div class="atlas-tags">${n.isMonster?'<span class="atlas-tag hunt">Cazable</span>':'<span class="atlas-tag">No cazable</span>'}${soul?`<span class="atlas-tag soul">${esc(itemName(soul).replace(/\s*\((Encuadernado|Vinculado|Bound)\)/,''))} · ${pct(soul.chance)}</span>`:''}</div>`;
  if(hover){
   const best=lootLines(drops.filter(d=>d!==soul)).slice(0,3);
   if(drops.length)h+=`<div class="atlas-loot"><small>Botín · ${drops.length} objetos</small>${best.map(l=>`<span class="g-${esc(l.grade)}">${esc(l.name)}${l.count>1?` ×${l.count}`:''}<em>${l.odds}</em></span>`).join('')}</div>`;

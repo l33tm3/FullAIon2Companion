@@ -22,7 +22,7 @@ public static class Program
         // --lang es|en|pt, anywhere after the command: the windows' texts (and skill names) in that language, for the tests
         // that draw them. Taken out of the arguments, so each test reads its own as before.
         int langAt = Array.IndexOf(args, "--lang");
-        if (langAt > 0 && langAt + 1 < args.Length && args[langAt + 1] is "es" or "en" or "pt")
+        if (langAt > 0 && langAt + 1 < args.Length && args[langAt + 1] is "es" or "en" or "pt" or "fr")
         {
             L.Language = AionDPS.Aion2.Protocol.Aion2SkillNames.Language = args[langAt + 1];
             args = [.. args.Where((_, i) => i != langAt && i != langAt + 1)];
@@ -201,6 +201,30 @@ public static class Program
                     var coins = engine.Inventory.Holdings(ResourceBook.IsCoin).OrderBy(c => c.Key).Select(c => new { item = c.Key, name = InventoryWatch.Info(c.Key).Name, count = c.Value });
                     File.WriteAllText(Path.GetFullPath(args[2]), JsonSerializer.Serialize(new { engine.Resources.Complete, engine.Resources.At, counters = engine.Resources.Counters.Values.OrderBy(c => c.Key), coins },
                         new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
+                }
+                finally { Directory.Delete(testDirectory, true); testDirectory = null; }
+                return 0;
+            }
+            if(args.FirstOrDefault() == "--frame-timeline")
+            {
+                // Diagnostic: every frame the server sent in a recording (time, opcode, length) and every packet the game sent
+                // (time, length; its content is encrypted), one per line to args[2], to find what goes with an action in the game.
+                testDirectory = Path.Combine(Path.GetTempPath(), "fa2c-replay-" + Guid.NewGuid().ToString("N"));
+                Directory.CreateDirectory(testDirectory);
+                try
+                {
+                    var rows = new List<string>(); DateTime at = DateTime.MinValue;
+                    using var engine = new CaptureEngine { ReplayClock = () => at };
+                    engine.Tap = (f, t) => Frames.Walk(f, x => { if (x.Length >= 2) rows.Add($"{t:HH:mm:ss.fff}	S	{System.Buffers.Binary.BinaryPrimitives.ReadUInt16BigEndian(x):X4}	{x.Length}"); });
+                    foreach (var line in File.ReadLines(args[1]))
+                    {
+                        var s = JsonSerializer.Deserialize<SegmentLog>(line)!; at = s.Timestamp;
+                        var payload = Convert.FromBase64String(s.Payload);
+                        if (!s.FromServer && payload.Length > 0) rows.Add($"{s.Timestamp:HH:mm:ss.fff}	C	-	{payload.Length}");
+                        engine.Ingest(new(s.Timestamp, s.Source, s.Destination, s.Sequence, payload, s.FromServer));
+                    }
+                    File.WriteAllLines(Path.GetFullPath(args[2]), rows);
+                    Console.WriteLine($"{rows.Count} rows");
                 }
                 finally { Directory.Delete(testDirectory, true); testDirectory = null; }
                 return 0;
@@ -805,7 +829,7 @@ public static class Program
             {
                 // Pictures for the website's tour (TourShots): args[1] a recording, args[2] the folder, args[3] en or pt (the GitHub
                 // README's pictures). A temporary data folder.
-                if (args.Length > 3 && args[3] is "en" or "pt") L.Language = args[3];
+                if (args.Length > 3 && args[3] is "en" or "pt" or "fr") L.Language = args[3];
                 string real = DataDirectory;
                 testDirectory = Path.Combine(Path.GetTempPath(), "fa2c-tour-" + Guid.NewGuid().ToString("N"));
                 Directory.CreateDirectory(testDirectory);
@@ -819,7 +843,7 @@ public static class Program
                 // icon under the mouse (AssistantWindow.TileAt) on a bar out of sight: the centre of each icon finds it, a point
                 // between two finds none. args[2]: es (default), en or pt.
                 string outDir = Path.GetFullPath(args[1]); Directory.CreateDirectory(outDir);
-                if (args.Length > 2 && args[2] is "en" or "pt") L.Language = args[2];
+                if (args.Length > 2 && args[2] is "en" or "pt" or "fr") L.Language = args[2];
                 testDirectory = Path.Combine(Path.GetTempPath(), "fa2c-skillcard-" + Guid.NewGuid().ToString("N"));
                 Directory.CreateDirectory(testDirectory);
                 var lines = new List<string>(); bool ok = true;
@@ -883,7 +907,7 @@ public static class Program
                 // one with a copy of the profile cache, so nothing is saved over the real one and the class icons need no download.
                 string outDir = Path.GetFullPath(args[1]); Directory.CreateDirectory(outDir);
                 // args[2]: es (default), en or pt - the texts as the overlay shows them in that language.
-                if (args.Length > 2 && args[2] is "en" or "pt") L.Language = args[2];
+                if (args.Length > 2 && args[2] is "en" or "pt" or "fr") L.Language = args[2];
                 string realCache = Path.Combine(DataDirectory, "player-cache.json");
                 testDirectory = Path.Combine(Path.GetTempPath(), "fa2c-styles-" + Guid.NewGuid().ToString("N"));
                 Directory.CreateDirectory(testDirectory);
@@ -1093,11 +1117,12 @@ public static class Program
                     "hoy 6 almas · 48 muertes · ~272 más", "TROPA · GRUPO 2 · 5 miembros", "Furia en", "Derrota en", "Vida en furia", "EN FURIA",
                     "DPS necesario 75.7K · faltan 30.3K (60%)", "1,2K daño", "3 criaturas", "12m 30s · 48 muertes · 6 almas", "Buscando tráfico del juego… entra con tu personaje en AION 2"];
                 var lines = new List<string>();
-                foreach (var lang in new[] { "en", "pt" }) { L.Language = lang; foreach (var x in samples) lines.Add($"{lang}	{x}	=>	{L.T(x)}"); }
-                L.Language = "en"; lines.Add("npc 2300218 en: " + Catalog.NpcName(2300218)); lines.Add("pet 1002 en: " + PetTracker.NameOf(1002));
-                L.Language = "pt"; lines.Add("npc 2300218 pt: " + Catalog.NpcName(2300218)); lines.Add("pet 1002 pt: " + PetTracker.NameOf(1002));
-                AionDPS.Aion2.Protocol.Aion2SkillNames.Language = "pt"; lines.Add("skill pt: " + BossCasts.NameOf(11020340));
-                AionDPS.Aion2.Protocol.Aion2SkillNames.Language = "en"; lines.Add("skill en: " + BossCasts.NameOf(11020340));
+                foreach (var lang in new[] { "en", "pt", "fr" }) { L.Language = lang; foreach (var x in samples) lines.Add($"{lang}	{x}	=>	{L.T(x)}"); }
+                foreach (var lang in new[] { "en", "pt", "fr" })
+                {
+                    L.Language = AionDPS.Aion2.Protocol.Aion2SkillNames.Language = lang;
+                    lines.Add($"npc 2300218 {lang}: " + Catalog.NpcName(2300218)); lines.Add($"pet 1002 {lang}: " + PetTracker.NameOf(1002)); lines.Add($"skill {lang}: " + BossCasts.NameOf(11020340));
+                }
                 File.WriteAllLines(Path.GetFullPath(args[1]), lines);
                 return 0;
             }
@@ -1182,7 +1207,7 @@ public static class Program
                 // the enrage not seen yet (Kashapa as the user saw it on 2026-10-18), the group in time, late, enraged, and in the overlay.
                 const long kashapa = 276_000_000;
                 // args[2]: en or pt - the card's texts in that language (for the GitHub README's pictures).
-                if (args.Length > 2 && args[2] is "en" or "pt") L.Language = args[2];
+                if (args.Length > 2 && args[2] is "en" or "pt" or "fr") L.Language = args[2];
                 var states = new (string Name, TargetInfo Target, bool Window)[]
                 {
                     ("sin furia", new TargetInfo(2, 2400353, "Nutah supervisor jefe", null, 113_200_000, 160_000_000, true, 2_400_000, 113_200_000 / 2_400_000.0, 17), true),
@@ -1198,7 +1223,9 @@ public static class Program
                     // A hit just before (6 % of its health) leaves the pale stretch closing in.
                     if (target.Hp is long before && target.HighestObservedHp is long top) panel.Update(target with { Hp = Math.Min(top, before + top * 6 / 100) });
                     panel.Update(target);
-                    string label = L.Language == "es" ? name : name switch { "sin furia" => "enrage not seen yet", "a tiempo" => "in time", "tarde" => "late", "en furia" => "enraged", _ => name };
+                    string label = L.Language == "es" ? name
+                        : L.Language == "fr" ? name switch { "sin furia" => "fureur pas encore vue", "a tiempo" => "à temps", "tarde" => "en retard", "en furia" => "en fureur", _ => name }
+                        : name switch { "sin furia" => "enrage not seen yet", "a tiempo" => "in time", "tarde" => "late", "en furia" => "enraged", _ => name };
                     sheet.Children.Add(new System.Windows.Controls.TextBlock { Text = label, Foreground = System.Windows.Media.Brushes.Gray, Margin = new System.Windows.Thickness(10, 8, 0, 2) });
                     sheet.Children.Add(new System.Windows.Controls.Border { Width = window ? 360 : 320, HorizontalAlignment = System.Windows.HorizontalAlignment.Left, Margin = new System.Windows.Thickness(10, 0, 10, 4), CornerRadius = new System.Windows.CornerRadius(8),
                         Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(13, 20, 27)), Padding = new System.Windows.Thickness(12, 8, 12, 8), Child = panel });

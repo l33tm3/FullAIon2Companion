@@ -13,7 +13,8 @@ namespace FullAIon2Companion;
 /// <summary>The target's loot table from the local catalog, beside the overlay: objects (souls, materials, chests) first,
 /// then the gear, where the armour and the weapons of one series and grade share a row («Equipo de tormenta», «Armas de
 /// tormenta»): hovering it shows its pieces, a click pins them. A monster without a table shows what it gave the player
-/// (<see cref="LootBook"/>). Takes the mouse like the player card in the same place, never the keyboard focus.</summary>
+/// (<see cref="LootBook"/>). Takes the mouse like the player card in the same place, never the keyboard focus. Item names
+/// and series follow the interface language (<see cref="InventoryWatch.NameOf"/>, <see cref="LocalSeries"/>).</summary>
 public sealed class DropsWindow : Window
 {
     const int Shown = 16;
@@ -24,6 +25,10 @@ public sealed class DropsWindow : Window
     static readonly Brush Muted = Paint("#95A4B6"), Gold = Paint("#E9C77E"), Teal = Paint("#71DED6"), Dim = Paint("#5F7480");
     // Pieces whose series adjective agrees with «Equipo» (masculine singular) or, made plural, with «Armas».
     static readonly HashSet<string> Masculine = ["Yelmo", "Peto"], Feminine = ["Daga", "Espada larga", "Maza", "Arma de puño"];
+    // The same in French and Portuguese, by the Spanish category: «Armure» agrees with the breastplate and the cloak (Cuirasse,
+    // Cape), «Equipamento» with the helmet and the breastplate (Elmo, Peitoral), «Armes» and «Armas» with the dagger, the
+    // longsword and the mace (Dague, Épée, Masse; Adaga, Espada Longa, Maça; the fist weapon is masculine there).
+    static readonly HashSet<string> FeminineArmour = ["Peto", "Capa"], FeminineWeapons = ["Daga", "Espada larga", "Maza"];
     readonly TextBlock title = Label("", 12.5, Brushes.White), subtitle = Label("", 10.5, Muted), footer = Label("", 10, Dim);
     readonly StackPanel rows = new();
     // The pieces of a group, to the side of the panel.
@@ -32,6 +37,7 @@ public sealed class DropsWindow : Window
     Group? pinned, showing;
     double scale = 1;
     int? shownNpc;
+    string shownLanguage = "";
     bool shownResult, shownLearned;
     int shownVersion;
     sealed record Loot(JsonElement Item, int Rank, string Color, double? Chance);
@@ -65,14 +71,17 @@ public sealed class DropsWindow : Window
     static Brush Paint(string color) { var b = new SolidColorBrush((Color)ColorConverter.ConvertFromString(color)); b.Freeze(); return b; }
     static TextBlock Label(string text, double size, Brush color) => new() { Text = text, FontSize = size, Foreground = color, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center };
     static string Text(JsonElement e, string name) => e.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString()! : "";
+    static int Id(JsonElement item) => item.TryGetProperty("id", out var v) && v.TryGetInt32(out int n) ? n : 0;
+    // A loot table's item in the interface language (the table's own Spanish name in Spanish).
+    static string ItemName(Loot d) => InventoryWatch.NameOf(Id(d.Item), Text(d.Item, "name"));
     static double? Chance(JsonElement e) => e.TryGetProperty("chance", out var c) && c.ValueKind == JsonValueKind.Number ? c.GetDouble() : null;
     static string Num(double p) => p >= 1 ? $"{p:0.#}" : $"{p:0.##}";
     /// <summary>True when the panel has something for the NPC: its catalog loot table or, for a monster without one, what
     /// it gave the player (that card follows each new kill).</summary>
     public bool Load(int? npc)
     {
-        if (npc == shownNpc && !(shownLearned && (LootBook.Live?.Version ?? 0) != shownVersion)) return shownResult;
-        shownNpc = npc; shownLearned = false; rows.Children.Clear(); groups.Clear(); pinned = null; HideDetail();
+        if (npc == shownNpc && L.Language == shownLanguage && !(shownLearned && (LootBook.Live?.Version ?? 0) != shownVersion)) return shownResult;
+        shownNpc = npc; shownLanguage = L.Language; shownLearned = false; rows.Children.Clear(); groups.Clear(); pinned = null; HideDetail();
         return shownResult = Build(npc);
     }
     bool Build(int? npc)
@@ -160,6 +169,7 @@ public sealed class DropsWindow : Window
     }
     static string SeriesName(string kind, List<(Loot Loot, string Tail)> members)
     {
+        if (L.Language != "es" && LocalSeries(kind, members.Select(m => m.Loot).ToList()) is string local) return local;
         string first = members[0].Tail, usual = members.GroupBy(m => m.Tail).OrderByDescending(g => g.Count()).First().Key;
         if (IsOf(usual)) return $"{kind} {usual}";
         // An adjective agrees: «Equipo olvidado» from the helmet, «Armas olvidadas» from the dagger.
@@ -167,6 +177,42 @@ public sealed class DropsWindow : Window
         return kind == "Equipo" ? $"Equipo {Of(Masculine) ?? first}" : $"Armas {Plural(Of(Feminine) ?? first)}";
     }
     static bool IsOf(string tail) => tail.StartsWith("de ", StringComparison.OrdinalIgnoreCase) || tail.StartsWith("del ", StringComparison.OrdinalIgnoreCase);
+    // The series in the interface language, from its pieces' names there (the group itself is the Spanish one). English puts
+    // it first («Tempest Gloves», «Tempest Helm» → «Tempest armor»); Portuguese and French after the piece, mostly as a «de …»
+    // («Luvas da Tempestade» → «Equipamento da Tempestade», «Gants de la tempête» → «Armure de la tempête»), else as an
+    // adjective that agrees, taken from a piece of the head word's gender («Cuirasse oubliée» → «Armure oubliée», «Dague
+    // oubliée» → «Armes oubliées»). A piece without a Portuguese or French name puts the series in English, as its pieces
+    // show. Null when the names share nothing: the Spanish title stays, for the patterns of i18n/patterns.tsv.
+    static string? LocalSeries(string kind, List<Loot> pieces)
+    {
+        string language = pieces.All(p => InventoryWatch.OwnName(Id(p.Item), L.Language) is not null) ? L.Language : "en";
+        var names = pieces.Select(p => InventoryWatch.OwnName(Id(p.Item), language)).OfType<string>().ToList();
+        if (names.Count < pieces.Count || names.Distinct().Count() < 2) return null;
+        var words = names.Select(n => n.Split(' ')).ToList();
+        if (language == "en")
+        {
+            int same = 0;
+            while (words.All(w => same < w.Length - 1 && w[same] == words[0][same])) same++;
+            return same > 0 ? $"{string.Join(' ', words[0][..same])} {(kind == "Equipo" ? "armor" : "weapons")}" : null;
+        }
+        string head = (language, kind) switch { ("pt", "Equipo") => "Equipamento", ("pt", _) => "Armas", (_, "Equipo") => "Armure", _ => "Armes" };
+        // The «de …» most pieces share: one piece named apart does not undo the series.
+        var usual = words.Select(OfPart).OfType<string>().GroupBy(t => t).OrderByDescending(g => g.Count()).FirstOrDefault();
+        if (usual is not null && usual.Count() * 2 >= names.Count) return $"{head} {usual.Key}";
+        var agree = kind == "Equipo" ? language == "pt" ? Masculine : FeminineArmour : FeminineWeapons;
+        if (pieces.FirstOrDefault(p => agree.Contains(Text(p.Item, "category"))) is not { } piece
+            || InventoryWatch.OwnName(Id(piece.Item), language)!.Split(' ') is not { Length: > 1 } named) return null;
+        string adjective = named[^1];
+        return $"{head} {(kind == "Armas" && !adjective.EndsWith('s') && !adjective.EndsWith('x') ? adjective + "s" : adjective)}";
+    }
+    // A Portuguese or French name's «de …» part, after the piece: «Espada Longa da Sombra» → «da Sombra», «Garde-bras d'illusion» → «d'illusion».
+    static string? OfPart(string[] words)
+    {
+        for (int i = 1; i < words.Length; i++)
+            if (words[i] is "de" or "da" or "do" or "das" or "dos" or "du" or "des" || words[i].StartsWith("d'") || words[i].StartsWith("d’"))
+                return string.Join(' ', words[i..]);
+        return null;
+    }
     // The piece's name without its kind: «Guantes de tormenta» → «de tormenta», «Puñal de sabiduría» (a dagger) → «de sabiduría».
     static string Tail(string name, string category)
     {
@@ -198,7 +244,7 @@ public sealed class DropsWindow : Window
         var odds = Label(d.Chance is double p ? Num(p) + "%" : "—", 10.5, Teal);
         odds.Margin = new Thickness(8, 0, 0, 0);
         DockPanel.SetDock(odds, Dock.Right); row.Children.Add(odds);
-        row.Children.Add(Label(Text(d.Item, "name"), 11, Paint(d.Color)));
+        row.Children.Add(Label(ItemName(d), 11, Paint(d.Color)));
         return row;
     }
     UIElement GroupRow(Group g)
@@ -245,7 +291,7 @@ public sealed class DropsWindow : Window
             DockPanel.SetDock(icon, Dock.Left); row.Children.Add(icon);
             var odds = Label(d.Chance is double p ? Num(p) + "%" : "—", 10.5, Teal); odds.Margin = new Thickness(8, 0, 0, 0);
             DockPanel.SetDock(odds, Dock.Right); row.Children.Add(odds);
-            row.Children.Add(Label(Text(d.Item, "name"), 11, grade));
+            row.Children.Add(Label(ItemName(d), 11, grade));
             stack.Children.Add(row);
         }
         stack.Children.Add(new TextBlock { Text = L.T(pinned ? "Fijado · clic en el grupo para cerrarlo" : "Clic en el grupo para dejarlo fijo"), Foreground = Dim, FontSize = 9.5, Margin = new Thickness(0, 6, 0, 0) });

@@ -5,7 +5,7 @@ function petBadge(cat,cls){const k=PET_BADGES[String(cat||'').toLowerCase()];ret
 let data=null,initialized=false;
 const $=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // Numbers, dates and times in the panel's language (uiLang is set further down; before that, Spanish).
-const uiLoc=()=>{try{return uiLang==='pt'?'pt-BR':uiLang==='en'?'en-GB':'es-CL';}catch{return 'es-CL';}};
+const uiLoc=()=>{try{return uiLang==='pt'?'pt-BR':uiLang==='en'?'en-GB':uiLang==='fr'?'fr-FR':'es-CL';}catch{return 'es-CL';}};
 const number=v=>Number(v||0).toLocaleString(uiLoc(),{maximumFractionDigits:0}),time=v=>{v=Math.max(0,Math.floor(v));return v>=86400?`${Math.floor(v/86400)}d ${Math.floor(v%86400/3600)}h`:v>=3600?`${Math.floor(v/3600)}:${String(Math.floor(v%3600/60)).padStart(2,'0')}:${String(v%60).padStart(2,'0')}`:`${Math.floor(v/60)}:${String(v%60).padStart(2,'0')}`;};
 const pendingActions=new Map();let actionSequence=0;
 const actionLabels={'donate':'Abriendo PayPal…','license-check':'Comprobando licencia…','title-start':'Pidiendo la verificación…','title-check':'Comprobando en la web oficial…','title-cancel':'Cancelando la verificación…','pets-upload':'Subiendo tus mascotas…',pull:'Descargando preferencias…',pair:'Vinculando dispositivo…','pair-web':'Abriendo Daeva Companion…','update-check':'Buscando actualizaciones…','update-download':'Descargando actualización…','own-profile':'Abriendo tu perfil…'};
@@ -71,7 +71,7 @@ window.renderCompanion=d=>{
  if(!initialized){$('farm-goal').value=d.settings.FarmGoal;initialized=true;}
  renderMobs();$('clock').textContent=new Date().toLocaleTimeString(uiLoc());
 };
-window.showNpc=(n,sib)=>{if(n&&sib&&!(n.drops||[]).length){n={...n,drops:sib.drops,dropsFrom:sib.level};}if(!n){$('npc-detail').innerHTML='<h2>Ficha pendiente</h2><p class="muted">Esta criatura todavía no está en el catálogo local.</p>';}else{$('npc-detail').innerHTML=`<div class="target-identity">${icon(n.icon,n.name)}<div><span class="eyebrow">CRIATURA · ${n.id}</span><h2>${esc(n.name)}</h2><small>Nv. ${n.level} · ${esc(n.gradeName||'')} · ${esc(n.creatureName||'')}</small></div></div><h3 style="margin-top:25px">Dónde aparece</h3><p class="muted">${(n.where||[]).map(x=>esc(x.name)).join(' · ')||'Sin apariciones en el catálogo'}</p><button data-atlas-find="${esc(n.name)}" data-atlas-map="${esc((n.maps||[])[0]||'')}" style="margin:12px 0">Ver en el mapa</button><h3 style="margin:15px 0">Botín registrado ${n.drops?.length?'· '+n.drops.length:''}</h3>${n.dropsFrom?`<p class="notice">Esta variante no trae tabla propia en el catálogo: se muestra la de la misma criatura de Nv. ${n.dropsFrom}.</p>`:''}${(n.drops||[]).slice(0,100).map(x=>`<div class="drop">${icon(x.icon,x.name)}<b class="grade-${esc(x.grade)}">${esc(x.name)}</b><strong>${Number(x.chance).toLocaleString(uiLoc(),{maximumFractionDigits:2})}%</strong></div>`).join('')||'<p class="muted">La ficha importada no contiene una tabla de botín.</p>'}<p class="footnote">Datos del catálogo local de Daeva Companion. Las probabilidades corresponden a la fuente del catálogo, no a esta captura.</p>`;}$('npc-dialog').showModal();};
+window.showNpc=async(n,sib)=>{await itemTable();if(n&&sib&&!(n.drops||[]).length){n={...n,drops:sib.drops,dropsFrom:sib.level};}if(!n){$('npc-detail').innerHTML='<h2>Ficha pendiente</h2><p class="muted">Esta criatura todavía no está en el catálogo local.</p>';}else{$('npc-detail').innerHTML=`<div class="target-identity">${icon(n.icon,n.name)}<div><span class="eyebrow">CRIATURA · ${n.id}</span><h2>${esc(n.name)}</h2><small>Nv. ${n.level} · ${esc(n.gradeName||'')} · ${esc(n.creatureName||'')}</small></div></div><h3 style="margin-top:25px">Dónde aparece</h3><p class="muted">${(n.where||[]).map(x=>esc(x.name)).join(' · ')||'Sin apariciones en el catálogo'}</p><button data-atlas-find="${esc(n.name)}" data-atlas-map="${esc((n.maps||[])[0]||'')}" style="margin:12px 0">Ver en el mapa</button><h3 style="margin:15px 0">Botín registrado ${n.drops?.length?'· '+n.drops.length:''}</h3>${n.dropsFrom?`<p class="notice">Esta variante no trae tabla propia en el catálogo: se muestra la de la misma criatura de Nv. ${n.dropsFrom}.</p>`:''}${(n.drops||[]).slice(0,100).map(x=>`<div class="drop">${icon(x.icon,itemName(x))}<b class="grade-${esc(x.grade)}">${esc(itemName(x))}</b><strong>${Number(x.chance).toLocaleString(uiLoc(),{maximumFractionDigits:2})}%</strong></div>`).join('')||'<p class="muted">La ficha importada no contiene una tabla de botín.</p>'}<p class="footnote">Datos del catálogo local de Daeva Companion. Las probabilidades corresponden a la fuente del catálogo, no a esta captura.</p>`;}$('npc-dialog').showModal();};
 
 // Cuenta: device state chips and the ownership challenge.
 function renderCloud(c){if(!c)return;const t=c.title,pull=c.pull;const chip=(id,on,txt)=>{const el=$(id);el.className=on?'on':'';el.textContent=txt;};
@@ -171,191 +171,191 @@ document.addEventListener('click',e=>{const b=e.target.closest('.sidenav button[
 // ---- Idiomas: español (original), inglés y portugués de Brasil ----
 // The page is written in Spanish; every visible text (and placeholder / title / aria-label) is looked up in
 // data/i18n.json and swapped, also for whatever is rendered later (MutationObserver). Spanish restores the originals.
-let i18nDict={en:{},pt:{}},uiLang='es',i18nBusy=false;
+let i18nDict={en:{},pt:{},fr:{}},uiLang='es',i18nBusy=false;
 const i18nOrig=new WeakMap();
 // Dynamic phrases with numbers: [regex over the Spanish text, English, Portuguese].
 const I18N_PATTERNS=[
  // Combate, objetivo y cabecera
- [/^(.+) · identidad recibida en el juego$/,'$1 · identity received in the game','$1 · identidade recebida no jogo'],
- [/^(.+) · identidad deducida de la captura$/,'$1 · identity deduced from the capture','$1 · identidade deduzida da captura'],
- [/^(\d+(?::\d\d){1,2}|\d+d \d+h) de combate observado$/,'$1 of combat observed','$1 de combate observado'],
- [/^(\d+) habilidades$/,'$1 skills','$1 habilidades'],
- [/^(\d+) ms · ([\d.,]+) segmentos · ([\d.,]+) tramas · ([\d.,]+) eventos$/,'$1 ms · $2 segments · $3 frames · $4 events','$1 ms · $2 segmentos · $3 quadros · $4 eventos'],
- [/^([\d.,]+) segmentos · ([\d.,]+) tramas · ([\d.,]+) eventos$/,'$1 segments · $2 frames · $3 events','$1 segmentos · $2 quadros · $3 eventos'],
- [/^VERSIÓN (.+)$/,'VERSION $1','VERSÃO $1'],
- [/^Captura activa · (.+)$/,'Capture active · $T1','Captura ativa · $T1'],
- [/^CRIATURA · (\d+)$/,'CREATURE · $1','CRIATURA · $1'],
- [/^Botín registrado · (\d+)$/,'Recorded loot · $1','Saque registrado · $1'],
- [/^Esta variante no trae tabla propia en el catálogo: se muestra la de la misma criatura de Nv\. (\d+)\.$/,'This variant has no table of its own in the catalog: the one of the same creature at Lv. $1 is shown.','Esta variante não traz tabela própria no catálogo: é mostrada a da mesma criatura de Nv. $1.'],
- [/^(\d+) cerca · Nv\. (\d+) · (.+)$/,'$1 nearby · Lv. $2 · $T3','$1 por perto · Nv. $2 · $T3'],
- [/^(\d+) cerca · Nv\. (\d+)$/,'$1 nearby · Lv. $2','$1 por perto · Nv. $2'],
- [/^(\d+) cerca · (.+)$/,'$1 nearby · $T2','$1 por perto · $T2'],
- [/^(\d+) cerca$/,'$1 nearby','$1 por perto'],
- [/^Nv\. (\d+) · (\d+)\/(\d+)$/,'Lv. $1 · $2/$3','Nv. $1 · $2/$3'],
- [/^Nv\. (\d+) · MÁX\.$/,'Lv. $1 · MAX','Nv. $1 · MÁX.'],
- [/^Nv\. ([\d?]+) · (.+) · (.+)$/,'Lv. $1 · $T2 · $T3','Nv. $1 · $T2 · $T3'],
- [/^Nv\. ([\d?]+) · (.+)$/,'Lv. $1 · $T2','Nv. $1 · $T2'],
- [/^(.+) · Nv\. (\d+) · (.+)$/,'$T1 · Lv. $2 · $3','$T1 · Nv. $2 · $3'],
- [/^(\d+) por completar$/,'$1 to go','$1 restantes'],
- [/^Avisos con sonido activados · (\d+) min antes y al inicio · marca los eventos que quieres escuchar\.$/,'Sound alerts on · $1 min before and at the start · tick the events you want to hear.','Avisos com som ativados · $1 min antes e no início · marque os eventos que você quer ouvir.'],
- [/^Avisos con sonido desactivados · (\d+) min antes y al inicio · marca los eventos que quieres escuchar\.$/,'Sound alerts off · $1 min before and at the start · tick the events you want to hear.','Avisos com som desativados · $1 min antes e no início · marque os eventos que você quer ouvir.'],
- [/^Otra aplicación ya usa (.+)\. Elige otra combinación en Configuración > Atajos\.$/,'Another app already uses $1. Choose another combination in Settings > Shortcuts.','Outro aplicativo já usa $1. Escolha outra combinação em Configurações > Atalhos.'],
- [/^Novedades \((\d+)\)$/,'News ($1)','Novidades ($1)'],
+ [/^(.+) · identidad recibida en el juego$/,'$1 · identity received in the game','$1 · identidade recebida no jogo',"$1 · identité reçue dans le jeu"],
+ [/^(.+) · identidad deducida de la captura$/,'$1 · identity deduced from the capture','$1 · identidade deduzida da captura',"$1 · identité déduite de la capture"],
+ [/^(\d+(?::\d\d){1,2}|\d+d \d+h) de combate observado$/,'$1 of combat observed','$1 de combate observado',"$1 de combat observé"],
+ [/^(\d+) habilidades$/,'$1 skills','$1 habilidades',"$1 compétences"],
+ [/^(\d+) ms · ([\d.,]+) segmentos · ([\d.,]+) tramas · ([\d.,]+) eventos$/,'$1 ms · $2 segments · $3 frames · $4 events','$1 ms · $2 segmentos · $3 quadros · $4 eventos',"$1 ms · $2 segments · $3 trames · $4 événements"],
+ [/^([\d.,]+) segmentos · ([\d.,]+) tramas · ([\d.,]+) eventos$/,'$1 segments · $2 frames · $3 events','$1 segmentos · $2 quadros · $3 eventos',"$1 segments · $2 trames · $3 événements"],
+ [/^VERSIÓN (.+)$/,'VERSION $1','VERSÃO $1',"VERSION $1"],
+ [/^Captura activa · (.+)$/,'Capture active · $T1','Captura ativa · $T1',"Capture active · $T1"],
+ [/^CRIATURA · (\d+)$/,'CREATURE · $1','CRIATURA · $1',"CRÉATURE · $1"],
+ [/^Botín registrado · (\d+)$/,'Recorded loot · $1','Saque registrado · $1',"Butin enregistré · $1"],
+ [/^Esta variante no trae tabla propia en el catálogo: se muestra la de la misma criatura de Nv\. (\d+)\.$/,'This variant has no table of its own in the catalog: the one of the same creature at Lv. $1 is shown.','Esta variante não traz tabela própria no catálogo: é mostrada a da mesma criatura de Nv. $1.',"Cette variante n'a pas de table propre dans le catalogue : celle de la même créature au Niv. $1 est affichée."],
+ [/^(\d+) cerca · Nv\. (\d+) · (.+)$/,'$1 nearby · Lv. $2 · $T3','$1 por perto · Nv. $2 · $T3',"$1 à proximité · Niv. $2 · $T3"],
+ [/^(\d+) cerca · Nv\. (\d+)$/,'$1 nearby · Lv. $2','$1 por perto · Nv. $2',"$1 à proximité · Niv. $2"],
+ [/^(\d+) cerca · (.+)$/,'$1 nearby · $T2','$1 por perto · $T2',"$1 à proximité · $T2"],
+ [/^(\d+) cerca$/,'$1 nearby','$1 por perto',"$1 à proximité"],
+ [/^Nv\. (\d+) · (\d+)\/(\d+)$/,'Lv. $1 · $2/$3','Nv. $1 · $2/$3',"Niv. $1 · $2/$3"],
+ [/^Nv\. (\d+) · MÁX\.$/,'Lv. $1 · MAX','Nv. $1 · MÁX.',"Niv. $1 · MAX"],
+ [/^Nv\. ([\d?]+) · (.+) · (.+)$/,'Lv. $1 · $T2 · $T3','Nv. $1 · $T2 · $T3',"Niv. $1 · $T2 · $T3"],
+ [/^Nv\. ([\d?]+) · (.+)$/,'Lv. $1 · $T2','Nv. $1 · $T2',"Niv. $1 · $T2"],
+ [/^(.+) · Nv\. (\d+) · (.+)$/,'$T1 · Lv. $2 · $3','$T1 · Nv. $2 · $3',"$T1 · Niv. $2 · $3"],
+ [/^(\d+) por completar$/,'$1 to go','$1 restantes',"$1 restantes"],
+ [/^Avisos con sonido activados · (\d+) min antes y al inicio · marca los eventos que quieres escuchar\.$/,'Sound alerts on · $1 min before and at the start · tick the events you want to hear.','Avisos com som ativados · $1 min antes e no início · marque os eventos que você quer ouvir.',"Alertes sonores activées · $1 min avant et au début · coche les événements que tu veux entendre."],
+ [/^Avisos con sonido desactivados · (\d+) min antes y al inicio · marca los eventos que quieres escuchar\.$/,'Sound alerts off · $1 min before and at the start · tick the events you want to hear.','Avisos com som desativados · $1 min antes e no início · marque os eventos que você quer ouvir.',"Alertes sonores désactivées · $1 min avant et au début · coche les événements que tu veux entendre."],
+ [/^Otra aplicación ya usa (.+)\. Elige otra combinación en Configuración > Atajos\.$/,'Another app already uses $1. Choose another combination in Settings > Shortcuts.','Outro aplicativo já usa $1. Escolha outra combinação em Configurações > Atalhos.',"Une autre app utilise déjà $1. Choisis une autre combinaison dans Réglages > Raccourcis."],
+ [/^Novedades \((\d+)\)$/,'News ($1)','Novidades ($1)',"Nouveautés ($1)"],
  // Mascotas
- [/^Mascotas obtenidas por día \(últimos (\d+) días\)$/,'Pets obtained per day (last $1 days)','Mascotes obtidos por dia (últimos $1 dias)'],
- [/^(\d{4}-\d\d-\d\d): (\d+) mascotas · Nv3 (\d+) · (\d+) almas$/,'$1: $2 pets · Lv3 $3 · $4 souls','$1: $2 mascotes · Nv3 $3 · $4 almas'],
- [/^Ver solo (.+)$/,'Show only $T1','Ver só $T1'],
- [/^(.+) · (al día|guardada) · lista del juego (.+)$/,"$1 · $T2 · game's list $3",'$1 · $T2 · lista do jogo $3'],
- [/^(.+) · (al día|guardada)$/,'$1 · $T2','$1 · $T2'],
- [/^([\d.,]+)% por muerte$/,'$1% per kill','$1% por abate'],
- [/^Criaturas que dan sus almas: (.+)$/,'Creatures that drop its souls: $1','Criaturas que dão suas almas: $1'],
- [/^Mascotas: (.+)$/,'Pets: $T1','Mascotes: $T1'],
- [/^(.+) fijada en el overlay\.$/,'$1 pinned to the overlay.','$1 fixado no overlay.'],
- [/^(.+) ya no está fijada\.$/,'$1 is no longer pinned.','$1 não está mais fixado.'],
- [/^(\d+) criaturas dan almas de (.+)\.$/,'$1 creatures drop souls of $2.','$1 criaturas dão almas de $2.'],
+ [/^Mascotas obtenidas por día \(últimos (\d+) días\)$/,'Pets obtained per day (last $1 days)','Mascotes obtidos por dia (últimos $1 dias)',"Familiers obtenus par jour ($1 derniers jours)"],
+ [/^(\d{4}-\d\d-\d\d): (\d+) mascotas · Nv3 (\d+) · (\d+) almas$/,'$1: $2 pets · Lv3 $3 · $4 souls','$1: $2 mascotes · Nv3 $3 · $4 almas',"$1 : $2 familiers · Niv3 $3 · $4 âmes"],
+ [/^Ver solo (.+)$/,'Show only $T1','Ver só $T1',"Afficher seulement $T1"],
+ [/^(.+) · (al día|guardada) · lista del juego (.+)$/,"$1 · $T2 · game's list $3",'$1 · $T2 · lista do jogo $3',"$1 · $T2 · liste du jeu $3"],
+ [/^(.+) · (al día|guardada)$/,'$1 · $T2','$1 · $T2',"$1 · $T2"],
+ [/^([\d.,]+)% por muerte$/,'$1% per kill','$1% por abate',"$1% par élimination"],
+ [/^Criaturas que dan sus almas: (.+)$/,'Creatures that drop its souls: $1','Criaturas que dão suas almas: $1',"Créatures qui donnent ses âmes : $1"],
+ [/^Mascotas: (.+)$/,'Pets: $T1','Mascotes: $T1',"Familiers : $T1"],
+ [/^(.+) fijada en el overlay\.$/,'$1 pinned to the overlay.','$1 fixado no overlay.',"$1 épinglé dans l'overlay."],
+ [/^(.+) ya no está fijada\.$/,'$1 is no longer pinned.','$1 não está mais fixado.',"$1 n'est plus épinglé."],
+ [/^(\d+) criaturas dan almas de (.+)\.$/,'$1 creatures drop souls of $2.','$1 criaturas dão almas de $2.',"$1 créatures donnent des âmes de $2."],
  // Historial
- [/^(✔ Derrotado|Sin muerte confirmada) · vida máxima (\S+) · 1 jugador$/,'$T1 · max HP $2 · 1 player','$T1 · vida máxima $2 · 1 jogador'],
- [/^(✔ Derrotado|Sin muerte confirmada) · vida máxima (\S+) · (\d+) jugadores$/,'$T1 · max HP $2 · $3 players','$T1 · vida máxima $2 · $3 jogadores'],
- [/^(✔ Derrotado|Sin muerte confirmada) · 1 jugador$/,'$T1 · 1 player','$T1 · 1 jogador'],
- [/^(✔ Derrotado|Sin muerte confirmada) · (\d+) jugadores$/,'$T1 · $2 players','$T1 · $2 jogadores'],
- [/^Combate exportado en (.+)$/,'Fight exported to $1','Combate exportado em $1'],
+ [/^(✔ Derrotado|Sin muerte confirmada) · vida máxima (\S+) · 1 jugador$/,'$T1 · max HP $2 · 1 player','$T1 · vida máxima $2 · 1 jogador',"$T1 · PV max $2 · 1 joueur"],
+ [/^(✔ Derrotado|Sin muerte confirmada) · vida máxima (\S+) · (\d+) jugadores$/,'$T1 · max HP $2 · $3 players','$T1 · vida máxima $2 · $3 jogadores',"$T1 · PV max $2 · $3 joueurs"],
+ [/^(✔ Derrotado|Sin muerte confirmada) · 1 jugador$/,'$T1 · 1 player','$T1 · 1 jogador',"$T1 · 1 joueur"],
+ [/^(✔ Derrotado|Sin muerte confirmada) · (\d+) jugadores$/,'$T1 · $2 players','$T1 · $2 jogadores',"$T1 · $2 joueurs"],
+ [/^Combate exportado en (.+)$/,'Fight exported to $1','Combate exportado em $1',"Combat exporté vers $1"],
  // Jefes de campo
- [/^Murió a las (.+) · abre la lista del mapa para saber su reaparición$/,'Died at $1 · open the map list to learn its respawn','Morreu às $1 · abra a lista do mapa para saber o renascimento'],
- [/^Aparece hacia las (.+) · estimado por su última muerte$/,'Spawns around $1 · estimated from its last death','Aparece por volta das $1 · estimado pela última morte'],
+ [/^Murió a las (.+) · abre la lista del mapa para saber su reaparición$/,'Died at $1 · open the map list to learn its respawn','Morreu às $1 · abra a lista do mapa para saber o renascimento',"Mort à $1 · ouvre la liste de la carte pour connaître sa réapparition"],
+ [/^Aparece hacia las (.+) · estimado por su última muerte$/,'Spawns around $1 · estimated from its last death','Aparece por volta das $1 · estimado pela última morte',"Apparaît vers $1 · estimé depuis sa dernière mort"],
  // Objetivos
- [/^Reto de (\d+) min$/,'$1 min challenge','Desafio de $1 min'],
- [/^¡Objetivo cumplido en (.+)!$/,'Goal reached in $1!','Objetivo cumprido em $1!'],
- [/^Quedan (.+) · vas a tiempo: terminas en (.+)$/,'$1 left · on pace: you finish in $2','Faltam $1 · no ritmo: você termina em $2'],
- [/^Quedan (.+) · a este ritmo te faltan (.+)$/,'$1 left · at this pace you need $2 more','Faltam $1 · neste ritmo faltam $2'],
- [/^Quedan (.+) · sin ritmo aún$/,'$1 left · no pace yet','Faltam $1 · sem ritmo ainda'],
- [/^A este ritmo, (.+) restantes$/,'At this pace, $1 left','Neste ritmo, faltam $1'],
- [/^([\d.,]+) \/ ([\d.,]+) (muertes|kinah en botín|kinah)$/,'$1 / $2 $T3','$1 / $2 $T3'],
+ [/^Reto de (\d+) min$/,'$1 min challenge','Desafio de $1 min',"Défi de $1 min"],
+ [/^¡Objetivo cumplido en (.+)!$/,'Goal reached in $1!','Objetivo cumprido em $1!',"Objectif atteint en $1 !"],
+ [/^Quedan (.+) · vas a tiempo: terminas en (.+)$/,'$1 left · on pace: you finish in $2','Faltam $1 · no ritmo: você termina em $2',"Reste $1 · dans les temps : tu finis en $2"],
+ [/^Quedan (.+) · a este ritmo te faltan (.+)$/,'$1 left · at this pace you need $2 more','Faltam $1 · neste ritmo faltam $2',"Reste $1 · à ce rythme il te faut encore $2"],
+ [/^Quedan (.+) · sin ritmo aún$/,'$1 left · no pace yet','Faltam $1 · sem ritmo ainda',"Reste $1 · pas encore de rythme"],
+ [/^A este ritmo, (.+) restantes$/,'At this pace, $1 left','Neste ritmo, faltam $1',"À ce rythme, il reste $1"],
+ [/^([\d.,]+) \/ ([\d.,]+) (muertes|kinah en botín|kinah)$/,'$1 / $2 $T3','$1 / $2 $T3',"$1 / $2 $T3"],
  // Cubos
- [/^(\d+) m (arriba|abajo)$/,'$1 m $T2','$1 m $T2'],
- [/^desde las (.+)$/,'since $1','desde as $1'],
- [/^(.+) · desde las (.+)$/,'$T1 · since $2','$T1 · desde as $2'],
- [/^(.+) · (-?\d+), (-?\d+) · altura (-?\d+) · detectado a (\d+) m$/,'$1 · $2, $3 · height $4 · detected at $5 m','$1 · $2, $3 · altura $4 · detectado a $5 m'],
- [/^(.+) · (-?\d+), (-?\d+) · altura (-?\d+)$/,'$1 · $2, $3 · height $4','$1 · $2, $3 · altura $4'],
+ [/^(\d+) m (arriba|abajo)$/,'$1 m $T2','$1 m $T2',"$1 m $T2"],
+ [/^desde las (.+)$/,'since $1','desde as $1',"depuis $1"],
+ [/^(.+) · desde las (.+)$/,'$T1 · since $2','$T1 · desde as $2',"$T1 · depuis $2"],
+ [/^(.+) · (-?\d+), (-?\d+) · altura (-?\d+) · detectado a (\d+) m$/,'$1 · $2, $3 · height $4 · detected at $5 m','$1 · $2, $3 · altura $4 · detectado a $5 m',"$1 · $2, $3 · hauteur $4 · détecté à $5 m"],
+ [/^(.+) · (-?\d+), (-?\d+) · altura (-?\d+)$/,'$1 · $2, $3 · height $4','$1 · $2, $3 · altura $4',"$1 · $2, $3 · hauteur $4"],
  // Recursos y Mercado
- [/^(.+) · en juego$/,'$1 · in game','$1 · em jogo'],
- [/^Actualizado a las (.+)$/,'Updated at $1','Atualizado às $1'],
- [/^Actualizado (.+)$/,'Updated $1','Atualizado $1'],
- [/^(Sudamérica|Norteamérica Este|Norteamérica Oeste|Europa|Asia) · (Asmodianos|Elios)$/,'$T1 · $T2','$T1 · $T2'],
+ [/^(.+) · en juego$/,'$1 · in game','$1 · em jogo',"$1 · en jeu"],
+ [/^Actualizado a las (.+)$/,'Updated at $1','Atualizado às $1',"Mis à jour à $1"],
+ [/^Actualizado (.+)$/,'Updated $1','Atualizado $1',"Mis à jour $1"],
+ [/^(Sudamérica|Norteamérica Este|Norteamérica Oeste|Europa|Asia) · (Asmodianos|Elios)$/,'$T1 · $T2','$T1 · $T2',"$T1 · $T2"],
  // Versiones
- [/^Versión (.+) \((estable|beta)\)$/,'Version $1 ($T2)','Versão $1 ($T2)'],
- [/^Tienes la (.+) · ([\d.,]+) MB · publicada (?:el )?(.+)$/,'You have $1 · $2 MB · published $3','Você tem a $1 · $2 MB · publicada em $3'],
- [/^Tienes la (.+) · ([\d.,]+) MB$/,'You have $1 · $2 MB','Você tem a $1 · $2 MB'],
- [/^Hay una versión nueva: (.+)$/,'A new version is available: $1','Há uma versão nova: $1'],
- [/^Versión (.+) disponible$/,'Version $1 available','Versão $1 disponível'],
- [/^Versión (.+) descargada y verificada \(tamaño y SHA-256\)$/,'Version $1 downloaded and verified (size and SHA-256)','Versão $1 baixada e verificada (tamanho e SHA-256)'],
- [/^Instalando (.+): la app se cerrará y volverá a abrirse sola en unos segundos\.$/,'Installing $1: the app will close and open again by itself in a few seconds.','Instalando $1: o app vai fechar e reabrir sozinho em alguns segundos.'],
- [/^No se pudo descargar \(HTTP (\d+)\)\.$/,'Could not download (HTTP $1).','Não foi possível baixar (HTTP $1).'],
+ [/^Versión (.+) \((estable|beta)\)$/,'Version $1 ($T2)','Versão $1 ($T2)',"Version $1 ($T2)"],
+ [/^Tienes la (.+) · ([\d.,]+) MB · publicada (?:el )?(.+)$/,'You have $1 · $2 MB · published $3','Você tem a $1 · $2 MB · publicada em $3',"Tu as la $1 · $2 Mo · publiée le $3"],
+ [/^Tienes la (.+) · ([\d.,]+) MB$/,'You have $1 · $2 MB','Você tem a $1 · $2 MB',"Tu as la $1 · $2 Mo"],
+ [/^Hay una versión nueva: (.+)$/,'A new version is available: $1','Há uma versão nova: $1',"Une nouvelle version est disponible : $1"],
+ [/^Versión (.+) disponible$/,'Version $1 available','Versão $1 disponível',"Version $1 disponible"],
+ [/^Versión (.+) descargada y verificada \(tamaño y SHA-256\)$/,'Version $1 downloaded and verified (size and SHA-256)','Versão $1 baixada e verificada (tamanho e SHA-256)',"Version $1 téléchargée et vérifiée (taille et SHA-256)"],
+ [/^Instalando (.+): la app se cerrará y volverá a abrirse sola en unos segundos\.$/,'Installing $1: the app will close and open again by itself in a few seconds.','Instalando $1: o app vai fechar e reabrir sozinho em alguns segundos.',"Installation de la $1 : l'app va se fermer et se rouvrir toute seule dans quelques secondes."],
+ [/^No se pudo descargar \(HTTP (\d+)\)\.$/,'Could not download (HTTP $1).','Não foi possível baixar (HTTP $1).',"Téléchargement impossible (HTTP $1)."],
  // Mensajes del programa (MainWindow, CompanionClient)
- [/^Buscando el perfil público de (.+)…$/,'Looking up the public profile of $1…','Buscando o perfil público de $1…'],
- [/^Perfil de (.+) abierto\. Los datos oficiales se completan al recibirlos\.$/,"$1's profile opened. The official data fills in as it arrives.",'Perfil de $1 aberto. Os dados oficiais são completados ao recebê-los.'],
- [/^Buscando la ficha oficial de (.+)…$/,'Looking up the official card of $1…','Buscando a ficha oficial de $1…'],
- [/^Preferencias y estado descargados\. (.+)$/,'Preferences and status downloaded. $T1','Preferências e estado baixados. $T1'],
- [/^(.+) ya está asignado a otra acción$/,'$1 is already assigned to another action','$1 já está atribuído a outra ação'],
- [/^Atajo guardado: (.+)$/,'Shortcut saved: $1','Atalho salvo: $1'],
- [/^Esta acción no está disponible: (.+)$/,'This action is not available: $1','Esta ação não está disponível: $1'],
- [/^Diagnóstico enviado · (.+)$/,'Diagnostics sent · $1','Diagnóstico enviado · $1'],
- [/^Diagnóstico rechazado: (.+)$/,'Diagnostics rejected: $T1','Diagnóstico rejeitado: $T1'],
- [/^Subida a tu cuenta · (.+)$/,'Uploaded to your account · $1','Enviado para sua conta · $1'],
- [/^No se pudo subir · (.+) · reintento en 5 min$/,'Could not upload · $T1 · retry in 5 min','Não foi possível enviar · $T1 · nova tentativa em 5 min'],
- [/^No se pudo subir · (.+)$/,'Could not upload · $T1','Não foi possível enviar · $T1'],
- [/^Lote de telemetría rechazado: (.+)$/,'Telemetry batch rejected: $T1','Lote de telemetria rejeitado: $T1'],
- [/^Nv\. ([\d?]+) ·$/,'Lv. $1 ·','Nv. $1 ·'],
+ [/^Buscando el perfil público de (.+)…$/,'Looking up the public profile of $1…','Buscando o perfil público de $1…',"Recherche du profil public de $1…"],
+ [/^Perfil de (.+) abierto\. Los datos oficiales se completan al recibirlos\.$/,"$1's profile opened. The official data fills in as it arrives.",'Perfil de $1 aberto. Os dados oficiais são completados ao recebê-los.',"Profil de $1 ouvert. Les données officielles se complètent à leur arrivée."],
+ [/^Buscando la ficha oficial de (.+)…$/,'Looking up the official card of $1…','Buscando a ficha oficial de $1…',"Recherche de la fiche officielle de $1…"],
+ [/^Preferencias y estado descargados\. (.+)$/,'Preferences and status downloaded. $T1','Preferências e estado baixados. $T1',"Préférences et état téléchargés. $T1"],
+ [/^(.+) ya está asignado a otra acción$/,'$1 is already assigned to another action','$1 já está atribuído a outra ação',"$1 est déjà attribué à une autre action"],
+ [/^Atajo guardado: (.+)$/,'Shortcut saved: $1','Atalho salvo: $1',"Raccourci enregistré : $1"],
+ [/^Esta acción no está disponible: (.+)$/,'This action is not available: $1','Esta ação não está disponível: $1',"Cette action n'est pas disponible : $1"],
+ [/^Diagnóstico enviado · (.+)$/,'Diagnostics sent · $1','Diagnóstico enviado · $1',"Diagnostic envoyé · $1"],
+ [/^Diagnóstico rechazado: (.+)$/,'Diagnostics rejected: $T1','Diagnóstico rejeitado: $T1',"Diagnostic refusé : $T1"],
+ [/^Subida a tu cuenta · (.+)$/,'Uploaded to your account · $1','Enviado para sua conta · $1',"Envoyé à ton compte · $1"],
+ [/^No se pudo subir · (.+) · reintento en 5 min$/,'Could not upload · $T1 · retry in 5 min','Não foi possível enviar · $T1 · nova tentativa em 5 min',"Envoi impossible · $T1 · nouvel essai dans 5 min"],
+ [/^No se pudo subir · (.+)$/,'Could not upload · $T1','Não foi possível enviar · $T1',"Envoi impossible · $T1"],
+ [/^Lote de telemetría rechazado: (.+)$/,'Telemetry batch rejected: $T1','Lote de telemetria rejeitado: $T1',"Lot de télémétrie refusé : $T1"],
+ [/^Nv\. ([\d?]+) ·$/,'Lv. $1 ·','Nv. $1 ·',"Niv. $1 ·"],
  // Soporte: tema o autor y fecha
- [/^(Cuenta|Aplicación|Mapa|Datos del juego|Suscripción|Otro) · (.+)$/,'$T1 · $2','$T1 · $2'],
- [/^Equipo de soporte · (.+)$/,'Support team · $1','Equipe de suporte · $1'],
+ [/^(Cuenta|Aplicación|Mapa|Datos del juego|Suscripción|Otro) · (.+)$/,'$T1 · $2','$T1 · $2',"$T1 · $2"],
+ [/^Equipo de soporte · (.+)$/,'Support team · $1','Equipe de suporte · $1',"Équipe d'assistance · $1"],
  // Botín agrupado del Atlas, como en el overlay (i18n/patterns.tsv)
- [/^Equipo de ([^()]+)$/,'Armor · $1','Equipamento de $1'],
- [/^Equipo del ([^()]+)$/,'Armor · $1','Equipamento do $1'],
- [/^Armas de ([^()]+)$/,'Weapons · $1','Armas de $1'],
- [/^Armas del ([^()]+)$/,'Weapons · $1','Armas do $1'],
- [/^Equipo (olvidado|terrestre|sediento de sangre)$/,'Armor · $1','Equipamento · $1'],
- [/^Armas (olvidadas|terrestres|sedientas de sangre)$/,'Weapons · $1','Armas · $1'],
- [/^ID (\d+) · Datos del cliente$/,'ID $1 · Client data','ID $1 · Dados do cliente'],
- [/^(.+) · (\d+) ubicaciones$/,'$1 · $2 places','$1 · $2 locais'],
- [/^(\d+) piezas$/,'$1 pieces','$1 peças'],
- [/^Botín · (\d+) objetos$/,'Loot · $1 items','Saque · $1 itens'],
- [/^(\d+) con precio · (\d+) sin precio$/,'$1 priced · $2 without a price','$1 com preço · $2 sem preço'],
- [/^PNJ ([\d.,]+) c\/u$/,'NPC $1 each','PNJ $1 cada'],
- [/^hace (\d+) (min|h|d)$/,'$1 $2 ago','há $1 $2'],
- [/^Servidor (\d+)$/,'Server $1','Servidor $1'],
- [/^Vista (.+) · se renueva a las (.+)$/,'Seen $1 · renews at $2','Vista $1 · renova às $2'],
- [/^Vista (.+) · hay datos nuevos: vuelve a abrirla en el juego$/,'Seen $1 · newer data: open it again in the game','Vista $1 · há dados novos: abra de novo no jogo'],
- [/^de ([\d.,]+) · top ([\d.,]+) %$/,'of $1 · top $2 %','de $1 · top $2 %'],
- [/^de ([\d.,]+)$/,'of $1','de $1'],
- [/^🏆 ([\d.,]+) puntos$/,'🏆 $1 points','🏆 $1 pontos'],
- [/^([\d.,]+) bajas · ([\d.,]+) muertes · ([\d.,]+) asistencias$/,'$1 kills · $2 deaths · $3 assists','$1 abates · $2 mortes · $3 assistências'],
- [/^([\d.,]+) partidas · ([\d.,]+) victorias · ([\d.,]+) derrotas$/,'$1 matches · $2 wins · $3 losses','$1 partidas · $2 vitórias · $3 derrotas'],
- [/^Mejor marca: nivel ([\d.,]+) · (\d+:\d\d) · ([\d.,]+) puntos$/,'Best: level $1 · $2 · $3 points','Melhor marca: nível $1 · $2 · $3 pontos'],
- [/^(.+) · mejor marca (\d+:\d\d) · ([\d.,]+) puntos$/,'$1 · best $2 · $3 points','$1 · melhor marca $2 · $3 pontos'],
- [/^Clase: (.+)$/,'Class: $1','Classe: $1'],
- [/^General: (.+)$/,'Overall: $1','Geral: $1'],
- [/^desde (.+)$/,'since $1','desde $1'],
- [/^Clasificación (\d+)$/,'Ranking $1','Classificação $1'],
- [/^Grabando… (\d+:\d\d)$/,'Recording… $1','Gravando… $1'],
- [/^Grabación guardada: (.+) \(([\d.,]+) MB\), en la carpeta de datos\.$/,'Recording saved: $1 ($2 MB), in the data folder.','Gravação salva: $1 ($2 MB), na pasta de dados.'],
- [/^No se grabó: (.+)$/,'Not recorded: $T1','Não gravado: $T1'],
- [/^No se encontró la conexión del juego: entra al juego con el personaje y vuelve a grabar\. \((.+)\)$/,'The game connection was not found: enter the game with the character and record again. ($T1)','A conexão do jogo não foi encontrada: entre no jogo com o personagem e grave de novo. ($T1)'],
- [/^· 1 lugar$/,'· 1 place','· 1 lugar'],
- [/^· (\d+) lugares$/,'· $1 places','· $1 lugares'],
- [/^(\d+) pin(es)? · (\d+) ruta(s)? en este mapa · también en el minimapa$/,'$1 pin(s) · $3 route(s) on this map · also on the minimap','$1 pin(s) · $3 rota(s) neste mapa · também no minimapa'],
- [/^Clic en cada punto de la ruta \((\d+)\) · doble clic o Enter para terminar · Esc para cancelar$/,'Click each point of the route ($1) · double click or Enter to finish · Esc to cancel','Clique em cada ponto da rota ($1) · duplo clique ou Enter para terminar · Esc para cancelar'],
- [/^(\d+) puntos · También se ve en el minimapa del overlay\.$/,'$1 points · Also shown on the overlay minimap.','$1 pontos · Também aparece no minimapa do overlay.'],
- [/^Tus marcas de este mapa: (\d+) pin(es)? · (\d+) ruta(s)?\. También se ven en el minimapa\.$/,'Your marks on this map: $1 pin(s) · $3 route(s). Also shown on the minimap.','Suas marcas neste mapa: $1 pin(s) · $3 rota(s). Também aparecem no minimapa.'],
- [/^de ([\d.,]+) objetos seguidos$/,'of $1 items followed','de $1 itens acompanhados'],
- [/^hace (\d+) (min|h|d) · se actualiza cada hora$/,'$1 $2 ago · updated every hour','há $1 $2 · atualiza a cada hora'],
- [/^Datos: aion2\.exchange · foto de las (.+)$/,'Data: aion2.exchange · snapshot at $1','Dados: aion2.exchange · foto das $1'],
- [/^· tienes ([\d.,]+)$/,'· you have $1','· você tem $1'],
- [/^([\d.,]+) en venta$/,'$1 on sale','$1 à venda'],
- [/^Se muestran 300 de ([\d.,]+): afina la búsqueda o la categoría\.$/,'Showing 300 of $1: narrow the search or the category.','Mostrando 300 de $1: refine a busca ou a categoria.'],
- [/^No se pudo actualizar el Mercado \((.+)\)\. Se muestran los datos de las (.+)\.$/,'Could not update the Market ($T1). Showing the data of $2.','Não foi possível atualizar o Mercado ($T1). Mostrando os dados das $2.'],
- [/^No se pudo actualizar el Mercado \((.+)\)\.$/,'Could not update the Market ($T1).','Não foi possível atualizar o Mercado ($T1).'],
- [/^(.+): no respondió con datos \(HTTP (\d+)\)\.?$/,'$1: did not answer with data (HTTP $2).','$1: não respondeu com dados (HTTP $2).'],
- [/^(.+) · no es tu servidor$/,'$1 · not your server','$1 · não é seu servidor'],
- [/^(.+) · tu servidor$/,'$1 · your server','$1 · seu servidor'],
- [/^Precio guardado: (.+) a ([\d.,]+) kinah en este servidor\.$/,'Price saved: $1 at $2 kinah on this server.','Preço salvo: $1 a $2 kinah neste servidor.'],
- [/^Precio de (.+) borrado\.$/,'Price of $1 cleared.','Preço de $1 apagado.'],
- [/^Mascota · (.+)$/,'Pet · $1','Mascote · $1'],
- [/^Nv\. (\d+)$/,'Lv. $1','Nv. $1'],
- [/^Aviso para (.+)$/,'Alert for $T1','Aviso para $T1'],
- [/^Tú · (.+) · posición aproximada$/,'You · $T1 · approximate position','Você · $T1 · posição aproximada'],
- [/^Tú · (.+) · última posición$/,'You · $T1 · last known position','Você · $T1 · última posição'],
- [/^Tú · ([^·]+)$/,'You · $T1','Você · $T1'],
- [/^([\d.,]+) puntos visibles$/,'$1 visible points','$1 pontos visíveis'],
- [/^Centrar en mí · (.+)$/,'Center on me · $T1','Centralizar em mim · $T1'],
- [/^Caduca a las (.+)$/,'Expires at $1','Expira às $1'],
- [/^Tus personajes verificados \((\d+)\/(\d+)\)$/,'Your verified characters ($1/$2)','Seus personagens verificados ($1/$2)'],
- [/^Ya tienes (\d+) personajes verificados, el máximo por cuenta\. Quita uno en Mi perfil de la web para añadir este\.$/,'You already have $1 verified characters, the maximum per account. Remove one in My profile on the website to add this one.','Você já tem $1 personagens verificados, o máximo por conta. Remova um em Meu perfil no site para adicionar este.'],
- [/^La web oficial todavía muestra «(.+)»\. Puede tardar unos minutos en actualizarse; si no cambia, cierra la sesión del personaje en el juego y vuelve a comprobar\.$/,"The official site still shows «$1». It can take a few minutes to update; if it doesn't change, log out of the character in the game and check again.",'O site oficial ainda mostra «$1». Pode levar alguns minutos para atualizar; se não mudar, saia do personagem no jogo e verifique de novo.'],
- [/^Región ([A-Z]+) · servidor (\d+) · ID (.+)$/,'Region $1 · server $2 · ID $3','Região $1 · servidor $2 · ID $3'],
- [/^(\d+) combates en el historial\.$/,'$1 fights in the history.','$1 combates no histórico.'],
- [/^1 combate en el historial\.$/,'1 fight in the history.','1 combate no histórico.'],
- [/^(\d+)–(\d+) de (\d+) mascotas$/,'$1–$2 of $3 pets','$1–$2 de $3 mascotes'],
- [/^de (\d+) · (\d+)%$/,'of $1 · $2%','de $1 · $2%'],
- [/^Personaje: (.+)$/,'Character: $1','Personagem: $1'],
- [/^(\d+) golpes · (.+)% crítico$/,'$1 hits · $2% crit','$1 golpes · $2% crítico'],
- [/^(.+) · habilidades$/,'$1 · skills','$1 · habilidades'],
- [/^Nv\. (\d+)$/,'Lv. $1','Nv. $1'],
- [/^(\d+) jugadores$/,'$1 players','$1 jogadores'],
- [/^hoy (\d+) almas?(.*)$/,'today $1 souls$2','hoje $1 almas$2'],
- [/^Aparece a las (.+)$/,'Comes back at $1','Volta às $1'],
- [/^Horario fijo · (.+)$/,'Fixed time · $1','Horário fixo · $1'],
- [/^vivo (\d.+)$/,'up $1','vivo $1'],
- [/^El servidor de seguridad del hosting o tu red devolvió una página en lugar de datos \(HTTP (\d+), «(.+)»\)$/,"The hosting's security server or your network returned a page instead of data (HTTP $1, «$2»)",'O servidor de segurança da hospedagem ou a sua rede devolveu uma página em vez de dados (HTTP $1, «$2»)'],
- [/^El servidor de seguridad del hosting o tu red devolvió una página en lugar de datos \(HTTP (\d+)\)$/,"The hosting's security server or your network returned a page instead of data (HTTP $1)",'O servidor de segurança da hospedagem ou a sua rede devolveu uma página em vez de dados (HTTP $1)'],
- [/^No se pudo vincular \(HTTP (\d+)\)$/,'Could not link (HTTP $1)','Não foi possível vincular (HTTP $1)'],
+ [/^Equipo de ([^()]+)$/,'Armor · $1','Equipamento de $1',"Armure · $1"],
+ [/^Equipo del ([^()]+)$/,'Armor · $1','Equipamento do $1',"Armure · $1"],
+ [/^Armas de ([^()]+)$/,'Weapons · $1','Armas de $1',"Armes · $1"],
+ [/^Armas del ([^()]+)$/,'Weapons · $1','Armas do $1',"Armes · $1"],
+ [/^Equipo (olvidado|terrestre|sediento de sangre)$/,'Armor · $1','Equipamento · $1',"Armure · $1"],
+ [/^Armas (olvidadas|terrestres|sedientas de sangre)$/,'Weapons · $1','Armas · $1',"Armes · $1"],
+ [/^ID (\d+) · Datos del cliente$/,'ID $1 · Client data','ID $1 · Dados do cliente',"ID $1 · Données du client"],
+ [/^(.+) · (\d+) ubicaciones$/,'$1 · $2 places','$1 · $2 locais',"$1 · $2 lieux"],
+ [/^(\d+) piezas$/,'$1 pieces','$1 peças',"$1 pièces"],
+ [/^Botín · (\d+) objetos$/,'Loot · $1 items','Saque · $1 itens',"Butin · $1 objets"],
+ [/^(\d+) con precio · (\d+) sin precio$/,'$1 priced · $2 without a price','$1 com preço · $2 sem preço',"$1 avec prix · $2 sans prix"],
+ [/^PNJ ([\d.,]+) c\/u$/,'NPC $1 each','PNJ $1 cada',"PNJ $1 chacun"],
+ [/^hace (\d+) (min|h|d)$/,'$1 $2 ago','há $1 $2',"il y a $1 $2"],
+ [/^Servidor (\d+)$/,'Server $1','Servidor $1',"Serveur $1"],
+ [/^Vista (.+) · se renueva a las (.+)$/,'Seen $1 · renews at $2','Vista $1 · renova às $2',"Vu $1 · renouvelé à $2"],
+ [/^Vista (.+) · hay datos nuevos: vuelve a abrirla en el juego$/,'Seen $1 · newer data: open it again in the game','Vista $1 · há dados novos: abra de novo no jogo',"Vu $1 · données plus récentes : rouvre-le dans le jeu"],
+ [/^de ([\d.,]+) · top ([\d.,]+) %$/,'of $1 · top $2 %','de $1 · top $2 %',"sur $1 · top $2 %"],
+ [/^de ([\d.,]+)$/,'of $1','de $1',"sur $1"],
+ [/^🏆 ([\d.,]+) puntos$/,'🏆 $1 points','🏆 $1 pontos',"🏆 $1 points"],
+ [/^([\d.,]+) bajas · ([\d.,]+) muertes · ([\d.,]+) asistencias$/,'$1 kills · $2 deaths · $3 assists','$1 abates · $2 mortes · $3 assistências',"$1 éliminations · $2 morts · $3 assistances"],
+ [/^([\d.,]+) partidas · ([\d.,]+) victorias · ([\d.,]+) derrotas$/,'$1 matches · $2 wins · $3 losses','$1 partidas · $2 vitórias · $3 derrotas',"$1 matchs · $2 victoires · $3 défaites"],
+ [/^Mejor marca: nivel ([\d.,]+) · (\d+:\d\d) · ([\d.,]+) puntos$/,'Best: level $1 · $2 · $3 points','Melhor marca: nível $1 · $2 · $3 pontos',"Meilleur : niveau $1 · $2 · $3 points"],
+ [/^(.+) · mejor marca (\d+:\d\d) · ([\d.,]+) puntos$/,'$1 · best $2 · $3 points','$1 · melhor marca $2 · $3 pontos',"$1 · meilleur $2 · $3 points"],
+ [/^Clase: (.+)$/,'Class: $1','Classe: $1',"Classe : $1"],
+ [/^General: (.+)$/,'Overall: $1','Geral: $1',"Général : $1"],
+ [/^desde (.+)$/,'since $1','desde $1',"depuis $1"],
+ [/^Clasificación (\d+)$/,'Ranking $1','Classificação $1',"Classement $1"],
+ [/^Grabando… (\d+:\d\d)$/,'Recording… $1','Gravando… $1',"Enregistrement… $1"],
+ [/^Grabación guardada: (.+) \(([\d.,]+) MB\), en la carpeta de datos\.$/,'Recording saved: $1 ($2 MB), in the data folder.','Gravação salva: $1 ($2 MB), na pasta de dados.',"Enregistrement sauvegardé : $1 ($2 Mo), dans le dossier de données."],
+ [/^No se grabó: (.+)$/,'Not recorded: $T1','Não gravado: $T1',"Non enregistré : $T1"],
+ [/^No se encontró la conexión del juego: entra al juego con el personaje y vuelve a grabar\. \((.+)\)$/,'The game connection was not found: enter the game with the character and record again. ($T1)','A conexão do jogo não foi encontrada: entre no jogo com o personagem e grave de novo. ($T1)',"La connexion du jeu est introuvable : entre dans le jeu avec le personnage et enregistre à nouveau. ($T1)"],
+ [/^· 1 lugar$/,'· 1 place','· 1 lugar',"· 1 lieu"],
+ [/^· (\d+) lugares$/,'· $1 places','· $1 lugares',"· $1 lieux"],
+ [/^(\d+) pin(es)? · (\d+) ruta(s)? en este mapa · también en el minimapa$/,'$1 pin(s) · $3 route(s) on this map · also on the minimap','$1 pin(s) · $3 rota(s) neste mapa · também no minimapa',"$1 épingle(s) · $3 itinéraire(s) sur cette carte · aussi sur le minimap"],
+ [/^Clic en cada punto de la ruta \((\d+)\) · doble clic o Enter para terminar · Esc para cancelar$/,'Click each point of the route ($1) · double click or Enter to finish · Esc to cancel','Clique em cada ponto da rota ($1) · duplo clique ou Enter para terminar · Esc para cancelar',"Clique sur chaque point de l'itinéraire ($1) · double-clic ou Entrée pour terminer · Échap pour annuler"],
+ [/^(\d+) puntos · También se ve en el minimapa del overlay\.$/,'$1 points · Also shown on the overlay minimap.','$1 pontos · Também aparece no minimapa do overlay.',"$1 points · Affiché aussi sur le minimap de l'overlay."],
+ [/^Tus marcas de este mapa: (\d+) pin(es)? · (\d+) ruta(s)?\. También se ven en el minimapa\.$/,'Your marks on this map: $1 pin(s) · $3 route(s). Also shown on the minimap.','Suas marcas neste mapa: $1 pin(s) · $3 rota(s). Também aparecem no minimapa.',"Tes repères sur cette carte : $1 épingle(s) · $3 itinéraire(s). Affichés aussi sur le minimap."],
+ [/^de ([\d.,]+) objetos seguidos$/,'of $1 items followed','de $1 itens acompanhados',"sur $1 objets suivis"],
+ [/^hace (\d+) (min|h|d) · se actualiza cada hora$/,'$1 $2 ago · updated every hour','há $1 $2 · atualiza a cada hora',"il y a $1 $2 · mis à jour toutes les heures"],
+ [/^Datos: aion2\.exchange · foto de las (.+)$/,'Data: aion2.exchange · snapshot at $1','Dados: aion2.exchange · foto das $1',"Données : aion2.exchange · instantané de $1"],
+ [/^· tienes ([\d.,]+)$/,'· you have $1','· você tem $1',"· tu en as $1"],
+ [/^([\d.,]+) en venta$/,'$1 on sale','$1 à venda',"$1 en vente"],
+ [/^Se muestran 300 de ([\d.,]+): afina la búsqueda o la categoría\.$/,'Showing 300 of $1: narrow the search or the category.','Mostrando 300 de $1: refine a busca ou a categoria.',"300 affichés sur $1 : affine la recherche ou la catégorie."],
+ [/^No se pudo actualizar el Mercado \((.+)\)\. Se muestran los datos de las (.+)\.$/,'Could not update the Market ($T1). Showing the data of $2.','Não foi possível atualizar o Mercado ($T1). Mostrando os dados das $2.',"Impossible de mettre à jour le Marché ($T1). Données du $2 affichées."],
+ [/^No se pudo actualizar el Mercado \((.+)\)\.$/,'Could not update the Market ($T1).','Não foi possível atualizar o Mercado ($T1).',"Impossible de mettre à jour le Marché ($T1)."],
+ [/^(.+): no respondió con datos \(HTTP (\d+)\)\.?$/,'$1: did not answer with data (HTTP $2).','$1: não respondeu com dados (HTTP $2).',"$1 : n'a pas répondu avec des données (HTTP $2)."],
+ [/^(.+) · no es tu servidor$/,'$1 · not your server','$1 · não é seu servidor',"$1 · pas ton serveur"],
+ [/^(.+) · tu servidor$/,'$1 · your server','$1 · seu servidor',"$1 · ton serveur"],
+ [/^Precio guardado: (.+) a ([\d.,]+) kinah en este servidor\.$/,'Price saved: $1 at $2 kinah on this server.','Preço salvo: $1 a $2 kinah neste servidor.',"Prix enregistré : $1 à $2 kinah sur ce serveur."],
+ [/^Precio de (.+) borrado\.$/,'Price of $1 cleared.','Preço de $1 apagado.',"Prix de $1 effacé."],
+ [/^Mascota · (.+)$/,'Pet · $1','Mascote · $1',"Familier · $1"],
+ [/^Nv\. (\d+)$/,'Lv. $1','Nv. $1',"Niv. $1"],
+ [/^Aviso para (.+)$/,'Alert for $T1','Aviso para $T1',"Alerte pour $T1"],
+ [/^Tú · (.+) · posición aproximada$/,'You · $T1 · approximate position','Você · $T1 · posição aproximada',"Toi · $T1 · position approximative"],
+ [/^Tú · (.+) · última posición$/,'You · $T1 · last known position','Você · $T1 · última posição',"Toi · $T1 · dernière position connue"],
+ [/^Tú · ([^·]+)$/,'You · $T1','Você · $T1',"Toi · $T1"],
+ [/^([\d.,]+) puntos visibles$/,'$1 visible points','$1 pontos visíveis',"$1 points visibles"],
+ [/^Centrar en mí · (.+)$/,'Center on me · $T1','Centralizar em mim · $T1',"Centrer sur moi · $T1"],
+ [/^Caduca a las (.+)$/,'Expires at $1','Expira às $1',"Expire à $1"],
+ [/^Tus personajes verificados \((\d+)\/(\d+)\)$/,'Your verified characters ($1/$2)','Seus personagens verificados ($1/$2)',"Tes personnages vérifiés ($1/$2)"],
+ [/^Ya tienes (\d+) personajes verificados, el máximo por cuenta\. Quita uno en Mi perfil de la web para añadir este\.$/,'You already have $1 verified characters, the maximum per account. Remove one in My profile on the website to add this one.','Você já tem $1 personagens verificados, o máximo por conta. Remova um em Meu perfil no site para adicionar este.',"Tu as déjà $1 personnages vérifiés, le maximum par compte. Retires-en un dans Mon profil sur le site pour ajouter celui-ci."],
+ [/^La web oficial todavía muestra «(.+)»\. Puede tardar unos minutos en actualizarse; si no cambia, cierra la sesión del personaje en el juego y vuelve a comprobar\.$/,"The official site still shows «$1». It can take a few minutes to update; if it doesn't change, log out of the character in the game and check again.",'O site oficial ainda mostra «$1». Pode levar alguns minutos para atualizar; se não mudar, saia do personagem no jogo e verifique de novo.',"Le site officiel affiche encore « $1 ». La mise à jour peut prendre quelques minutes ; si rien ne change, déconnecte le personnage dans le jeu et vérifie à nouveau."],
+ [/^Región ([A-Z]+) · servidor (\d+) · ID (.+)$/,'Region $1 · server $2 · ID $3','Região $1 · servidor $2 · ID $3',"Région $1 · serveur $2 · ID $3"],
+ [/^(\d+) combates en el historial\.$/,'$1 fights in the history.','$1 combates no histórico.',"$1 combats dans l'historique."],
+ [/^1 combate en el historial\.$/,'1 fight in the history.','1 combate no histórico.',"1 combat dans l'historique."],
+ [/^(\d+)–(\d+) de (\d+) mascotas$/,'$1–$2 of $3 pets','$1–$2 de $3 mascotes',"$1–$2 sur $3 familiers"],
+ [/^de (\d+) · (\d+)%$/,'of $1 · $2%','de $1 · $2%',"sur $1 · $2%"],
+ [/^Personaje: (.+)$/,'Character: $1','Personagem: $1',"Personnage : $1"],
+ [/^(\d+) golpes · (.+)% crítico$/,'$1 hits · $2% crit','$1 golpes · $2% crítico',"$1 coups · $2% crit."],
+ [/^(.+) · habilidades$/,'$1 · skills','$1 · habilidades',"$1 · compétences"],
+ [/^Nv\. (\d+)$/,'Lv. $1','Nv. $1',"Niv. $1"],
+ [/^(\d+) jugadores$/,'$1 players','$1 jogadores',"$1 joueurs"],
+ [/^hoy (\d+) almas?(.*)$/,'today $1 souls$2','hoje $1 almas$2',"aujourd'hui $1 âmes$2"],
+ [/^Aparece a las (.+)$/,'Comes back at $1','Volta às $1',"Revient à $1"],
+ [/^Horario fijo · (.+)$/,'Fixed time · $1','Horário fixo · $1',"Heure fixe · $1"],
+ [/^vivo (\d.+)$/,'up $1','vivo $1',"en vie $1"],
+ [/^El servidor de seguridad del hosting o tu red devolvió una página en lugar de datos \(HTTP (\d+), «(.+)»\)$/,"The hosting's security server or your network returned a page instead of data (HTTP $1, «$2»)",'O servidor de segurança da hospedagem ou a sua rede devolveu uma página em vez de dados (HTTP $1, «$2»)',"Le serveur de sécurité de l'hébergeur ou ton réseau a renvoyé une page au lieu de données (HTTP $1, « $2 »)"],
+ [/^El servidor de seguridad del hosting o tu red devolvió una página en lugar de datos \(HTTP (\d+)\)$/,"The hosting's security server or your network returned a page instead of data (HTTP $1)",'O servidor de segurança da hospedagem ou a sua rede devolveu uma página em vez de dados (HTTP $1)',"Le serveur de sécurité de l'hébergeur ou ton réseau a renvoyé une page au lieu de données (HTTP $1)"],
+ [/^No se pudo vincular \(HTTP (\d+)\)$/,'Could not link (HTTP $1)','Não foi possível vincular (HTTP $1)',"Liaison impossible (HTTP $1)"],
  // Last: a category and a quantity («Mascota · 1», the Atlas loot lines).
- [/^(.+) · (\d+(?:–\d+)?)$/,'$T1 · $2','$T1 · $2'],
+ [/^(.+) · (\d+(?:–\d+)?)$/,'$T1 · $2','$T1 · $2',"$T1 · $2"],
 ];
 // In a pattern, $T1…$T9 is that group translated as well (an event, a status or a category inside a longer phrase).
 function i18nText(s,depth=0){if(uiLang==='es'||!s)return s;const d=i18nDict[uiLang]||{};const t=s.trim();if(!t)return s;
  if(d[t]!==undefined)return s.replace(t,()=>d[t]);
- for(const [re,en,pt] of I18N_PATTERNS){const m=t.match(re);if(!m)continue;
-  const out=(uiLang==='en'?en:pt).replace(/\$(T?)(\d)/g,(_,tr,i)=>{const v=m[+i]??'';return tr&&depth<3?i18nText(v,depth+1):v;});return s.replace(t,()=>out);}
+ for(const [re,en,pt,fr] of I18N_PATTERNS){const m=t.match(re);if(!m)continue;
+  const out=(uiLang==='en'?en:uiLang==='fr'?(fr??en):pt).replace(/\$(T?)(\d)/g,(_,tr,i)=>{const v=m[+i]??'';return tr&&depth<3?i18nText(v,depth+1):v;});return s.replace(t,()=>out);}
  return s;}
 function i18nNode(n){if(n.nodeType===3){const p=n.parentNode;if(!p||/^(SCRIPT|STYLE)$/.test(p.nodeName))return;
   if(!i18nOrig.has(n)||(n.nodeValue!==i18nOrig.get(n).out))i18nOrig.set(n,{src:n.nodeValue,out:null});
@@ -366,8 +366,31 @@ function i18nNode(n){if(n.nodeType===3){const p=n.parentNode;if(!p||/^(SCRIPT|ST
  if(n.tagName==='OPTION'||n.tagName==='SELECT'){} // options are text nodes, handled below
  for(const c of n.childNodes)i18nNode(c);}
 // Configuración → Estilos: each thumbnail is the overlay drawn in the panel's language (styles/en/, styles/pt/; Spanish in styles/).
-function styleThumbs(){const dir=uiLang==='en'||uiLang==='pt'?`styles/${uiLang}/`:'styles/';document.querySelectorAll('.style-card[data-style] img').forEach(img=>{const src=dir+img.closest('[data-style]').dataset.style+'.webp';if(img.getAttribute('src')!==src)img.setAttribute('src',src);});}
-function applyLanguage(lang){uiLang=lang||'es';document.documentElement.lang=uiLang==='pt'?'pt-BR':uiLang;i18nBusy=true;try{i18nNode(document.body);}finally{i18nBusy=false;}styleThumbs();const sel=$('cfg-language');if(sel&&document.activeElement!==sel)sel.value=uiLang;}
+function styleThumbs(){const dir=uiLang==='pt'?'styles/pt/':uiLang==='en'||uiLang==='fr'?'styles/en/':'styles/';document.querySelectorAll('.style-card[data-style] img').forEach(img=>{const src=dir+img.closest('[data-style]').dataset.style+'.webp';if(img.getAttribute('src')!==src)img.setAttribute('src',src);});}
+// Item names in the panel's language, from /data/items.json ([es, en, icon, grade, price, pt, fr], loaded on first need):
+// Portuguese and French for the gear only (the vendor's table), English otherwise; Spanish as the loot tables write it.
+let itemRows={},itemBook=null;
+const itemTable=()=>uiLang==='es'?Promise.resolve():(itemBook??=fetch('/data/items.json').then(r=>r.json()).then(t=>{itemRows=t||{};}).catch(()=>{}));
+const ownItemName=(id,lang)=>{const r=itemRows[id],c={es:0,en:1,pt:5,fr:6}[lang];return r&&c!=null&&r[c]?r[c]:null;};
+const itemName=d=>uiLang==='es'?d.name:ownItemName(d.id,uiLang)||ownItemName(d.id,'en')||d.name;
+// A gear series in the panel's language, as DropsWindow.LocalSeries does it for the overlay: English puts it first («Tempest
+// armor»), Portuguese and French after the piece («Equipamento da Tempestade», «Armure de la tempête») or as an adjective
+// taken from a piece of the head word's gender («Armure oubliée», «Armes oubliées»). Null keeps the Spanish title.
+const SERIES_AGREE={pt:['Yelmo','Peto'],fr:['Peto','Capa'],weapons:['Daga','Espada larga','Maza']};
+function localSeries(armour,pieces){
+ if(uiLang==='es')return null;
+ const lang=pieces.every(p=>ownItemName(p.id,uiLang))?uiLang:'en',names=pieces.map(p=>ownItemName(p.id,lang));
+ if(names.some(x=>!x)||new Set(names).size<2)return null;
+ const words=names.map(x=>x.split(' '));
+ if(lang==='en'){let same=0;while(words.every(w=>same<w.length-1&&w[same]===words[0][same]))same++;return same?`${words[0].slice(0,same).join(' ')} ${armour?'armor':'weapons'}`:null;}
+ const head=lang==='pt'?(armour?'Equipamento':'Armas'):(armour?'Armure':'Armes'),tails=new Map();
+ for(const w of words){const i=w.findIndex((x,k)=>k>0&&(/^(de|da|do|das|dos|du|des)$/.test(x)||/^d['’]/.test(x)));if(i>0){const t=w.slice(i).join(' ');tails.set(t,(tails.get(t)||0)+1);}}
+ const usual=[...tails].sort((a,b)=>b[1]-a[1])[0];if(usual&&usual[1]*2>=names.length)return `${head} ${usual[0]}`;
+ const piece=pieces.find(p=>(armour?SERIES_AGREE[lang]:SERIES_AGREE.weapons).includes(p.category)),named=piece&&ownItemName(piece.id,lang).split(' ');
+ if(!named||named.length<2)return null;
+ const adj=named[named.length-1];return `${head} ${!armour&&!/[sx]$/.test(adj)?adj+'s':adj}`;
+}
+function applyLanguage(lang){uiLang=lang||'es';document.documentElement.lang=uiLang==='pt'?'pt-BR':uiLang;itemTable();i18nBusy=true;try{i18nNode(document.body);}finally{i18nBusy=false;}styleThumbs();const sel=$('cfg-language');if(sel&&document.activeElement!==sel)sel.value=uiLang;}
 new MutationObserver(list=>{if(i18nBusy||uiLang==='es')return;i18nBusy=true;try{for(const m of list){if(m.type==='characterData')i18nNode(m.target);else m.addedNodes.forEach(i18nNode);}}finally{i18nBusy=false;}})
  .observe(document.documentElement,{childList:true,subtree:true,characterData:true});
 fetch('/data/i18n.json').then(r=>r.json()).then(d=>{i18nDict=d;applyLanguage(data?.settings?.Language||uiLang);}).catch(()=>{});
@@ -390,7 +413,7 @@ function renderFieldBosses(){const maps=fbData;if(!maps||!$('fb-list'))return;
   else if((b.Phase==='Respawn'||b.Phase==='Fixed')&&at){right=(b.Estimated?'~':'')+fbClock(at-now);cls=at-now<5*60000?'soon':'';}
   else if(b.Phase==='Dead'){right='muerto';cls='dead';}
   else right='—';
-  const when=at?new Date(at).toLocaleTimeString(uiLang==='pt'?'pt-BR':uiLang==='en'?'en-GB':'es-CL',{hour:'2-digit',minute:'2-digit'}):null;
+  const when=at?new Date(at).toLocaleTimeString(uiLang==='pt'?'pt-BR':uiLang==='en'?'en-GB':uiLang==='fr'?'fr-FR':'es-CL',{hour:'2-digit',minute:'2-digit'}):null;
   const src=b.Source==='seen'?' · visto por ti':'';
   const sub=b.Phase==='Now'?'Ha aparecido'+src:b.Phase==='Dead'?`Murió a las ${when} · abre la lista del mapa para saber su reaparición`:b.Phase==='Respawn'?(b.Estimated?`Aparece hacia las ${when} · estimado por su última muerte`:`Aparece a las ${when}`):b.Phase==='Fixed'?`Horario fijo · ${when}`:'Sin datos: abre la lista en el mapa del juego';
   return `<div class="fb-row ${cls}"><button class="fb-star${b.Starred?' on':''}" data-fb-star="${b.Npc}" title="Avisarme de este jefe">★</button>${icon(b.Icon,b.Name,'fb-icon')}<span class="fb-name"><b>${esc(b.Name)}</b><small>${esc(sub)}</small></span><strong class="fb-time">${esc(right)}</strong></div>`;}).join('')||'<p class="empty">Sin jefes en este mapa.</p>';}
@@ -401,11 +424,11 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-fb-map]');
  const ld=e.target.closest('[data-fb-lead]');if(ld){send('set',{key:'fieldBossLead',value:Number(ld.dataset.fbLead)});document.querySelectorAll('[data-fb-lead]').forEach(x=>x.classList.toggle('on',x===ld));}});
 
 // ---- Registro de botín y kinah de la sesión (0x1B56) ----
-function renderLoot(f){if(!f||!$('loot-log'))return;const n=v=>Number(v||0).toLocaleString(uiLang==='pt'?'pt-BR':uiLang==='en'?'en-US':'es-CL');
+function renderLoot(f){if(!f||!$('loot-log'))return;const n=v=>Number(v||0).toLocaleString(uiLang==='pt'?'pt-BR':uiLang==='en'?'en-US':uiLang==='fr'?'fr-FR':'es-CL');
  const hours=Math.max(1/60,(Date.now()-new Date(f.start).getTime())/3600000);
  $('loot-kinah').textContent=n(f.kinah);$('loot-kinah-h').textContent=n(Math.round(f.kinah/hours));$('loot-value').textContent=n(f.lootValue);$('loot-kinah-now').textContent=f.kinahNow==null?'—':n(f.kinahNow);
  const row=(icn,name,grade,right,sub)=>`<div class="loot-row">${icon(icn,name,'loot-icon')}<span><b class="grade-${esc(grade)}">${esc(name)}</b><small>${esc(sub)}</small></span><strong>${esc(right)}</strong></div>`;
- const log=(f.loot||[]).map(l=>row(l.Icon,l.Name,l.Grade,'×'+n(l.Quantity),`${new Date(l.At).toLocaleTimeString(uiLang==='pt'?'pt-BR':uiLang==='en'?'en-GB':'es-CL')}${l.Value?' · '+n(l.Value)+' kinah':''}`)).join('');
+ const log=(f.loot||[]).map(l=>row(l.Icon,l.Name,l.Grade,'×'+n(l.Quantity),`${new Date(l.At).toLocaleTimeString(uiLang==='pt'?'pt-BR':uiLang==='en'?'en-GB':uiLang==='fr'?'fr-FR':'es-CL')}${l.Value?' · '+n(l.Value)+' kinah':''}`)).join('');
  const top=(f.top||[]).map(t=>row(t.icon,t.name,t.grade,n(t.value)+' kinah','×'+n(t.qty))).join('');
  const set=(id,html,empty)=>{const el=$(id);const v=html||`<p class="empty">${empty}</p>`;if(el.dataset.html!==v){el.innerHTML=v;el.dataset.html=v;}};
  set('loot-log',log,'Lo que recojas aparecerá aquí con su cantidad y su valor de venta al mercader.');set('loot-top',top,'Sin botín todavía.');}
@@ -414,7 +437,7 @@ const _rcLoot=window.renderCompanion;window.renderCompanion=d=>{_rcLoot?.(d);if(
 // ---- Objetivos: meta de muertes, kinah o botín con estimación de fin ----
 const goalPresets={kills:[50,100,300,500],kinah:[100000,500000,1000000,5000000],loot:[50000,200000,1000000]};
 let goalInit=false;
-const goalLocale=()=>uiLang==='pt'?'pt-BR':uiLang==='en'?'en-US':'es-CL';
+const goalLocale=()=>uiLang==='pt'?'pt-BR':uiLang==='en'?'en-US':uiLang==='fr'?'fr-FR':'es-CL';
 function goalPresetButtons(){const k=$('goal-kind').value;$('goal-presets').innerHTML=goalPresets[k].map(v=>`<button class="chip" data-goal-preset="${v}">${Number(v).toLocaleString(goalLocale())}</button>`).join('');}
 function goalSend(minutes){const target=Math.max(1,Math.round(Number($('goal-target').value)||0));send('goal-set',{kind:$('goal-kind').value,target,minutes:minutes??Math.max(0,Math.round(Number($('goal-minutes').value)||0))});}
 if($('goal-kind')){$('goal-kind').onchange=goalPresetButtons;goalPresetButtons();$('goal-set').onclick=()=>goalSend();$('goal-challenge').onclick=()=>{$('goal-minutes').value=30;goalSend(30);};
@@ -435,7 +458,7 @@ const _rcGoal=window.renderCompanion;window.renderCompanion=d=>{_rcGoal?.(d);ren
 
 // ---- Cubos ocultos: el cubo vivo (0x3436) y los puntos posibles alrededor ----
 function cubeArrow(deg){return deg==null?'':`<span class="cube-arrow" data-rot="${(deg-90).toFixed(0)}">➤</span>`;}
-function renderCubes(c){if(!c||!$('cube-now'))return;const loc=uiLang==='pt'?'pt-BR':uiLang==='en'?'en-GB':'es-CL';
+function renderCubes(c){if(!c||!$('cube-now'))return;const loc=uiLang==='pt'?'pt-BR':uiLang==='en'?'en-GB':uiLang==='fr'?'fr-FR':'es-CL';
  $('cube-map').textContent=c.map||'Mapa sin identificar';
  const put=(id,v)=>{const el=$(id);if(el.dataset.html!==v){el.innerHTML=v;el.dataset.html=v;el.querySelectorAll('[data-rot]').forEach(x=>x.style.transform=`rotate(${x.dataset.rot}deg)`);}};
  const a=c.Active;const hgt=c.Height==null?'':Math.abs(c.Height)<2?'a tu altura':c.Height>0?`${c.Height.toFixed(0)} m arriba`:`${(-c.Height).toFixed(0)} m abajo`;
@@ -460,7 +483,7 @@ const _rcNews=window.renderCompanion;window.renderCompanion=d=>{_rcNews?.(d);con
 // Recursos: coins, Od, entries and limits of each character (ResourceBook), the one in play first.
 let resChoice=null;
 function renderResources(list){const t=x=>x;const view=$('res-view'),sel=$('res-character');if(!view||!sel||!list)return;
- const loc=uiLang==='pt'?'pt-BR':uiLang==='en'?'en-GB':'es-CL';const n=v=>v==null?'—':Number(v).toLocaleString(loc);
+ const loc=uiLang==='pt'?'pt-BR':uiLang==='en'?'en-GB':uiLang==='fr'?'fr-FR':'es-CL';const n=v=>v==null?'—':Number(v).toLocaleString(loc);
  const opts=list.map(r=>`<option value="${esc(r.key)}">${esc(r.character)}${r.serverName?' · '+esc(r.serverName):''}${r.live?' · '+t('en juego'):''}</option>`).join('');
  if(sel.dataset.html!==opts){sel.innerHTML=opts;sel.dataset.html=opts;}
  if(!list.length){sel.hidden=true;return;}sel.hidden=false;
@@ -505,7 +528,7 @@ function renderMarketServers(home,server){const sel=$('market-server');if(!sel||
 function renderMarket(m,b){const view=$('market-view');if(!view)return;if(m)marketData=m;if(b)marketBoard=b;m=marketData;b=marketBoard;if(!m&&!b)return;
  renderMarketServers(m?.home,m?.server??b?.server);
  const active=document.activeElement;if(active&&view.contains(active)&&active.matches('input,select')){marketHeld=true;return;}marketHeld=false;
- const loc=uiLang==='pt'?'pt-BR':uiLang==='en'?'en-GB':'es-CL';const n=v=>v==null?'—':Number(v).toLocaleString(loc);
+ const loc=uiLang==='pt'?'pt-BR':uiLang==='en'?'en-GB':uiLang==='fr'?'fr-FR':'es-CL';const n=v=>v==null?'—':Number(v).toLocaleString(loc);
  const ago=d=>{const min=Math.max(0,Math.round((Date.now()-new Date(d))/60000));return min<60?`hace ${min} min`:min<1440?`hace ${Math.round(min/60)} h`:`hace ${Math.round(min/1440)} d`;};
  const clock=d=>new Date(d).toLocaleTimeString(loc,{hour:'2-digit',minute:'2-digit'});
  const q=marketFold(($('market-search')?.value||'').trim());const mode=marketState.mode==='mine'?'mine':'all';
@@ -555,7 +578,7 @@ let rankingData=null,dungeonNames={};
 fetch('/data/dungeon-names.json').then(r=>r.json()).then(d=>{dungeonNames=d;renderRanking();}).catch(()=>{});
 const RANK_NAMES={1:'Abismo',3:'Jefes',4:'Expedición',21:'Despertar',5:'Arena',6:'Arena 2'};
 function renderRanking(r){const view=$('ranking-view');if(!view)return;if(r)rankingData=r;r=rankingData;if(!r)return;
- const loc=uiLang==='pt'?'pt-BR':uiLang==='en'?'en-GB':'es-CL';const n=v=>v==null?'—':Number(v).toLocaleString(loc);
+ const loc=uiLang==='pt'?'pt-BR':uiLang==='en'?'en-GB':uiLang==='fr'?'fr-FR':'es-CL';const n=v=>v==null?'—':Number(v).toLocaleString(loc);
  const clock=d=>new Date(d).toLocaleTimeString(loc,{hour:'2-digit',minute:'2-digit'}),day=d=>new Date(d).toLocaleDateString(loc,{day:'2-digit',month:'short'});
  const when=d=>{const t=new Date(d),today=new Date();return t.toDateString()===today.toDateString()?clock(d):day(d)+' '+clock(d);};
  const mmss=s=>s==null?'':`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
@@ -583,7 +606,7 @@ function renderRanking(r){const view=$('ranking-view');if(!view)return;if(r)rank
  if(view.dataset.html!==html){view.innerHTML=html;view.dataset.html=html;}}
 // «Grabar 2 minutos»: recording (seconds left), saved (file and size) or why it failed.
 function renderRecording(s){const b=$('record-button'),note=$('record-status');if(!b||!note)return;
- const loc=uiLang==='pt'?'pt-BR':uiLang==='en'?'en-GB':'es-CL';
+ const loc=uiLang==='pt'?'pt-BR':uiLang==='en'?'en-GB':uiLang==='fr'?'fr-FR':'es-CL';
  b.disabled=s?.state==='recording';const label=s?.state==='recording'?`Grabando… ${Math.floor(s.left/60)}:${String(s.left%60).padStart(2,'0')}`:'Grabar';if(b.textContent!==label)b.textContent=label;
  const text=!s?'':s.state==='recording'?'Haz ahora en el juego lo que quieras grabar.':s.state==='done'?`Grabación guardada: ${s.file} (${(s.bytes/1048576).toLocaleString(loc,{maximumFractionDigits:1})} MB), en la carpeta de datos.`:`No se grabó: ${s.reason}`;
  note.hidden=!text;if(note.textContent!==text)note.textContent=text;note.classList.toggle('failed',s?.state==='failed');}
@@ -598,7 +621,7 @@ const _rcChrome=window.renderCompanion;window.renderCompanion=d=>{_rcChrome?.(d)
 const supStates={open:'Abierta',pending:'Abierta',answered:'Respondida',waiting:'Esperando tu respuesta',closed:'Cerrada'};
 const supTopics={account:'Cuenta',desktop:'Aplicación',map:'Mapa',data:'Datos del juego',subscription:'Suscripción',other:'Otro'};
 let supSentAt=0,supLastOpen=null;
-function renderSupport(s){if(!s||!$('sup-list'))return;const loc=uiLang==='pt'?'pt-BR':uiLang==='en'?'en-GB':'es-CL';
+function renderSupport(s){if(!s||!$('sup-list'))return;const loc=uiLang==='pt'?'pt-BR':uiLang==='en'?'en-GB':uiLang==='fr'?'fr-FR':'es-CL';
  const when=x=>x?new Date(String(x).replace(' ','T')+(String(x).endsWith('Z')?'':'Z')).toLocaleString(loc,{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'';
  $('sup-unpaired').hidden=!!s.paired;$('sup-send').disabled=!s.paired;
  const put=(id,html)=>{const el=$(id);if(el.dataset.html!==html){el.innerHTML=html;el.dataset.html=html;}};

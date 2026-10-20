@@ -81,7 +81,7 @@ public sealed class AppSettings
     public int FieldBossLeadMinutes { get; set; } = 5;
     /// <summary>Columns shown per skill in the fight details (hits, crit, back, front, perfect, double, multi, avg, max).</summary>
     public HashSet<string> BreakdownColumns { get; set; } = ["hits", "crit", "avg", "max"];
-    /// <summary>Interface language: "es", "en" or "pt" (Brazilian Portuguese).</summary>
+    /// <summary>Interface language: "es", "en", "pt" (Brazilian Portuguese) or "fr".</summary>
     public string Language { get; set; } = "es";
     /// <summary>The farm block folded to one line (click its title in move mode).</summary>
     public bool FarmCollapsed { get; set; }

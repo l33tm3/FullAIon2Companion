@@ -91,7 +91,7 @@ public sealed class FieldBossBoard
     public IReadOnlyList<FieldBossMapView> View()
     {
         var now = DateTime.Now;
-        string lang = L.Language == "pt" ? "pt" : L.Language == "en" ? "en" : "es";
+        string lang = L.Language is "pt" or "en" or "fr" ? L.Language : "es";
         return Aion2FieldBosses.Maps.Select(m => new FieldBossMapView(m.Key, m.NameIn(lang), m.Bosses.Select(b =>
         {
             var (st, estimated, source) = Merge(b, now);
@@ -120,7 +120,7 @@ public sealed class FieldBossBoard
             {
                 var (st, _, _) = Merge(b, now);
                 if (st.At is not DateTime at) continue;
-                string name = Aion2FieldBosses.DisplayName(m, b, L.Language == "pt" ? "pt" : L.Language == "en" ? "en" : "es");
+                string name = Aion2FieldBosses.DisplayName(m, b, L.Language is "pt" or "en" or "fr" ? L.Language : "es");
                 bool soon = st.Phase is BossPhase.Respawn or BossPhase.Fixed && at > now && at - now <= TimeSpan.FromMinutes(settings.FieldBossLeadMinutes);
                 bool up = st.Phase == BossPhase.Now && now - at < TimeSpan.FromMinutes(2);
                 if (soon && announced.Add((b.Npc, at, false))) { overlay.Toast(name, "#E9C77E", at, false); if (settings.Sounds) timers.Play(); }

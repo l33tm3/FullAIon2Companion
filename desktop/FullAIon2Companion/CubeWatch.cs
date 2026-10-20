@@ -59,7 +59,7 @@ public sealed class CubeWatch
     /// <summary>Kind (Cube, Od, Ore, Gemstone, Herb, Food, Wood, Cotton, Fragment) and name in the interface language, or null.</summary>
     public static (string Kind, string Name)? Classify(int envId)
     {
-        if (IsCube(envId)) return ("Cube", L.Language == "en" ? "Hidden Cube" : L.Language == "pt" ? "Cubo oculto" : "Cubo oculto");
+        if (IsCube(envId)) return ("Cube", L.Language == "en" ? "Hidden Cube" : L.Language == "fr" ? "Cube caché" : "Cubo oculto");
         if (!gather.TryGetValue(envId, out var g)) return null;
         string name = g.Names.TryGetValue(L.Language, out var n) && n.Length > 0 ? n : g.Names.TryGetValue("es", out var es) ? es : g.Kind;
         return (g.Kind, name);

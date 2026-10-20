@@ -1,193 +1,193 @@
-EN ESPERA	IDLE	EM ESPERA
-Esperando objetivo	Waiting for target	Aguardando alvo
-Esperando identidad · captura pasiva	Waiting for identity · passive capture	Aguardando identidade · captura passiva
-Arrastra para cambiar el tamaño del overlay	Drag to resize the overlay	Arraste para mudar o tamanho do overlay
-Plegar o desplegar (en modo mover)	Fold or unfold (in move mode)	Recolher ou expandir (no modo mover)
-Tiempo de sesión	Session time	Tempo de sessão
-Muertes	Kills	Abates
-Almas	Souls	Almas
-Muertes / h	Kills / h	Abates / h
-Almas / h	Souls / h	Almas / h
-SESIÓN DE FARMEO ▸	FARM SESSION ▸	SESSÃO DE FARM ▸
-SESIÓN DE FARMEO ▾	FARM SESSION ▾	SESSÃO DE FARM ▾
-Nv. 3 · máximo	Lv. 3 · max	Nv. 3 · máximo
-falta 1	1 left	falta 1
-Nv. 3 · MÁX.	Lv. 3 · MAX	Nv. 3 · MÁX.
-Sin desbloquear	Not unlocked	Não desbloqueado
-esperando la lista del juego	waiting for the game's list	aguardando a lista do jogo
-Nivel máximo alcanzado	Maximum level reached	Nível máximo alcançado
-hoy sin almas aún	no souls yet today	nenhuma alma hoje ainda
-MODO MOVER · arrastra el panel · clic en el objetivo abre su ficha · Ctrl+Alt+M para fijar	MOVE MODE · drag the panel · click the target to open its card · Ctrl+Alt+M to lock	MODO MOVER · arraste o painel · clique no alvo para abrir a ficha · Ctrl+Alt+M para fixar
-Captura activa	Capture active	Captura ativa
-EN PAUSA	PAUSED	PAUSADO
-EN COMBATE	IN COMBAT	EM COMBATE
-IDENTIDAD PENDIENTE	IDENTITY PENDING	IDENTIDADE PENDENTE
-Sin objetivo · selecciona una criatura	No target · select a creature	Sem alvo · selecione uma criatura
-Objetivo sin identificar	Unidentified target	Alvo não identificado
-Buscando tráfico del juego… entra con tu personaje en AION 2	Looking for game traffic… log in with your character in AION 2	Procurando tráfego do jogo… entre com seu personagem no AION 2
-Teletranspórtate a algún lugar para detectar tu personaje	Teleport somewhere to detect your character	Teletransporte-se para algum lugar para detectar seu personagem
-Objetivo sin identificar: el juego no lo anunció (ya estaba cerca). Aléjate hasta perderlo de vista y vuelve, o elige otro	Unidentified target: the game didn't announce it (it was already nearby). Walk away until it's out of sight and come back, or pick another	Alvo não identificado: o jogo não o anunciou (já estava perto). Afaste-se até perdê-lo de vista e volte, ou escolha outro
-Vida máxima sin confirmar · el % es un máximo hasta verlo con vida llena	Max health unconfirmed · the % is an upper bound until it's seen at full health	Vida máxima não confirmada · o % é um máximo até vê-lo com vida cheia
-Personaje deducido · teletranspórtate para confirmarlo	Character inferred · teleport to confirm it	Personagem deduzido · teletransporte-se para confirmá-lo
-Esperando tu personaje	Waiting for your character	Aguardando seu personagem
-1 criatura	1 creature	1 criatura
-MIEMBRO  ·  PE  ·  PC  ·  ESTADO	MEMBER  ·  GS  ·  CP  ·  STATUS	MEMBRO  ·  PE  ·  PC  ·  STATUS
-MIEMBRO	MEMBER	MEMBRO
-PE	GS	PE
-PC	CP	PC
-GRUPO	GROUP	GRUPO
-Últimas: 	Recent: 	Últimas:
-Líder	Leader	Líder
-✓ Listo	✓ Ready	✓ Pronto
-No listo	Not ready	Não pronto
-  (deducido)	  (inferred)	  (deduzido)
-Identificando…	Identifying…	Identificando…
-Furia en	Enrage in	Fúria em
-DPS del grupo	Group DPS	DPS do grupo
-Derrota en	Kill in	Derrota em
-Vida en furia	HP at enrage	Vida na fúria
-EN FURIA	ENRAGED	EM FÚRIA
-Furia: se aprende la primera vez que este jefe se enfurece	Enrage: learned the first time this boss enrages	Fúria: aprendida na primeira vez que este chefe se enfurece
-Arrastra para mover el panel del jefe	Drag to move the boss panel	Arraste para mover o painel do chefe
-¡Comienza ahora!	Starting now!	Começa agora!
-Arrastra para mover el overlay	Drag to move the overlay	Arraste para mover o overlay
-Panel del objetivo: botín de la criatura o perfil del jugador (Ctrl+Alt+B)	Target panel: creature loot or player profile (Ctrl+Alt+B)	Painel do alvo: saque da criatura ou perfil do jogador (Ctrl+Alt+B)
-Minimapa (Ctrl+Alt+N)	Minimap (Ctrl+Alt+N)	Minimapa (Ctrl+Alt+N)
-Tropa: ver toda la tropa o solo tu grupo	Troop: show the whole troop or only your group	Tropa: ver a tropa toda ou só seu grupo
-Desglose de tu combate por habilidad (Ctrl+Alt+D)	Your fight broken down by skill (Ctrl+Alt+D)	Detalhamento do seu combate por habilidade (Ctrl+Alt+D)
-Panel de FullAIon2Companion	FullAIon2Companion panel	Painel do FullAIon2Companion
-Minimapa · requiere Companion Plus en tu cuenta	Minimap · requires Companion Plus on your account	Minimapa · requer Companion Plus na sua conta
-Mostrando toda la tropa · clic para ver solo tu grupo	Showing the whole troop · click to show only your group	Mostrando a tropa toda · clique para ver só seu grupo
-Mostrando solo tu grupo · clic para ver toda la tropa	Showing only your group · click to show the whole troop	Mostrando só seu grupo · clique para ver a tropa toda
-BOTÍN DEL OBJETIVO	TARGET LOOT	SAQUE DO ALVO
-Probabilidades del catálogo, no de esta captura.	Catalog chances, not from this capture.	Probabilidades do catálogo, não desta captura.
-JUGADOR · PERFIL OFICIAL	PLAYER · OFFICIAL PROFILE	JOGADOR · PERFIL OFICIAL
-JcJ: sin clasificación publicada por NCSOFT	PvP: no ranking published by NCSOFT	JxJ: sem classificação publicada pela NCSOFT
-Buscando en NCSOFT…	Searching NCSOFT…	Buscando na NCSOFT…
-Cargando equipo y poder de combate…	Loading gear and combat power…	Carregando equipamento e poder de combate…
-No aparece en la búsqueda oficial de su servidor (nombre recién cambiado u otro servidor).	Not found in their server's official search (recently renamed or another server).	Não aparece na busca oficial do servidor (nome recém-alterado ou outro servidor).
-LO GANAS	YOU WIN	VOCÊ VENCE
-TE GANA	THEY WIN	ELE VENCE
-Cargando detalle oficial…	Loading official detail…	Carregando detalhe oficial…
-Detalle no disponible todavía: el perfil se está actualizando.	Detail not available yet: the profile is updating.	Detalhe ainda indisponível: o perfil está sendo atualizado.
-PIEDRA SAGRADA	HOLY STONE	PEDRA SAGRADA
-Sin daño registrado en este combate todavía.	No damage recorded in this fight yet.	Nenhum dano registrado neste combate ainda.
-Daño	Damage	Dano
-Curación	Healing	Cura
-Máx	Max	Máx
-Ocultar minimapa (Ctrl+Alt+N)	Hide minimap (Ctrl+Alt+N)	Ocultar minimapa (Ctrl+Alt+N)
-Mostrar u ocultar los filtros	Show or hide the filters	Mostrar ou ocultar os filtros
-Arrastra para cambiar el tamaño	Drag to resize	Arraste para mudar o tamanho
-Abismo: el atlas de esta zona todavía no está calibrado para la posición	Abyss: this zone's atlas isn't calibrated for position yet	Abismo: o atlas desta zona ainda não está calibrado para a posição
-Mazmorra o instancia: no hay atlas de esta zona	Dungeon or instance: no atlas for this zone	Masmorra ou instância: não há atlas desta zona
-Esperando tu posición: muévete o usa una habilidad	Waiting for your position: move or use a skill	Aguardando sua posição: mova-se ou use uma habilidade
-Reconociendo el mapa por las criaturas de alrededor…	Recognizing the map from nearby creatures…	Reconhecendo o mapa pelas criaturas ao redor…
-Tu posición queda fuera del atlas de este mapa	Your position is outside this map's atlas	Sua posição fica fora do atlas deste mapa
-Abismo	Abyss	Abismo
-Mazmorra	Dungeon	Masmorra
-Minimapa	Minimap	Minimapa
-Cerrar (la prueba sigue hasta que la canceles)	Close (the test continues until you cancel it)	Fechar (o teste continua até você cancelar)
-Reiniciar ataques	Restart attacks	Reiniciar ataques
-Cancelar la prueba	Cancel the test	Cancelar o teste
-Enviando la evidencia	Sending the evidence	Enviando a evidência
-Ocho ataques registrados con sus tiempos reales.	Eight attacks recorded with their real timings.	Oito ataques registrados com os tempos reais.
-Patrón recibido	Pattern received	Padrão recebido
-El servidor recibió tus ocho ataques con el ritmo correcto. Queda pendiente de validación: el servicio todavía no tiene el verificador que confirma la propiedad, así que el personaje aún no aparece como verificado.	The server received your eight attacks with the right rhythm. It is pending validation: the service doesn't have the verifier that confirms ownership yet, so the character doesn't show as verified yet.	O servidor recebeu seus oito ataques no ritmo certo. Falta a validação: o serviço ainda não tem o verificador que confirma a propriedade, então o personagem ainda não aparece como verificado.
-El servidor confirmó la propiedad del personaje y lo vinculó a tu cuenta.	The server confirmed the character's ownership and linked it to your account.	O servidor confirmou a propriedade do personagem e o vinculou à sua conta.
-La prueba caducó	The test expired	O teste expirou
-Tienes tres pruebas por hora. Puedes pedir otra cuando quieras.	You have three tests per hour. You can request another whenever you want.	Você tem três testes por hora. Pode pedir outro quando quiser.
-Pedir otra prueba	Request another test	Pedir outro teste
-No se pudo completar	Couldn't complete	Não foi possível concluir
-Consultar estado	Check status	Consultar status
-Volver a empezar	Start over	Recomeçar
-Haz ocho ataques con una pausa de cinco segundos entre ellos. La ventana muestra el ritmo de tu prueba.	Make eight attacks with a five-second pause between them. The window shows your test's rhythm.	Faça oito ataques com uma pausa de cinco segundos entre eles. A janela mostra o ritmo do seu teste.
-Usa el mismo Muñeco de entrenamiento y una habilidad que puedas repetir cada cinco segundos. La del primer golpe es la única que cuenta.	Use the same Training Dummy and a skill you can repeat every five seconds. The one from the first hit is the only one that counts.	Use o mesmo Boneco de treinamento e uma habilidade que possa repetir a cada cinco segundos. A do primeiro golpe é a única que conta.
-Esta ventana te marca cada pausa y el momento de atacar (±0,8 s). Si te sales de ritmo, vuelve a empezar desde el primero.	This window marks each pause and the moment to attack (±0.8 s). If you lose the rhythm, start again from the first.	Esta janela marca cada pausa e o momento de atacar (±0,8 s). Se perder o ritmo, recomece do primeiro.
-Lleva alrededor de un minuto. Puedes parar en cualquier momento.	It takes about a minute. You can stop at any time.	Leva cerca de um minuto. Você pode parar a qualquer momento.
-SE FIJA CON TU PRÓXIMO GOLPE	LOCKS WITH YOUR NEXT HIT	FIXA COM SEU PRÓXIMO GOLPE
-SOLO ESTA CUENTA	ONLY THIS ONE COUNTS	SÓ ESTA CONTA
-Cualquier ataque	Any attack	Qualquer ataque
-Espera sin atacar	Wait without attacking	Espere sem atacar
-Te pasaste: reinicia los ataques	Too early: restart the attacks	Passou do tempo: reinicie os ataques
-Sigue el ritmo.	Keep the rhythm.	Siga o ritmo.
-tu personaje	your character	seu personagem
-Heroico	Heroic	Heroico
-Legendario	Legendary	Lendário
-Élite	Elite	Elite
-Único	Unique	Único
-Normal	Normal	Normal
-Kinah	Kinah	Kinah
-Probabilidades del catálogo, no de esta captura. Pasa el mouse por un grupo para ver sus objetos.	Catalog chances, not from this capture. Hover a group to see its items.	Probabilidades do catálogo, não desta captura. Passe o mouse sobre um grupo para ver seus itens.
-Fijado · clic en el grupo para cerrarlo	Pinned · click the group to close it	Fixado · clique no grupo para fechar
-Clic en el grupo para dejarlo fijo	Click the group to pin it	Clique no grupo para fixá-lo
-OBJETOS	ITEMS	ITENS
-EQUIPO	GEAR	EQUIPAMENTO
-LO QUE TE HA DADO	WHAT IT GAVE YOU	O QUE TE DEU
-Sin botín en el catálogo	No loot in the catalog	Sem saque no catálogo
-Lo que vio la app al matarla en este equipo: 3/40 es en 3 de 40 muertes.	What the app saw when you killed it on this computer: 3/40 means in 3 of 40 kills.	O que o app viu ao matá-la neste computador: 3/40 é em 3 de 40 abates.
-Al matarla con la app abierta no te ha dado ningún objeto.	Killed with the app open, it has given you no items.	Abatida com o app aberto, não te deu nenhum item.
-Lo que te dé al matarla con la app abierta aparecerá aquí.	What it gives you when killed with the app open will show here.	O que ela te der ao ser abatida com o app aberto aparecerá aqui.
-Botín · Mercado	Loot · Market	Saque · Mercado
-sin precio	no price	sem preço
-Sin precio de Mercado: ponlo en la pestaña Mercado del panel	No Market price: set it in the panel's Market tab	Sem preço de Mercado: defina na aba Mercado do painel
-vinculado	bound	vinculado
-Vinculado: no se vende en el Mercado	Bound: cannot be sold on the Market	Vinculado: não se vende no Mercado
-Clasificación del Abismo	Abyss ranking	Classificação do Abismo
-Tu clase	Your class	Sua classe
-General	Overall	Geral
-Puntos	Points	Pontos
-Bajas · muertes · asist.	Kills · deaths · assists	Abates · mortes · assist.
-DERROTA EN	KILL IN	DERROTA EM
-FURIA EN	ENRAGE IN	FÚRIA EM
-DPS DEL GRUPO	GROUP DPS	DPS DO GRUPO
-Furia: aún no vista en este jefe	Enrage: not seen yet on this boss	Fúria: ainda não vista neste chefe
-Sin objetivo	No target	Sem alvo
-Cubo oculto	Hidden cube	Cubo oculto
-Cubo	Cube	Cubo
-· fuera de alcance	· out of range	· fora de alcance
-MASCOTAS	PETS	MASCOTES
-MASCOTAS QUE SIGUES	PETS YOU FOLLOW	MASCOTES QUE VOCÊ SEGUE
-FUERA DE COMBATE	OUT OF COMBAT	FORA DE COMBATE
-último:	last:	último:
-♛ JEFE DE CAMPO	♛ FIELD BOSS	♛ CHEFE DE CAMPO
-◈ GRIETA	◈ RIFT	◈ FENDA
-Criaturas	Creatures	Criaturas
-daño	damage	dano
-curación	healing	cura
-criaturas	creatures	criaturas
-selecciona una criatura	select a creature	selecione uma criatura
-COMBATE	COMBAT	COMBATE
-clase	class	classe
-criatura	creature	criatura
-Detalle del combate	Fight details	Detalhe do combate
-Habilidades	Skills	Habilidades
-Mostrar:	Show:	Mostrar:
-Curación total	Total healing	Cura total
-Crítico	Critical	Crítico
-Espalda	Back	Costas
-Frente	Front	Frente
-Perfecto	Perfect	Perfeito
-Doble	Double	Duplo
-Perfecto*	Perfect*	Perfeito*
-Doble*	Double*	Duplo*
-Multigolpe	Multi-hit	Multigolpe
-Media	Average	Média
-Estimado: se confirmará comparando con el analizador de combate del juego (Ctrl+X)	Estimated: to be confirmed against the game's combat analyzer (Ctrl+X)	Estimado: será confirmado comparando com o analisador de combate do jogo (Ctrl+X)
-Guarda el detalle como imagen (Imágenes, carpeta FullAIon2Companion) y la copia al portapapeles	Saves the details as an image (Pictures, FullAIon2Companion folder) and copies it to the clipboard	Salva o detalhe como imagem (Imagens, pasta FullAIon2Companion) e copia para a área de transferência
-Actualizando…	Updating…	Atualizando…
-PAREJO	EVEN	EQUILIBRADO
-ESTADÍSTICAS	STATS	ESTATÍSTICAS
-ADICIONALES	ADDITIONAL	ADICIONAIS
-NCSOFT · ahora	NCSOFT · now	NCSOFT · agora
-Arquero	Ranger	Caçador
-Espiritualista	Spiritmaster	Espiritualista
-MÁX.	MAX	MÁX.
-ahora	now	agora
-Ya	Now	Já
-Grieta	Rift	Fenda
-fuera de alcance, puede que ya no esté	out of range, it may be gone	fora de alcance, pode já não estar
-Ocultar notas anteriores	Hide earlier notes	Ocultar notas anteriores
-Ataque del jefe	Boss attack	Ataque do chefe
-Tu objetivo	Your target	Seu alvo
-Arrastra para mover el asistente de combate	Drag to move the combat assistant	Arraste para mover o assistente de combate
-Texto del nivel máximo: tu nivel aún no llegó del perfil oficial	Max-level text: your level hasn't arrived from the official profile yet	Texto do nível máximo: seu nível ainda não chegou do perfil oficial
+EN ESPERA	IDLE	EM ESPERA	EN ATTENTE
+Esperando objetivo	Waiting for target	Aguardando alvo	En attente d'une cible
+Esperando identidad · captura pasiva	Waiting for identity · passive capture	Aguardando identidade · captura passiva	En attente de l'identité · capture passive
+Arrastra para cambiar el tamaño del overlay	Drag to resize the overlay	Arraste para mudar o tamanho do overlay	Fais glisser pour redimensionner l'overlay
+Plegar o desplegar (en modo mover)	Fold or unfold (in move mode)	Recolher ou expandir (no modo mover)	Replier ou déplier (en mode déplacement)
+Tiempo de sesión	Session time	Tempo de sessão	Durée de la session
+Muertes	Kills	Abates	Éliminations
+Almas	Souls	Almas	Âmes
+Muertes / h	Kills / h	Abates / h	Éliminations / h
+Almas / h	Souls / h	Almas / h	Âmes / h
+SESIÓN DE FARMEO ▸	FARM SESSION ▸	SESSÃO DE FARM ▸	SESSION DE FARM ▸
+SESIÓN DE FARMEO ▾	FARM SESSION ▾	SESSÃO DE FARM ▾	SESSION DE FARM ▾
+Nv. 3 · máximo	Lv. 3 · max	Nv. 3 · máximo	Niv. 3 · max
+falta 1	1 left	falta 1	1 restante
+Nv. 3 · MÁX.	Lv. 3 · MAX	Nv. 3 · MÁX.	Niv. 3 · MAX
+Sin desbloquear	Not unlocked	Não desbloqueado	Non débloqué
+esperando la lista del juego	waiting for the game's list	aguardando a lista do jogo	en attente de la liste du jeu
+Nivel máximo alcanzado	Maximum level reached	Nível máximo alcançado	Niveau maximum atteint
+hoy sin almas aún	no souls yet today	nenhuma alma hoje ainda	pas encore d'âmes aujourd'hui
+MODO MOVER · arrastra el panel · clic en el objetivo abre su ficha · Ctrl+Alt+M para fijar	MOVE MODE · drag the panel · click the target to open its card · Ctrl+Alt+M to lock	MODO MOVER · arraste o painel · clique no alvo para abrir a ficha · Ctrl+Alt+M para fixar	MODE DÉPLACEMENT · fais glisser le panneau · clique sur la cible pour ouvrir sa fiche · Ctrl+Alt+M pour verrouiller
+Captura activa	Capture active	Captura ativa	Capture active
+EN PAUSA	PAUSED	PAUSADO	EN PAUSE
+EN COMBATE	IN COMBAT	EM COMBATE	EN COMBAT
+IDENTIDAD PENDIENTE	IDENTITY PENDING	IDENTIDADE PENDENTE	IDENTITÉ EN ATTENTE
+Sin objetivo · selecciona una criatura	No target · select a creature	Sem alvo · selecione uma criatura	Aucune cible · sélectionne une créature
+Objetivo sin identificar	Unidentified target	Alvo não identificado	Cible non identifiée
+Buscando tráfico del juego… entra con tu personaje en AION 2	Looking for game traffic… log in with your character in AION 2	Procurando tráfego do jogo… entre com seu personagem no AION 2	Recherche du trafic du jeu… connecte-toi avec ton personnage dans AION 2
+Teletranspórtate a algún lugar para detectar tu personaje	Teleport somewhere to detect your character	Teletransporte-se para algum lugar para detectar seu personagem	Téléporte-toi quelque part pour détecter ton personnage
+Objetivo sin identificar: el juego no lo anunció (ya estaba cerca). Aléjate hasta perderlo de vista y vuelve, o elige otro	Unidentified target: the game didn't announce it (it was already nearby). Walk away until it's out of sight and come back, or pick another	Alvo não identificado: o jogo não o anunciou (já estava perto). Afaste-se até perdê-lo de vista e volte, ou escolha outro	Cible non identifiée : le jeu ne l'a pas annoncée (elle était déjà proche). Éloigne-toi jusqu'à la perdre de vue et reviens, ou choisis-en une autre
+Vida máxima sin confirmar · el % es un máximo hasta verlo con vida llena	Max health unconfirmed · the % is an upper bound until it's seen at full health	Vida máxima não confirmada · o % é um máximo até vê-lo com vida cheia	Vie max non confirmée · le % est une borne supérieure tant qu'elle n'a pas été vue à pleine vie
+Personaje deducido · teletranspórtate para confirmarlo	Character inferred · teleport to confirm it	Personagem deduzido · teletransporte-se para confirmá-lo	Personnage déduit · téléporte-toi pour le confirmer
+Esperando tu personaje	Waiting for your character	Aguardando seu personagem	En attente de ton personnage
+1 criatura	1 creature	1 criatura	1 créature
+MIEMBRO  ·  PE  ·  PC  ·  ESTADO	MEMBER  ·  GS  ·  CP  ·  STATUS	MEMBRO  ·  PE  ·  PC  ·  STATUS	MEMBRE  ·  GS  ·  PC  ·  ÉTAT
+MIEMBRO	MEMBER	MEMBRO	MEMBRE
+PE	GS	PE	GS
+PC	CP	PC	PC
+GRUPO	GROUP	GRUPO	GROUPE
+Últimas: 	Recent: 	Últimas:	Récents : 
+Líder	Leader	Líder	Chef
+✓ Listo	✓ Ready	✓ Pronto	✓ Prêt
+No listo	Not ready	Não pronto	Pas prêt
+  (deducido)	  (inferred)	  (deduzido)	  (déduit)
+Identificando…	Identifying…	Identificando…	Identification…
+Furia en	Enrage in	Fúria em	Fureur dans
+DPS del grupo	Group DPS	DPS do grupo	DPS du groupe
+Derrota en	Kill in	Derrota em	Mort dans
+Vida en furia	HP at enrage	Vida na fúria	Vie à la fureur
+EN FURIA	ENRAGED	EM FÚRIA	EN FUREUR
+Furia: se aprende la primera vez que este jefe se enfurece	Enrage: learned the first time this boss enrages	Fúria: aprendida na primeira vez que este chefe se enfurece	Fureur : apprise la première fois que ce boss entre en fureur
+Arrastra para mover el panel del jefe	Drag to move the boss panel	Arraste para mover o painel do chefe	Fais glisser pour déplacer le panneau du boss
+¡Comienza ahora!	Starting now!	Começa agora!	Ça commence !
+Arrastra para mover el overlay	Drag to move the overlay	Arraste para mover o overlay	Fais glisser pour déplacer l'overlay
+Panel del objetivo: botín de la criatura o perfil del jugador (Ctrl+Alt+B)	Target panel: creature loot or player profile (Ctrl+Alt+B)	Painel do alvo: saque da criatura ou perfil do jogador (Ctrl+Alt+B)	Panneau de la cible : butin de la créature ou profil du joueur (Ctrl+Alt+B)
+Minimapa (Ctrl+Alt+N)	Minimap (Ctrl+Alt+N)	Minimapa (Ctrl+Alt+N)	Minimap (Ctrl+Alt+N)
+Tropa: ver toda la tropa o solo tu grupo	Troop: show the whole troop or only your group	Tropa: ver a tropa toda ou só seu grupo	Troupe : afficher toute la troupe ou seulement ton groupe
+Desglose de tu combate por habilidad (Ctrl+Alt+D)	Your fight broken down by skill (Ctrl+Alt+D)	Detalhamento do seu combate por habilidade (Ctrl+Alt+D)	Ton combat détaillé par compétence (Ctrl+Alt+D)
+Panel de FullAIon2Companion	FullAIon2Companion panel	Painel do FullAIon2Companion	Panneau de FullAIon2Companion
+Minimapa · requiere Companion Plus en tu cuenta	Minimap · requires Companion Plus on your account	Minimapa · requer Companion Plus na sua conta	Minimap · nécessite Companion Plus sur ton compte
+Mostrando toda la tropa · clic para ver solo tu grupo	Showing the whole troop · click to show only your group	Mostrando a tropa toda · clique para ver só seu grupo	Toute la troupe est affichée · clique pour n'afficher que ton groupe
+Mostrando solo tu grupo · clic para ver toda la tropa	Showing only your group · click to show the whole troop	Mostrando só seu grupo · clique para ver a tropa toda	Seul ton groupe est affiché · clique pour afficher toute la troupe
+BOTÍN DEL OBJETIVO	TARGET LOOT	SAQUE DO ALVO	BUTIN DE LA CIBLE
+Probabilidades del catálogo, no de esta captura.	Catalog chances, not from this capture.	Probabilidades do catálogo, não desta captura.	Probabilités du catalogue, pas de cette capture.
+JUGADOR · PERFIL OFICIAL	PLAYER · OFFICIAL PROFILE	JOGADOR · PERFIL OFICIAL	JOUEUR · PROFIL OFFICIEL
+JcJ: sin clasificación publicada por NCSOFT	PvP: no ranking published by NCSOFT	JxJ: sem classificação publicada pela NCSOFT	PvP : aucun classement publié par NCSOFT
+Buscando en NCSOFT…	Searching NCSOFT…	Buscando na NCSOFT…	Recherche chez NCSOFT…
+Cargando equipo y poder de combate…	Loading gear and combat power…	Carregando equipamento e poder de combate…	Chargement de l'équipement et de la puissance de combat…
+No aparece en la búsqueda oficial de su servidor (nombre recién cambiado u otro servidor).	Not found in their server's official search (recently renamed or another server).	Não aparece na busca oficial do servidor (nome recém-alterado ou outro servidor).	Introuvable dans la recherche officielle de son serveur (renommé récemment ou autre serveur).
+LO GANAS	YOU WIN	VOCÊ VENCE	TU GAGNES
+TE GANA	THEY WIN	ELE VENCE	IL GAGNE
+Cargando detalle oficial…	Loading official detail…	Carregando detalhe oficial…	Chargement du détail officiel…
+Detalle no disponible todavía: el perfil se está actualizando.	Detail not available yet: the profile is updating.	Detalhe ainda indisponível: o perfil está sendo atualizado.	Détail pas encore disponible : le profil est en cours de mise à jour.
+PIEDRA SAGRADA	HOLY STONE	PEDRA SAGRADA	PIERRE SACRÉE
+Sin daño registrado en este combate todavía.	No damage recorded in this fight yet.	Nenhum dano registrado neste combate ainda.	Aucun dégât enregistré dans ce combat pour l'instant.
+Daño	Damage	Dano	Dégâts
+Curación	Healing	Cura	Soins
+Máx	Max	Máx	Max
+Ocultar minimapa (Ctrl+Alt+N)	Hide minimap (Ctrl+Alt+N)	Ocultar minimapa (Ctrl+Alt+N)	Masquer le minimap (Ctrl+Alt+N)
+Mostrar u ocultar los filtros	Show or hide the filters	Mostrar ou ocultar os filtros	Afficher ou masquer les filtres
+Arrastra para cambiar el tamaño	Drag to resize	Arraste para mudar o tamanho	Fais glisser pour redimensionner
+Abismo: el atlas de esta zona todavía no está calibrado para la posición	Abyss: this zone's atlas isn't calibrated for position yet	Abismo: o atlas desta zona ainda não está calibrado para a posição	Abysse : l'atlas de cette zone n'est pas encore calibré pour la position
+Mazmorra o instancia: no hay atlas de esta zona	Dungeon or instance: no atlas for this zone	Masmorra ou instância: não há atlas desta zona	Donjon ou instance : pas d'atlas pour cette zone
+Esperando tu posición: muévete o usa una habilidad	Waiting for your position: move or use a skill	Aguardando sua posição: mova-se ou use uma habilidade	En attente de ta position : déplace-toi ou utilise une compétence
+Reconociendo el mapa por las criaturas de alrededor…	Recognizing the map from nearby creatures…	Reconhecendo o mapa pelas criaturas ao redor…	Reconnaissance de la carte grâce aux créatures proches…
+Tu posición queda fuera del atlas de este mapa	Your position is outside this map's atlas	Sua posição fica fora do atlas deste mapa	Ta position est hors de l'atlas de cette carte
+Abismo	Abyss	Abismo	Abysse
+Mazmorra	Dungeon	Masmorra	Donjon
+Minimapa	Minimap	Minimapa	Minimap
+Cerrar (la prueba sigue hasta que la canceles)	Close (the test continues until you cancel it)	Fechar (o teste continua até você cancelar)	Fermer (le test continue jusqu'à ce que tu l'annules)
+Reiniciar ataques	Restart attacks	Reiniciar ataques	Recommencer les attaques
+Cancelar la prueba	Cancel the test	Cancelar o teste	Annuler le test
+Enviando la evidencia	Sending the evidence	Enviando a evidência	Envoi des preuves
+Ocho ataques registrados con sus tiempos reales.	Eight attacks recorded with their real timings.	Oito ataques registrados com os tempos reais.	Huit attaques enregistrées avec leurs vrais délais.
+Patrón recibido	Pattern received	Padrão recebido	Motif reçu
+El servidor recibió tus ocho ataques con el ritmo correcto. Queda pendiente de validación: el servicio todavía no tiene el verificador que confirma la propiedad, así que el personaje aún no aparece como verificado.	The server received your eight attacks with the right rhythm. It is pending validation: the service doesn't have the verifier that confirms ownership yet, so the character doesn't show as verified yet.	O servidor recebeu seus oito ataques no ritmo certo. Falta a validação: o serviço ainda não tem o verificador que confirma a propriedade, então o personagem ainda não aparece como verificado.	Le serveur a reçu tes huit attaques avec le bon rythme. La validation est en attente : le service n'a pas encore le vérificateur qui confirme la propriété, donc le personnage n'apparaît pas encore comme vérifié.
+El servidor confirmó la propiedad del personaje y lo vinculó a tu cuenta.	The server confirmed the character's ownership and linked it to your account.	O servidor confirmou a propriedade do personagem e o vinculou à sua conta.	Le serveur a confirmé la propriété du personnage et l'a lié à ton compte.
+La prueba caducó	The test expired	O teste expirou	Le test a expiré
+Tienes tres pruebas por hora. Puedes pedir otra cuando quieras.	You have three tests per hour. You can request another whenever you want.	Você tem três testes por hora. Pode pedir outro quando quiser.	Tu as trois tests par heure. Tu peux en demander un autre quand tu veux.
+Pedir otra prueba	Request another test	Pedir outro teste	Demander un autre test
+No se pudo completar	Couldn't complete	Não foi possível concluir	Impossible de terminer
+Consultar estado	Check status	Consultar status	Vérifier l'état
+Volver a empezar	Start over	Recomeçar	Recommencer
+Haz ocho ataques con una pausa de cinco segundos entre ellos. La ventana muestra el ritmo de tu prueba.	Make eight attacks with a five-second pause between them. The window shows your test's rhythm.	Faça oito ataques com uma pausa de cinco segundos entre eles. A janela mostra o ritmo do seu teste.	Fais huit attaques avec une pause de cinq secondes entre chacune. La fenêtre affiche le rythme de ton test.
+Usa el mismo Muñeco de entrenamiento y una habilidad que puedas repetir cada cinco segundos. La del primer golpe es la única que cuenta.	Use the same Training Dummy and a skill you can repeat every five seconds. The one from the first hit is the only one that counts.	Use o mesmo Boneco de treinamento e uma habilidade que possa repetir a cada cinco segundos. A do primeiro golpe é a única que conta.	Utilise le même mannequin d'entraînement et une compétence que tu peux répéter toutes les cinq secondes. Seul celui du premier coup compte.
+Esta ventana te marca cada pausa y el momento de atacar (±0,8 s). Si te sales de ritmo, vuelve a empezar desde el primero.	This window marks each pause and the moment to attack (±0.8 s). If you lose the rhythm, start again from the first.	Esta janela marca cada pausa e o momento de atacar (±0,8 s). Se perder o ritmo, recomece do primeiro.	Cette fenêtre marque chaque pause et le moment d'attaquer (±0,8 s). Si tu perds le rythme, recommence depuis la première.
+Lleva alrededor de un minuto. Puedes parar en cualquier momento.	It takes about a minute. You can stop at any time.	Leva cerca de um minuto. Você pode parar a qualquer momento.	Ça prend environ une minute. Tu peux arrêter à tout moment.
+SE FIJA CON TU PRÓXIMO GOLPE	LOCKS WITH YOUR NEXT HIT	FIXA COM SEU PRÓXIMO GOLPE	SE FIXE AVEC TON PROCHAIN COUP
+SOLO ESTA CUENTA	ONLY THIS ONE COUNTS	SÓ ESTA CONTA	SEUL CELUI-CI COMPTE
+Cualquier ataque	Any attack	Qualquer ataque	N'importe quelle attaque
+Espera sin atacar	Wait without attacking	Espere sem atacar	Attends sans attaquer
+Te pasaste: reinicia los ataques	Too early: restart the attacks	Passou do tempo: reinicie os ataques	Trop tôt : recommence les attaques
+Sigue el ritmo.	Keep the rhythm.	Siga o ritmo.	Garde le rythme.
+tu personaje	your character	seu personagem	ton personnage
+Heroico	Heroic	Heroico	Héroïque
+Legendario	Legendary	Lendário	Légendaire
+Élite	Elite	Elite	Élite
+Único	Unique	Único	Unique
+Normal	Normal	Normal	Normal
+Kinah	Kinah	Kinah	Kinah
+Probabilidades del catálogo, no de esta captura. Pasa el mouse por un grupo para ver sus objetos.	Catalog chances, not from this capture. Hover a group to see its items.	Probabilidades do catálogo, não desta captura. Passe o mouse sobre um grupo para ver seus itens.	Probabilités du catalogue, pas de cette capture. Survole un groupe pour voir ses objets.
+Fijado · clic en el grupo para cerrarlo	Pinned · click the group to close it	Fixado · clique no grupo para fechar	Épinglé · clique sur le groupe pour le fermer
+Clic en el grupo para dejarlo fijo	Click the group to pin it	Clique no grupo para fixá-lo	Clique sur le groupe pour l'épingler
+OBJETOS	ITEMS	ITENS	OBJETS
+EQUIPO	GEAR	EQUIPAMENTO	ÉQUIPEMENT
+LO QUE TE HA DADO	WHAT IT GAVE YOU	O QUE TE DEU	CE QU'IL T'A DONNÉ
+Sin botín en el catálogo	No loot in the catalog	Sem saque no catálogo	Aucun butin dans le catalogue
+Lo que vio la app al matarla en este equipo: 3/40 es en 3 de 40 muertes.	What the app saw when you killed it on this computer: 3/40 means in 3 of 40 kills.	O que o app viu ao matá-la neste computador: 3/40 é em 3 de 40 abates.	Ce que l'app a vu quand tu l'as tué sur ce PC : 3/40 veut dire dans 3 éliminations sur 40.
+Al matarla con la app abierta no te ha dado ningún objeto.	Killed with the app open, it has given you no items.	Abatida com o app aberto, não te deu nenhum item.	Tué avec l'app ouverte, il ne t'a donné aucun objet.
+Lo que te dé al matarla con la app abierta aparecerá aquí.	What it gives you when killed with the app open will show here.	O que ela te der ao ser abatida com o app aberto aparecerá aqui.	Ce qu'il te donne quand tu le tues avec l'app ouverte s'affichera ici.
+Botín · Mercado	Loot · Market	Saque · Mercado	Butin · Marché
+sin precio	no price	sem preço	sans prix
+Sin precio de Mercado: ponlo en la pestaña Mercado del panel	No Market price: set it in the panel's Market tab	Sem preço de Mercado: defina na aba Mercado do painel	Aucun prix du Marché : indique-le dans l'onglet Marché du panneau
+vinculado	bound	vinculado	lié
+Vinculado: no se vende en el Mercado	Bound: cannot be sold on the Market	Vinculado: não se vende no Mercado	Lié : ne peut pas être vendu au Marché
+Clasificación del Abismo	Abyss ranking	Classificação do Abismo	Classement de l'Abysse
+Tu clase	Your class	Sua classe	Ta classe
+General	Overall	Geral	Général
+Puntos	Points	Pontos	Points
+Bajas · muertes · asist.	Kills · deaths · assists	Abates · mortes · assist.	Éliminations · morts · assistances
+DERROTA EN	KILL IN	DERROTA EM	MORT DANS
+FURIA EN	ENRAGE IN	FÚRIA EM	FUREUR DANS
+DPS DEL GRUPO	GROUP DPS	DPS DO GRUPO	DPS DU GROUPE
+Furia: aún no vista en este jefe	Enrage: not seen yet on this boss	Fúria: ainda não vista neste chefe	Fureur : pas encore vue sur ce boss
+Sin objetivo	No target	Sem alvo	Aucune cible
+Cubo oculto	Hidden cube	Cubo oculto	Cube caché
+Cubo	Cube	Cubo	Cube
+· fuera de alcance	· out of range	· fora de alcance	· hors de portée
+MASCOTAS	PETS	MASCOTES	FAMILIERS
+MASCOTAS QUE SIGUES	PETS YOU FOLLOW	MASCOTES QUE VOCÊ SEGUE	FAMILIERS QUE TU SUIS
+FUERA DE COMBATE	OUT OF COMBAT	FORA DE COMBATE	HORS COMBAT
+último:	last:	último:	dernier :
+♛ JEFE DE CAMPO	♛ FIELD BOSS	♛ CHEFE DE CAMPO	♛ BOSS DE TERRAIN
+◈ GRIETA	◈ RIFT	◈ FENDA	◈ FAILLE
+Criaturas	Creatures	Criaturas	Créatures
+daño	damage	dano	dégâts
+curación	healing	cura	soins
+criaturas	creatures	criaturas	créatures
+selecciona una criatura	select a creature	selecione uma criatura	sélectionne une créature
+COMBATE	COMBAT	COMBATE	COMBAT
+clase	class	classe	classe
+criatura	creature	criatura	créature
+Detalle del combate	Fight details	Detalhe do combate	Détail du combat
+Habilidades	Skills	Habilidades	Compétences
+Mostrar:	Show:	Mostrar:	Afficher :
+Curación total	Total healing	Cura total	Soins totaux
+Crítico	Critical	Crítico	Critique
+Espalda	Back	Costas	Dos
+Frente	Front	Frente	Face
+Perfecto	Perfect	Perfeito	Parfait
+Doble	Double	Duplo	Double
+Perfecto*	Perfect*	Perfeito*	Parfait*
+Doble*	Double*	Duplo*	Double*
+Multigolpe	Multi-hit	Multigolpe	Multi-coups
+Media	Average	Média	Moyenne
+Estimado: se confirmará comparando con el analizador de combate del juego (Ctrl+X)	Estimated: to be confirmed against the game's combat analyzer (Ctrl+X)	Estimado: será confirmado comparando com o analisador de combate do jogo (Ctrl+X)	Estimé : à confirmer avec l'analyseur de combat du jeu (Ctrl+X)
+Guarda el detalle como imagen (Imágenes, carpeta FullAIon2Companion) y la copia al portapapeles	Saves the details as an image (Pictures, FullAIon2Companion folder) and copies it to the clipboard	Salva o detalhe como imagem (Imagens, pasta FullAIon2Companion) e copia para a área de transferência	Enregistre le détail en image (Images, dossier FullAIon2Companion) et le copie dans le presse-papiers
+Actualizando…	Updating…	Atualizando…	Mise à jour…
+PAREJO	EVEN	EQUILIBRADO	ÉGALITÉ
+ESTADÍSTICAS	STATS	ESTATÍSTICAS	STATS
+ADICIONALES	ADDITIONAL	ADICIONAIS	SUPPLÉMENTAIRES
+NCSOFT · ahora	NCSOFT · now	NCSOFT · agora	NCSOFT · maintenant
+Arquero	Ranger	Caçador	Rôdeur
+Espiritualista	Spiritmaster	Espiritualista	Spiritualiste
+MÁX.	MAX	MÁX.	MAX
+ahora	now	agora	maintenant
+Ya	Now	Já	Maintenant
+Grieta	Rift	Fenda	Faille
+fuera de alcance, puede que ya no esté	out of range, it may be gone	fora de alcance, pode já não estar	hors de portée, il a peut-être disparu
+Ocultar notas anteriores	Hide earlier notes	Ocultar notas anteriores	Masquer les notes précédentes
+Ataque del jefe	Boss attack	Ataque do chefe	Attaque de boss
+Tu objetivo	Your target	Seu alvo	Ta cible
+Arrastra para mover el asistente de combate	Drag to move the combat assistant	Arraste para mover o assistente de combate	Fais glisser pour déplacer l'assistant de combat
+Texto del nivel máximo: tu nivel aún no llegó del perfil oficial	Max-level text: your level hasn't arrived from the official profile yet	Texto do nível máximo: seu nível ainda não chegou do perfil oficial	Texte du niveau maximum : ton niveau n'est pas encore arrivé du profil officiel

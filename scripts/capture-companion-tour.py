@@ -4,7 +4,7 @@ import json, pathlib, subprocess, sys, time
 from playwright.sync_api import sync_playwright
 
 root = pathlib.Path(r'D:\Proyectos\Aion2')
-# argv[1]: es (default), en or pt - the panel in that language (the GitHub README uses English), to output/showcase[-<lang>].
+# argv[1]: es (default), en, pt or fr - the panel in that language (the GitHub README uses English), to output/showcase[-<lang>].
 lang = sys.argv[1] if len(sys.argv) > 1 else 'es'
 out = root / 'output' / ('showcase' if lang == 'es' else f'showcase-{lang}'); out.mkdir(parents=True, exist_ok=True)
 data = json.load(open(r'C:/Users/nanos/AppData/Local/FullAIon2Companion/panel-dump.json', encoding='utf-8'))

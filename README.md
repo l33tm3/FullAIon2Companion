@@ -7,7 +7,7 @@
 **A free overlay and companion app for AION 2: DPS meter, boss timers, soul hunting, minimap, market prices, rankings and much more, on top of your game.**
 
 [![Download](https://img.shields.io/github/v/release/l33tm3/FullAIon2Companion?label=Download&logo=windows&color=2ea44f)](https://github.com/l33tm3/FullAIon2Companion/releases/latest)
-[![VirusTotal](https://img.shields.io/badge/VirusTotal-1%2F64-yellowgreen?logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/file/18b23018c8e87a7b5669d28c52a974c16a9e97b96f3657ce869d3015d7e7ad17)
+[![Languages](https://img.shields.io/badge/Languages-EN%20%7C%20ES%20%7C%20PT%20%7C%20FR-8a6dd8)](#features)
 [![Donate with PayPal](https://img.shields.io/badge/Donate-PayPal-e36cb8?logo=paypal&logoColor=white)](https://paypal.me/martincito45)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 ![Windows 10/11 64-bit](https://img.shields.io/badge/Windows-10%20%7C%2011%20x64-0078d6?logo=windows)
@@ -28,9 +28,9 @@ FullAIon2Companion reads the AION 2 traffic that already reaches your PC and sho
 
 | | |
 |---|---|
-| **Latest version** | [**FullAIon2Companion 1.0.20**](https://github.com/l33tm3/FullAIon2Companion/releases/latest) (Windows 10/11, 64-bit, ~99 MB) |
-| **SHA-256** | `18b23018c8e87a7b5669d28c52a974c16a9e97b96f3657ce869d3015d7e7ad17` |
-| **VirusTotal** | [![VirusTotal](https://img.shields.io/badge/VirusTotal-1%2F64-yellowgreen?logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/file/18b23018c8e87a7b5669d28c52a974c16a9e97b96f3657ce869d3015d7e7ad17) — 1 of 64 engines: DeepInstinct's machine-learning engine flags it, the other 63 report it clean. Unsigned installers often trip such heuristics; the full source of this installer is in this repository. |
+| **Latest version** | [**FullAIon2Companion 1.0.21**](https://github.com/l33tm3/FullAIon2Companion/releases/latest) (Windows 10/11, 64-bit, ~99 MB) |
+| **SHA-256** | `2ff0039f7b18a8fdd1ee7e602c5183fb630e1f4a1b2a1c2d1248e464696c30da` |
+| **VirusTotal** | The 1.0.21 report is coming. The previous installer, [1.0.20](https://www.virustotal.com/gui/file/18b23018c8e87a7b5669d28c52a974c16a9e97b96f3657ce869d3015d7e7ad17), got 1 of 64 engines: DeepInstinct's machine-learning engine flagged it, the other 63 reported it clean. Unsigned installers often trip such heuristics; the full source of this installer is in this repository. |
 | **Also on** | [governanceai.me](https://governanceai.me/?lang=en#home?download=1) |
 
 **Requirements**
@@ -39,7 +39,7 @@ FullAIon2Companion reads the AION 2 traffic that already reaches your PC and sho
 2. [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/) — already installed on most Windows 10/11 PCs.
 3. Run the installer, then open AION 2 and the app. The overlay appears over the game; the panel opens from its gear icon.
 
-> The installer is not signed with a publisher certificate yet, so Windows SmartScreen may warn you. Check the SHA-256 above and the VirusTotal report before running it. The app updates itself from inside: *News → Update now*.
+> The installer is not signed with a publisher certificate yet, so Windows SmartScreen may warn you. Check the SHA-256 above before running it. The app updates itself from inside: *News → Update now*.
 
 ---
 
@@ -148,7 +148,7 @@ Kills, souls and kinah per hour, the loot each creature gives you (learned while
 | <img src="docs/images/panel-goals.webp" alt="Goals" width="280"> | <img src="docs/images/panel-resources.webp" alt="Resources" width="280"> | <img src="docs/images/panel-events.webp" alt="Events" width="280"> |
 | Kills, kinah or loot: set the goal and the app tells you whether you are on time. | Your in-game counters and the Od energy for dungeons. | Upcoming events for your region, with alerts and sound. |
 
-The app speaks **English, Spanish and Portuguese** (*Settings → General*). Item and creature names come from the game's Spanish data.
+The app speaks **English, Spanish, Portuguese and French** (*Settings → General*). Creature, pet, skill and gear names follow that language from the game's own data; souls, chests and materials show in English.
 
 ---
 
@@ -182,7 +182,7 @@ FullAIon2Companion and the Daeva Companion website are free, and they will stay 
 | `desktop/FullAIon2Companion` | The desktop app: C# / WPF on .NET 10, the panel is HTML/JS in WebView2 (`ui/`), translations in `i18n/` |
 | `desktop/vendor` | Aion-DPS-Meter (MIT): AION 2 protocol decoding, capture and skill data |
 | `desktop/installer` | Inno Setup script of the installer |
-| `src`, `public` | The [Daeva Companion](https://governanceai.me/?lang=en#home) website (English, Spanish and Portuguese) (Astro + TypeScript) and its game database (`public/data`, `public/assets`) |
+| `src`, `public` | The [Daeva Companion](https://governanceai.me/?lang=en#home) website (English, Spanish, Portuguese and French) (Astro + TypeScript) and its game database (`public/data`, `public/assets`) |
 | `public/api` | The website's PHP API (accounts, app pairing, releases) |
 | `scripts` | Data import, image and build tools |
 | `tests` | Website tests |
@@ -197,7 +197,7 @@ dotnet build desktop/FullAIon2Companion -c Release -o desktop/build
 desktop/build/FullAIon2Companion.exe
 
 # Installer (self-contained, written to desktop/release/<version>)
-powershell -ExecutionPolicy Bypass -File scripts/build-companion.ps1 -Version 1.0.20 -Output desktop/release/1.0.20
+powershell -ExecutionPolicy Bypass -File scripts/build-companion.ps1 -Version 1.0.21 -Output desktop/release/1.0.21
 ```
 
 The app has offline self-tests, for example `FullAIon2Companion.exe --license-test out.json`, `--verify-test out.json`, `--overlay-styles <folder> [en]` (draws the overlay in all 36 styles) or `--skill-card-test <folder>`.

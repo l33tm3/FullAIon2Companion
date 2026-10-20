@@ -20,7 +20,9 @@ public static class L
 {
     public static string Language { get; set; } = "es";
     static readonly Dictionary<string, Dictionary<string, string>> exact = LoadExact();
-    static readonly List<(Regex Re, string En, string Pt)> patterns = LoadPatterns();
+    static readonly List<(Regex Re, string En, string Pt, string Fr)> patterns = LoadPatterns();
+    // The text of the current language among English, Portuguese and French (Spanish never gets here).
+    static string Pick(string en, string pt, string fr) => Language switch { "en" => en, "fr" => fr, _ => pt };
     sealed class Seen { public string Source = "", Output = ""; }
     static readonly ConditionalWeakTable<object, Seen> seen = new();
 
@@ -29,13 +31,13 @@ public static class L
         try { return JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "data", "i18n.json"))) ?? []; }
         catch { return []; }
     }
-    static List<(Regex, string, string)> LoadPatterns()
+    static List<(Regex, string, string, string)> LoadPatterns()
     {
-        var list = new List<(Regex, string, string)>();
+        var list = new List<(Regex, string, string, string)>();
         try
         {
             foreach (var line in File.ReadAllLines(Path.Combine(AppContext.BaseDirectory, "data", "i18n-patterns.tsv")))
-                if (line.Split('\t') is { Length: 3 } p) list.Add((new Regex(p[0], RegexOptions.Compiled), p[1], p[2]));
+                if (line.Split('\t') is { Length: 3 or 4 } p) list.Add((new Regex(p[0], RegexOptions.Compiled), p[1], p[2], p.Length == 4 && p[3].Length > 0 ? p[3] : p[1]));
         }
         catch { }
         return list;
@@ -47,8 +49,8 @@ public static class L
         if (Language == "es" || string.IsNullOrWhiteSpace(spanish)) return spanish;
         string key = spanish.Trim();
         if (exact.TryGetValue(Language, out var d) && d.TryGetValue(key, out var hit)) return spanish.Replace(key, hit);
-        foreach (var (re, en, pt) in patterns)
-            if (re.IsMatch(key)) return Fragments(spanish.Replace(key, re.Replace(key, Language == "en" ? en : pt)));
+        foreach (var (re, en, pt, fr) in patterns)
+            if (re.IsMatch(key)) return Fragments(spanish.Replace(key, re.Replace(key, Pick(en, pt, fr))));
         Miss(key);
         return Fragments(spanish);
     }
@@ -62,16 +64,16 @@ public static class L
         try { File.AppendAllText(missFile, key.ReplaceLineEndings(" | ") + Environment.NewLine); } catch { }
     }
     // Pieces that turn up inside composed lines ("Combate · 0:38 · Nv. 54 · Heroico", "… · ~272 más").
-    static readonly (Regex Re, string En, string Pt)[] fragments =
+    static readonly (Regex Re, string En, string Pt, string Fr)[] fragments =
     [
-        (new(@"\bNv\. (\d+)"), "Lv. $1", "Nv. $1"),
-        (new(@"~(\d+) más\b"), "~$1 more", "~$1 mais"),
-        (new(@"\bHeroico\b"), "Heroic", "Heroico"), (new(@"\bLegendario\b"), "Legendary", "Lendário"),
-        (new(@"\bÉlite\b"), "Elite", "Elite"), (new(@"\bÚnico\b"), "Unique", "Único"),
+        (new(@"\bNv\. (\d+)"), "Lv. $1", "Nv. $1", "Niv. $1"),
+        (new(@"~(\d+) más\b"), "~$1 more", "~$1 mais", "~$1 de plus"),
+        (new(@"\bHeroico\b"), "Heroic", "Heroico", "Héroïque"), (new(@"\bLegendario\b"), "Legendary", "Lendário", "Légendaire"),
+        (new(@"\bÉlite\b"), "Elite", "Elite", "Élite"), (new(@"\bÚnico\b"), "Unique", "Único", "Unique"),
     ];
     static string Fragments(string text)
     {
-        foreach (var (re, en, pt) in fragments) text = re.Replace(text, Language == "en" ? en : pt);
+        foreach (var (re, en, pt, fr) in fragments) text = re.Replace(text, Pick(en, pt, fr));
         return text;
     }
 

@@ -527,7 +527,7 @@ public sealed class MainWindow : Window
             case "fieldBossStar":{int npc=v.GetInt32();if(!settings.FieldBossStars.Remove(npc))settings.FieldBossStars.Add(npc);fieldBossDirty=true;break;}
             case "fieldBossAlerts":settings.FieldBossAlerts=v.GetBoolean();break;
             case "fieldBossLead":settings.FieldBossLeadMinutes=Math.Clamp(v.GetInt32(),1,30);break;
-            case "language":{string lang=v.GetString()??"es";if(lang is not("es" or "en" or "pt"))throw new InvalidOperationException("Idioma no disponible");settings.Language=lang;L.Language=lang;AionDPS.Aion2.Protocol.Aion2SkillNames.Language=lang;break;}
+            case "language":{string lang=v.GetString()??"es";if(lang is not("es" or "en" or "pt" or "fr"))throw new InvalidOperationException("Idioma no disponible");settings.Language=lang;L.Language=lang;AionDPS.Aion2.Protocol.Aion2SkillNames.Language=lang;break;}
             case "showEvent":settings.OverlayShowEvent=v.GetBoolean();break;
             case "showDrops":if(settings.OverlayDrops!=v.GetBoolean())overlay.ToggleDrops();break;
             case "showMinimap":if(settings.MinimapVisible!=v.GetBoolean())overlay.ToggleMinimap();break;
