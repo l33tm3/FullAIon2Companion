@@ -55,9 +55,13 @@ public sealed class SkillCardWindow : Window
     static readonly Brush Accent = Paint("#71DED6"), Gold = Paint("#E9C77E"), Muted = Paint("#95A4B6"), Dim = Paint("#5F7480"), Bright = Paint("#D5DEE6"),
         Lift = Paint("#2B3C48"), Frame = Paint("#33575B");
     static Brush Paint(string color) { var b = new SolidColorBrush((Color)ColorConverter.ConvertFromString(color)); b.Freeze(); return b; }
-    readonly TextBlock state = new() { FontSize = 11, Margin = new Thickness(0, 2, 0, 0), TextWrapping = TextWrapping.Wrap };
-    readonly Border fill = new() { Height = 3, HorizontalAlignment = HorizontalAlignment.Left, CornerRadius = new CornerRadius(2) };
-    readonly Grid track = new() { Height = 3, Margin = new Thickness(0, 8, 0, 0) };
+    // The parts that Tick updates: new ones for every card, because an element can only sit in one panel and the
+    // previous card still holds the old ones (reusing them threw «ya es el elemento secundario lógico de otro elemento»).
+    TextBlock state; Grid track; Border fill;
+    static (TextBlock State, Grid Track, Border Fill) Parts() =>
+        (new TextBlock { FontSize = 11, Margin = new Thickness(0, 2, 0, 0), TextWrapping = TextWrapping.Wrap },
+         new Grid { Height = 3, Margin = new Thickness(0, 8, 0, 0) },
+         new Border { Height = 3, HorizontalAlignment = HorizontalAlignment.Left, CornerRadius = new CornerRadius(2) });
     /// <summary>The skill on show (0 = none) and its level, to rebuild the card only when the skill changes.</summary>
     public int Skill { get; private set; }
     int? level;
@@ -65,6 +69,7 @@ public sealed class SkillCardWindow : Window
 
     public SkillCardWindow()
     {
+        (state, track, fill) = Parts();
         Title = "FullAIon2Companion · Habilidad"; SizeToContent = SizeToContent.WidthAndHeight;
         WindowStyle = WindowStyle.None; ResizeMode = ResizeMode.NoResize; AllowsTransparency = true; Background = Brushes.Transparent;
         Topmost = true; ShowActivated = false; ShowInTaskbar = false; Focusable = false; IsHitTestVisible = false;
@@ -77,6 +82,7 @@ public sealed class SkillCardWindow : Window
     public void Load(TimerTile tile, int? skillLevel, double scale)
     {
         Skill = tile.Skill; level = skillLevel;
+        (state, track, fill) = Parts();
         Content = Card(tile, skillLevel, scale, state, track, fill);
         Tick(tile);
     }
@@ -112,7 +118,6 @@ public sealed class SkillCardWindow : Window
         titles.Children.Add(state);
         head.Children.Add(titles);
         stack.Children.Add(head);
-        track.Children.Clear();
         track.Children.Add(new Border { Background = Lift, CornerRadius = new CornerRadius(2) });
         track.Children.Add(fill);
         stack.Children.Add(track);
@@ -172,9 +177,7 @@ public sealed class SkillCardWindow : Window
     /// <summary>For the test: the card as drawn, out of any window.</summary>
     internal static FrameworkElement Preview(TimerTile t, int? level, double scale = 1)
     {
-        var state = new TextBlock { FontSize = 11, Margin = new Thickness(0, 2, 0, 0), TextWrapping = TextWrapping.Wrap };
-        var fill = new Border { Height = 3, HorizontalAlignment = HorizontalAlignment.Left, CornerRadius = new CornerRadius(2) };
-        var track = new Grid { Height = 3, Margin = new Thickness(0, 8, 0, 0) };
+        var (state, track, fill) = Parts();
         var card = Card(t, level, scale, state, track, fill);
         Fill(t, state, track, fill);
         return card;

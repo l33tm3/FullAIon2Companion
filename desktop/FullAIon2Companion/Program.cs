@@ -892,6 +892,20 @@ public static class Program
                     bool none = bar.TileAt((int)right.X + 1, (int)right.Y) is null; ok &= none && tiles.Count == 4;
                     lines.Add($"{(none ? "ok" : "FALLA")} entre dos iconos no hay ninguno");
                     lines.Add($"{(tiles.Count == 4 ? "ok" : "FALLA")} la barra tiene {tiles.Count} iconos");
+                    // The same card window rebuilt as the mouse goes from icon to icon and back (on 2026-10-20 the second
+                    // card threw «ya es el elemento secundario lógico de otro elemento», shown as a dialog over the game).
+                    var window = new SkillCardWindow();
+                    string? rebuilt = null;
+                    try
+                    {
+                        foreach (var c in new[] { cases[0], cases[1], cases[0], cases[0], cases[2] }) { window.Load(c.Tile, c.Level, 1); window.Tick(c.Tile); }
+                        var shown = string.Join(" ", Texts((System.Windows.DependencyObject)window.Content));
+                        if (!shown.Contains(cases[2].Tile.Name)) rebuilt = "la última ficha no muestra " + cases[2].Tile.Name;
+                    }
+                    catch (Exception e) { rebuilt = e.Message; }
+                    window.Close();
+                    ok &= rebuilt is null;
+                    lines.Add(rebuilt is null ? "ok la ficha se rearma al pasar de un icono a otro y volver" : "FALLA la ficha al rearmarse: " + rebuilt);
                     bar.Close();
                     File.WriteAllLines(Path.Combine(outDir, "skill-card.txt"), lines);
                     Console.WriteLine(string.Join(Environment.NewLine, lines.Where(l => l.StartsWith("ok") || l.StartsWith("FALLA"))));

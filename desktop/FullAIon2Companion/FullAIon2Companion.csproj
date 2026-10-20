@@ -3,7 +3,7 @@
     <OutputType>WinExe</OutputType><TargetFramework>net10.0-windows</TargetFramework>
     <UseWPF>true</UseWPF><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
     <AssemblyName>FullAIon2Companion</AssemblyName><Product>FullAIon2Companion</Product>
-    <Version>1.0.21</Version><Company>Daeva Companion</Company><Copyright>© 2026 Daeva Companion</Copyright><Description>Daeva Companion para AION 2</Description><ApplicationIcon>assets\app.ico</ApplicationIcon><StartupObject>FullAIon2Companion.Program</StartupObject>
+    <Version>1.0.22</Version><Company>Daeva Companion</Company><Copyright>© 2026 Daeva Companion</Copyright><Description>Daeva Companion para AION 2</Description><ApplicationIcon>assets\app.ico</ApplicationIcon><StartupObject>FullAIon2Companion.Program</StartupObject>
     <Vendor>../vendor/Aion-DPS-Meter-084e7e94c5c5c4d280c4547ce9c39168e86d6437/Client</Vendor>
   </PropertyGroup>
   <ItemGroup>

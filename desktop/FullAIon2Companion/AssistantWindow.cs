@@ -78,7 +78,16 @@ public sealed class AssistantWindow : Window
         Closed += (_, _) => { hover.Stop(); Grip.Close(); Card.Close(); };
         // The bar never takes the mouse (the game keeps every click): the cursor is followed instead, and the card shows
         // while it rests on an icon - only with the cursor showing, so not while the game turns the camera with it hidden.
-        hover.Tick += (_, _) => Hover();
+        // It runs every 80 ms over the game: a failure is logged and the card hidden, never a dialog on top of the game.
+        hover.Tick += (_, _) =>
+        {
+            try { Hover(); }
+            catch (Exception e)
+            {
+                try { System.IO.File.AppendAllText(System.IO.Path.Combine(Program.DataDirectory, "errors.log"), e + "\n"); } catch { }
+                Card.Clear();
+            }
+        };
         IsVisibleChanged += (_, _) => { if (IsVisible) hover.Start(); else { hover.Stop(); Card.Clear(); } };
         ApplyScale();
     }
