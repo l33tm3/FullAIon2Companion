@@ -29,9 +29,9 @@ FullAIon2Companion reads the AION 2 traffic that already reaches your PC and sho
 
 | | |
 |---|---|
-| **Latest version** | [**FullAIon2Companion 1.0.22**](https://github.com/l33tm3/FullAIon2Companion/releases/latest) (Windows 10/11, 64-bit, ~99 MB) |
-| **SHA-256** | `5874d4e0ea9b7cf5b1b704de5992b5563722adfdd13bdf1a00fa7a1cd9c2dd1c` |
-| **VirusTotal** | The 1.0.22 report is coming. The previous installer, [1.0.21](https://www.virustotal.com/gui/file/2ff0039f7b18a8fdd1ee7e602c5183fb630e1f4a1b2a1c2d1248e464696c30da), got 0 of 65: no engine flagged it. Unsigned installers sometimes trip machine-learning heuristics; the full source of this installer is in this repository. |
+| **Latest version** | [**FullAIon2Companion 1.0.23**](https://github.com/l33tm3/FullAIon2Companion/releases/latest) (Windows 10/11, 64-bit, ~99 MB) |
+| **SHA-256** | `3698a6389d00a28ad603c505aba46c7c83005d586cc265c657911882a096a76b` |
+| **VirusTotal** | The 1.0.23 report is coming. The previous installer, [1.0.21](https://www.virustotal.com/gui/file/2ff0039f7b18a8fdd1ee7e602c5183fb630e1f4a1b2a1c2d1248e464696c30da), got 0 of 65: no engine flagged it. Unsigned installers sometimes trip machine-learning heuristics; the full source of this installer is in this repository. |
 | **Also on** | [governanceai.me](https://governanceai.me/?lang=en#home?download=1) |
 
 **Requirements**
@@ -127,6 +127,11 @@ Abyss, bosses, expedition, awakening and arenas: your rank in your class and ove
 
 <img src="docs/images/panel-ranking.webp" alt="Rankings tab" width="900">
 
+### Your arcanas, planned
+Your five arcana cards from your official profile, with their Empyrean Lord stats, skills and set effects added up the way the game shows them. The planner tries another level or the other set on each card and shows the result next to what you have now. Other players' arcanas show on their PvP card too.
+
+<img src="docs/images/panel-arcana.webp" alt="Arcana tab" width="900">
+
 ### Get to every field boss in time
 Field bosses of every map with their next spawn, alerts with sound and your favourites in the overlay's header.
 
@@ -198,7 +203,7 @@ dotnet build desktop/FullAIon2Companion -c Release -o desktop/build
 desktop/build/FullAIon2Companion.exe
 
 # Installer (self-contained, written to desktop/release/<version>)
-powershell -ExecutionPolicy Bypass -File scripts/build-companion.ps1 -Version 1.0.22 -Output desktop/release/1.0.22
+powershell -ExecutionPolicy Bypass -File scripts/build-companion.ps1 -Version 1.0.23 -Output desktop/release/1.0.23
 ```
 
 The app has offline self-tests, for example `FullAIon2Companion.exe --license-test out.json`, `--verify-test out.json`, `--overlay-styles <folder> [en]` (draws the overlay in all 36 styles) or `--skill-card-test <folder>`.
