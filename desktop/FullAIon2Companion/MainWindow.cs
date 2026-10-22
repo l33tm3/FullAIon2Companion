@@ -17,6 +17,8 @@ public sealed class MainWindow : Window
     readonly TextBlock actionStatus = new() { Foreground = Brushes.White, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(18,7,18,7) };
     readonly Border actionBanner = new() { Background = new SolidColorBrush(Color.FromRgb(25,49,57)), Visibility = Visibility.Collapsed };
     ProfileState? ownProfile;
+    // The Arcanas tab (ArcanaBook): the view of the own profile's arcanas, loaded once per profile reading.
+    object? arcanaView;DateTimeOffset? arcanaFor;int arcanaVersion,arcanaSent=-1;
     /// <summary>Where donations go: the app and the website are free, and whoever wants can support them here.</summary>
     internal const string DonateUrl="https://paypal.me/martincito45";
     readonly CaptureEngine engine=new();
@@ -184,7 +186,7 @@ public sealed class MainWindow : Window
     }
     // The panel shows its own notification; the strip is only for the website pages (map, account), which have none.
     void ShowAction(string text){message=text;actionStatus.Text=text;actionBanner.Visibility=ready&&view.Source?.Host=="companion.local"?Visibility.Collapsed:Visibility.Visible;}
-    async Task OpenOwnProfile()
+    async Task OpenOwnProfile(string tab="profile")
     {
         var s=engine.Snapshot();var identity=engine.CapturedIdentity;
         var name=identity?.Name??s.Character;
@@ -192,9 +194,16 @@ public sealed class MainWindow : Window
         ShowAction("Buscando el perfil público de "+name+"…");
         // A public profile is presentation only: cached/inferred identity never selects a Plus license.
         ownProfile=PlayerProfiles.Get(name,identity?.ServerId>0?identity.Value.ServerId:s.LocalServerId??settings.LastServerId,PlayerProfiles.RegionOf(settings.RegionOffset));
-        await Open("https://companion.local/ui/index.html#profile");
+        await Open("https://companion.local/ui/index.html#"+tab);
         await Refresh();
         ShowAction("Perfil de "+name+" abierto. Los datos oficiales se completan al recibirlos.");
+    }
+    // The five arcanas' official detail (each card one request, kept by PlayerProfiles), then the panel gets the view.
+    async Task LoadArcana(PlayerCard card)
+    {
+        try{arcanaView=await ArcanaBook.Load(card);}
+        catch(Exception e){arcanaView=new{error=e.Message};}
+        arcanaVersion++;
     }
     static Button BarButton(string label,string? tip)
     {
@@ -239,7 +248,7 @@ public sealed class MainWindow : Window
             view.CoreWebView2.NavigationStarting+=(_,e)=>{var uri=new Uri(e.Uri);if(uri.Host is not("companion.local" or "governanceai.me" or "aion2.plaync.com")) {e.Cancel=true;message="El enlace externo se ha bloqueado en el panel del juego";}};
             view.CoreWebView2.NewWindowRequested+=(_,e)=>{e.Handled=true;var uri=new Uri(e.Uri);if(uri.Host=="governanceai.me")view.Source=uri;};
             // The lists the panel only gets when they change (Mercado, marks) go again to a panel just loaded.
-            view.CoreWebView2.NavigationCompleted+=(_,_)=>{marketKey=boardKey=rankingKey="";marksSent=-1;};
+            view.CoreWebView2.NavigationCompleted+=(_,_)=>{marketKey=boardKey=rankingKey="";marksSent=-1;arcanaSent=-1;};
             view.Source=new Uri("https://companion.local/ui/index.html");ready=true;
         }
         catch(Exception ex){message=ex.Message;File.AppendAllText(Path.Combine(Program.DataDirectory,"errors.log"),ex+"\n");if(!ready)Content=new TextBlock{Text="No se pudo iniciar WebView2: "+ex.Message,Foreground=Brushes.White,Margin=new Thickness(30),TextWrapping=TextWrapping.Wrap};}
@@ -484,7 +493,9 @@ public sealed class MainWindow : Window
             object? marksView=null;if(atlasMarks.Version!=marksSent){marksSent=atlasMarks.Version;marksView=atlasMarks.View();}
             string rk=$"{engine.Rankings.Version}:{snapshot.LocalServerId??settings.LastServerId}:{snapshot.Character}:{L.Language}";
             object? rankingView=null;if(rk!=rankingKey){rankingKey=rk;rankingView=engine.Rankings.View(snapshot.LocalServerId??settings.LastServerId,snapshot.Character);}
-            var data=new{news=new{unread=newsUnread},market=marketView,marketBoard=boardView,atlasMarks=marksView,ranking=rankingView,recording=RecordingView(),support=new{list=supportList,open=supportOpen,status=supportStatus,paired=companion.Paired},resources=resourceBook.View(snapshot.Character,snapshot.LocalServerId??settings.LastServerId),farm,objective=ObjectiveNow(),cubes=new{cv.Active,cv.Distance,cv.Bearing,cv.Height,cv.SpotsNear,cv.NearestSpot,cv.NearestBearing,map=MinimapData.Map(cv.Map)?.Name,history=cv.History.Select(h=>new{h.At,h.GoneAt,h.LeftRangeAt,h.SeenFrom,h.Missing,h.EnvId,map=MinimapData.Map(h.Map)?.Name??h.Map,x=Math.Round(h.X/100),y=Math.Round(h.Y/100),z=Math.Round(h.Z/100)})},fieldBosses=ticks%4==0||fieldBossDirty?fieldBosses?.View():null,historyVersion=history.Version,classes,profile=ownProfile is null?null:new{stage=ownProfile.Stage,error=ownProfile.Error,card=ownProfile.Card},version=AppVersion.Current,update=UpdateView(),announcements=ActiveAnnouncements().Select(a=>new{a.Title,a.Body,a.Level}),diagnostics=companion.DiagnosticsStatus,features=new{pvp=license.Has("companionPvp"),minimap=license.Has("companionMinimap"),plan=license.View().Title},license=license.View(),minimapLayers=MinimapWindow.Layers.Select(l=>new{key=l.Key,label=l.Label,color=l.Color}),petList=petList??=PetTracker.All.Select(x=>new{id=x.Id,name=x.Name}).ToList(),snapshot,events,settings,petCollection=engine.Collection.Of(snapshot.Character,snapshot.LocalServerId??settings.LastServerId)??engine.Collection.All().OrderByDescending(c=>c.UpdatedAt).FirstOrDefault(),petsSync=companion.PetsStatus,cloud=new{state=companion.State.ToString(),pull=companion.LastPull,title=titles.View()},companion=companion.Status,paired=companion.Paired,message,overlay=overlay.Requested,locked=overlay.ClickThrough,assistantMoving=overlay.AssistantMoving,npc=snapshot.Target?.NpcId is int id?Catalog.Npc(id):null,mobs,alert=timers.LastAlert,atlas=here};
+            if(ownProfile?.Card is { } ownCard&&ArcanaBook.Has(ownCard)&&arcanaFor!=ownCard.FetchedAt){arcanaFor=ownCard.FetchedAt;_=LoadArcana(ownCard);}
+            object? arcanaSend=null;if(arcanaVersion!=arcanaSent||ticks%20==0){arcanaSent=arcanaVersion;arcanaSend=arcanaView;}
+            var data=new{news=new{unread=newsUnread},arcana=arcanaSend,market=marketView,marketBoard=boardView,atlasMarks=marksView,ranking=rankingView,recording=RecordingView(),support=new{list=supportList,open=supportOpen,status=supportStatus,paired=companion.Paired},resources=resourceBook.View(snapshot.Character,snapshot.LocalServerId??settings.LastServerId),farm,objective=ObjectiveNow(),cubes=new{cv.Active,cv.Distance,cv.Bearing,cv.Height,cv.SpotsNear,cv.NearestSpot,cv.NearestBearing,map=MinimapData.Map(cv.Map)?.Name,history=cv.History.Select(h=>new{h.At,h.GoneAt,h.LeftRangeAt,h.SeenFrom,h.Missing,h.EnvId,map=MinimapData.Map(h.Map)?.Name??h.Map,x=Math.Round(h.X/100),y=Math.Round(h.Y/100),z=Math.Round(h.Z/100)})},fieldBosses=ticks%4==0||fieldBossDirty?fieldBosses?.View():null,historyVersion=history.Version,classes,profile=ownProfile is null?null:new{stage=ownProfile.Stage,error=ownProfile.Error,card=ownProfile.Card},version=AppVersion.Current,update=UpdateView(),announcements=ActiveAnnouncements().Select(a=>new{a.Title,a.Body,a.Level}),diagnostics=companion.DiagnosticsStatus,features=new{pvp=license.Has("companionPvp"),minimap=license.Has("companionMinimap"),plan=license.View().Title},license=license.View(),minimapLayers=MinimapWindow.Layers.Select(l=>new{key=l.Key,label=l.Label,color=l.Color}),petList=petList??=PetTracker.All.Select(x=>new{id=x.Id,name=x.Name}).ToList(),snapshot,events,settings,petCollection=engine.Collection.Of(snapshot.Character,snapshot.LocalServerId??settings.LastServerId)??engine.Collection.All().OrderByDescending(c=>c.UpdatedAt).FirstOrDefault(),petsSync=companion.PetsStatus,cloud=new{state=companion.State.ToString(),pull=companion.LastPull,title=titles.View()},companion=companion.Status,paired=companion.Paired,message,overlay=overlay.Requested,locked=overlay.ClickThrough,assistantMoving=overlay.AssistantMoving,npc=snapshot.Target?.NpcId is int id?Catalog.Npc(id):null,mobs,alert=timers.LastAlert,atlas=here};
             string panelJson=UiContract.Serialize(data);
             if(dump){try{File.Delete(dumpFlag);File.WriteAllText(Path.Combine(Program.DataDirectory,"panel-dump.json"),panelJson);}catch{}}
             await view.ExecuteScriptAsync("window.renderCompanion?.("+panelJson+")");
@@ -665,6 +676,7 @@ public sealed class MainWindow : Window
                 }
                 case "map":view.Source=new Uri("https://governanceai.me/#map");break;
                 case "own-profile":await OpenOwnProfile();break;
+                case "arcana":await OpenOwnProfile("arcana");break;
                 case "open-map":await Open("https://companion.local/ui/index.html#atlas");message="Mapa de Atreia abierto.";break;
                 // The website's Atlas: dungeon maps, notes and routes the Atlas of the app does not have.
                 case "open-web-map":await Open("https://governanceai.me/#map");message="Atlas de la web abierto en el panel.";break;

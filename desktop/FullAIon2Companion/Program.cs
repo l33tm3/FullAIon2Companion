@@ -628,6 +628,94 @@ public static class Program
                 finally { Directory.Delete(testDirectory, true); testDirectory = null; }
                 return 0;
             }
+            if(args.FirstOrDefault() == "--arcana-test")
+            {
+                // Test: a character's arcanas from the official profile (args[2] name, args[3] server, default Darkni 2401, la)
+                // as the panel's Arcanas tab receives them, written to args[1].
+                string who = args.Length > 2 ? args[2] : "Darkni"; int server = args.Length > 3 ? int.Parse(args[3]) : 2401;
+                // A throwaway data folder with a copy of the profile cache: the running app's files are not touched.
+                string realCache = Path.Combine(DataDirectory, "player-cache.json");
+                testDirectory = Path.Combine(Path.GetTempPath(), "fa2c-arcana-" + Guid.NewGuid().ToString("N"));
+                Directory.CreateDirectory(testDirectory);
+                if (File.Exists(realCache)) File.Copy(realCache, Path.Combine(testDirectory, "player-cache.json"));
+                var state = PlayerProfiles.Get(who, server, "la");
+                for (int wait = 0; (state.Card is null || state.Stale) && state.Stage is not ("missing" or "error") && wait < 60; wait++) Thread.Sleep(500);
+                if (state.Card is not { } card) { Console.WriteLine($"no profile: {state.Stage} {state.Error}"); return 1; }
+                var view = ArcanaBook.Load(card).GetAwaiter().GetResult();
+                File.WriteAllText(Path.GetFullPath(args[1]), JsonSerializer.Serialize(view, new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
+                Console.WriteLine($"{card.Name}: {card.Gear.Count(g => g.Slot.StartsWith("Arcana"))} arcanas");
+                // And each card's hover card on the player card (skills and set), next to the JSON: <out>-Arcana1.png…
+                foreach (var g in card.Gear.Where(g => g.Slot.StartsWith("Arcana")))
+                {
+                    var detail = PlayerProfiles.ItemDetail(card, g).GetAwaiter().GetResult();
+                    var host = new System.Windows.Controls.Border { Padding = new System.Windows.Thickness(20), Background = System.Windows.Media.Brushes.DimGray, Child = PlayerWindow.DetailCard(g, detail, false) };
+                    for (var until = DateTime.Now.AddSeconds(3); DateTime.Now < until; Thread.Sleep(50)) System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Background);
+                    host.Measure(new System.Windows.Size(double.PositiveInfinity, double.PositiveInfinity)); host.Arrange(new System.Windows.Rect(host.DesiredSize));
+                    var bitmap = new System.Windows.Media.Imaging.RenderTargetBitmap((int)host.ActualWidth, (int)host.ActualHeight, 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
+                    bitmap.Render(host);
+                    var png = new System.Windows.Media.Imaging.PngBitmapEncoder(); png.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(bitmap));
+                    using var file = File.Create(Path.ChangeExtension(Path.GetFullPath(args[1]), null) + "-" + g.Slot + ".png"); png.Save(file);
+                }
+                return 0;
+            }
+            if(args.FirstOrDefault() == "--dps-test")
+            {
+                // Test: replays recordings (args[2..]) with a snapshot every second, as the app does, and compares the
+                // fight the overlay shows with your own: your hits dealt and taken, a new fight after 15 s without any.
+                // On 2026-10-22 a busy farm kept one «fight» for the whole 304 s recording and your DPS was spread over it.
+                testDirectory = Path.Combine(Path.GetTempPath(), "fa2c-replay-" + Guid.NewGuid().ToString("N"));
+                Directory.CreateDirectory(testDirectory);
+                bool ok = true;
+                try
+                {
+                    var report = new List<object>();
+                    foreach (var file in args.Skip(2))
+                    {
+                        DateTime at = DateTime.MinValue, nextSnap = DateTime.MinValue;
+                        var hits = new List<(AionDPS.Combat.DamageEvent Hit, string? Source, string? Target)>(); // with the names known then
+                        var worst = 0.0; int snaps = 0; object? worstAt = null;
+                        var groups = new List<(DateTime At, HashSet<string> Names)>(); // the group as it was at each snapshot
+                        int lastId = 0; DateTime idSince = DateTime.MinValue;
+                        var identity = new List<string>(); // who the overlay took you for, each time it changes
+                        using var engine = new CaptureEngine { ReplayClock = () => at };
+                        engine.Combat += h => hits.Add((h, engine.Entities.NameOf(h.SourceObjectId), engine.Entities.NameOf(h.TargetObjectId)));
+                        CaptureSnapshot? snap = null;
+                        foreach (var line in File.ReadLines(file))
+                        {
+                            var s = JsonSerializer.Deserialize<SegmentLog>(line)!; at = s.Timestamp;
+                            engine.Ingest(new(s.Timestamp, s.Source, s.Destination, s.Sequence, Convert.FromBase64String(s.Payload), s.FromServer));
+                            if (at < nextSnap) continue;
+                            nextSnap = at.AddSeconds(1); snap = engine.Snapshot(); snaps++;
+                            if (snap.LocalId != lastId) { lastId = snap.LocalId; idSince = at; identity.Add($"{at:HH:mm:ss} {snap.LocalId} {engine.Entities.NameOf(snap.LocalId) ?? snap.Character ?? "?"}{(snap.IdentityInferred ? " (deducido)" : "")}"); }
+                            var group = new HashSet<string>(snap.Party ?? [], StringComparer.OrdinalIgnoreCase);
+                            if (snap.Troop is { } tr) foreach (var m in tr.Members) if (m.Group == tr.OwnGroup) group.Add(m.Name);
+                            if (snap.Room is { } rm) foreach (var m in rm.Members) group.Add(m.Name);
+                            groups.Add((at, group));
+                            // Until the engine knows who you are it cannot tell your hits: 15 s of grace after your id changes.
+                            if (snap.LocalId <= 0 || snap.Damage <= 0 || (at - idSince).TotalSeconds < 15) continue;
+                            // Your fight at this moment: the last run of damage you or your group dealt or took, without a 15 s gap.
+                            HashSet<string> GroupAt(DateTime t) => groups.LastOrDefault(g => g.At <= t).Names ?? groups[0].Names;
+                            bool Ours(int id, string? name, DateTime t) => id == snap.LocalId || name is not null && GroupAt(t).Contains(name);
+                            var mine = hits.Where(x => !x.Hit.IsHeal && (Ours(x.Hit.SourceObjectId, x.Source, x.Hit.Timestamp) || Ours(x.Hit.TargetObjectId, x.Target, x.Hit.Timestamp))).Select(x => x.Hit).ToList();
+                            int from = 0;
+                            for (int i = 1; i < mine.Count; i++) if ((mine[i].Timestamp - mine[i - 1].Timestamp).TotalSeconds > 15) from = i;
+                            if (mine.Count == 0) continue;
+                            double span = Math.Max(1, (mine[^1].Timestamp - mine[from].Timestamp).TotalSeconds);
+                            long dealt = mine.Skip(from).Where(h => h.SourceObjectId == snap.LocalId && !h.IsHeal).Sum(h => h.Amount);
+                            // The first seconds of a fight swing with half a second, and a few points of damage are no DPS.
+                            if (dealt == 0 || span < 8 || dealt / span < 100) continue;
+                            double expected = dealt / span, off = Math.Abs(snap.Dps - expected) / expected;
+                            if (off > worst) { worst = off; worstAt = new { at = at.ToString("HH:mm:ss"), shownDps = Math.Round(snap.Dps), shownDuration = Math.Round(snap.Duration), expectedDps = Math.Round(expected), ownSpan = Math.Round(span), ownFrom = mine[from].Timestamp.ToString("HH:mm:ss"), ownLast = mine[^1].Timestamp.ToString("HH:mm:ss"), shownDamage = snap.Damage, ownDealt = dealt }; }
+                        }
+                        bool fine = worst <= 0.10; ok &= fine;
+                        report.Add(new { recording = Path.GetFileName(file), snaps, local = snap?.LocalId, damage = snap?.Damage, duration = Math.Round(snap?.Duration ?? 0), dps = Math.Round(snap?.Dps ?? 0),
+                            worstDpsError = Math.Round(worst * 100, 1) + " %", worstAt, identity, ok = fine });
+                    }
+                    File.WriteAllText(Path.GetFullPath(args[1]), JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true }));
+                }
+                finally { Directory.Delete(testDirectory, true); testDirectory = null; }
+                return ok ? 0 : 1;
+            }
             if(args.FirstOrDefault() == "--lootbook-test")
             {
                 // Test: replays recordings (args[2..]) and writes what each creature gave (LootBook) to args[1], with how many

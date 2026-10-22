@@ -53,7 +53,8 @@ public sealed class CaptureEngine : IDisposable
     readonly List<ILiveDevice> devices = [];
     readonly List<DamageEvent> fight = [];
     readonly HashSet<(int, DateTime)> deaths = [];
-    readonly HashSet<int> engaged = [];
+    // The monsters hit in this fight and who hit them: a death counts as a kill of ours only if one of them was us (Ours).
+    readonly Dictionary<int, HashSet<int>> engaged = [];
     readonly FrameAnalysis analysis=new();
     readonly BossCasts casts=new();
     readonly PartyRoster party;
@@ -404,7 +405,7 @@ public sealed class CaptureEngine : IDisposable
                     int loadsBefore = ownPos.Loads;
                     ownPos.Add(frame.Span);
                     // A map load: the monsters of the previous map must not vote for (or place the player on) the new one.
-                    if (ownPos.Loads != loadsBefore) { entities.ForgetMap(); cubes.ForgetLive(); carriedIdentity = sessionIdentity ?? carriedIdentity; sessionIdentity = null; }
+                    if (ownPos.Loads != loadsBefore) { lastOwnId = 0; ownKnown = false; entities.ForgetMap(); cubes.ForgetLive(); carriedIdentity = sessionIdentity ?? carriedIdentity; sessionIdentity = null; }
                     collection.Add(frame.Span);
                     if (devices.Count > 0) rare.Add(frame.Span); // live sessions only, not replays
                     Frames.Walk(frame.Span, SelectFrame);
@@ -415,35 +416,105 @@ public sealed class CaptureEngine : IDisposable
                     inventory.Add(frame.Span, segment.Timestamp);
                     assistant.Add(frame.Span, segment.Timestamp);
                     { var ts = segment.Timestamp; Frames.Walk(frame.Span, x => WatchFieldBoss(x, ts)); }
+                    int? localNow = null;
                     foreach(var hit in decoder.Decode(frame.Span, segment.Timestamp))
                     {
                         damageEvents++;
                         if (paused || hit.Amount < 0 || hit.Amount > 100_000_000_000) continue;
-                        // Start a new encounter after a quiet interval; old fights are exported explicitly.
-                        if (lastHit is not null && (hit.Timestamp - lastHit.Value).TotalSeconds > IdleSeconds) ResetFight();
-                        started ??= hit.Timestamp;
-                        lastHit = hit.Timestamp;
+                        // The encounter is ours: it starts, goes on and goes quiet with the damage you or your group deal or take.
+                        // Before 2026-10-22 any hit nearby kept it going (304 s of «fight» in 5 min of a busy farm, so your DPS
+                        // was your damage spread over all of it). Others' hits still join a fight of ours while it lasts (the
+                        // boss panel needs everyone's damage). Until the identity is known, every hit counts, as before.
+                        localNow ??= OwnId();
+                        if (localNow > 0 && !ownKnown) { ownKnown = true; RebaseFight(localNow.Value); }
+                        // Only damage keeps a fight alive: heals (regeneration, heals over time) went on for minutes after the
+                        // group stopped fighting in the Abyss on 2026-10-22, the fight never ended and your DPS kept falling.
+                        // They still count inside a fight.
+                        bool mine = !hit.IsHeal && (localNow <= 0 || Ours(hit.SourceObjectId, localNow.Value) || Ours(hit.TargetObjectId, localNow.Value));
+                        bool active = lastHit is DateTime previous && (hit.Timestamp - previous).TotalSeconds <= IdleSeconds;
+                        if (!mine && !active) { Combat?.Invoke(hit); continue; }
+                        if (mine)
+                        {
+                            // Start a new encounter after a quiet interval; old fights are exported explicitly.
+                            if (lastHit is not null && !active) ResetFight();
+                            started ??= hit.Timestamp;
+                            lastHit = hit.Timestamp;
+                        }
                         if (fight.Count >= 100_000) fight.RemoveRange(0, 50_000);
                         fight.Add(hit);
                         if (hitDetails.Of(hit) is { } extra) { if (extras.Count > 200_000) extras.Clear(); extras[hit] = extra; }
-                        if (entities.IsKnownMonster(hit.TargetObjectId)) engaged.Add(hit.TargetObjectId);
+                        if (entities.IsKnownMonster(hit.TargetObjectId))
+                        {
+                            if (!engaged.TryGetValue(hit.TargetObjectId, out var hitters)) engaged[hit.TargetObjectId] = hitters = [];
+                            if (hitters.Count < 64) hitters.Add(hit.SourceObjectId);
+                        }
                         Combat?.Invoke(hit);
                     }
                     decoder.DrainSkillUses();
                     foreach (var avoid in decoder.DrainAvoids()) { if (avoids.Count > 20_000) avoids.RemoveRange(0, 10_000); avoids.Add(avoid); }
                     foreach(var death in decoder.DrainKills().ToList().Where(d => { if (d.VictimIsPlayer) playerDeaths.Add(d); return true; }))
-                        if (!death.VictimIsPlayer && engaged.Contains(death.VictimObjectId)) CountDeath(death.VictimObjectId, death.Timestamp);
-                    foreach (int id in engaged.ToArray())
+                        if (!death.VictimIsPlayer && engaged.ContainsKey(death.VictimObjectId)) CountDeath(death.VictimObjectId, death.Timestamp);
+                    foreach (int id in engaged.Keys.ToArray())
                         if (entities.RemovalOf(id) is { Reason: Aion2EntityDirectory.RemovedDead } removal) CountDeath(id, removal.At);
                 }
                 catch { errors++; }
             }
         }
     }
+    // Kills count only for monsters you or your group hit: party, your troop group or the dungeon room. In the Abyss on
+    // 2026-10-22 every monster anyone hit was counted, and the overlay said «4,407 criaturas» next to 0 damage; the farm
+    // session, the souls per kill and the loot book took those kills of others as yours. Under the gate.
+    HashSet<string> groupNames = new(StringComparer.OrdinalIgnoreCase);
+    DateTime groupNamesAt;
+    bool ownKnown;
+    // Until the identity was known every hit counted, so strangers could have started the fight: when it becomes known,
+    // the fight starts at your (or your group's) first damage, dealt or taken, or it is dropped if you were not in it. Under the gate.
+    void RebaseFight(int local)
+    {
+        var ours = fight.Where(h => !h.IsHeal && (Ours(h.SourceObjectId, local) || Ours(h.TargetObjectId, local))).ToList();
+        if (ours.Count == 0) { fight.Clear(); extras.Clear(); avoids.Clear(); started = lastHit = null; return; }
+        // Your last run of hits: an earlier one, more than the idle time before, was another fight.
+        int from = 0;
+        for (int i = 1; i < ours.Count; i++) if ((ours[i].Timestamp - ours[i - 1].Timestamp).TotalSeconds > IdleSeconds) from = i;
+        started = ours[from].Timestamp; lastHit = ours[^1].Timestamp;
+        fight.RemoveAll(h => h.Timestamp < ours[from].Timestamp);
+    }
+    // The local id for telling what is ours: the confirmed one, else the one the detailed-stats frames point to, else the
+    // last one known on this map (0 = unknown). The guess comes and goes between frames: on 2026-10-11 it was there at
+    // 03:29:30 and gone at 03:29:57, and meanwhile every hit nearby counted as yours. A map load gives you a new id.
+    int lastOwnId;
+    // Who you are when the game has not said it: only the detailed-stats frames, which the server sends to you alone.
+    // The vendor's fallback (the unnamed player with the most skills seen) picked strangers in crowded places: in Balaur on
+    // 2026-10-12 it took five other players for you in a minute, and the overlay showed their damage as yours.
+    int? Guess() => entities.LocalFromDetailedStats();
+    int OwnId()
+    {
+        int id = LocalCombatId() is int local and > 0 ? local : Guess() is int guess and > 0 ? guess : 0;
+        if (id > 0) lastOwnId = id;
+        return lastOwnId;
+    }
+    // A kill is decided when the monster dies, not at the hit: by then the identity is usually known.
+    bool Ours(int source, int local)
+    {
+        if (local > 0 && source == local) return true;
+        if (entities.NameOf(source) is not { Length: > 0 } name) return false;
+        if ((Now - groupNamesAt).Duration().TotalSeconds >= 2)
+        {
+            groupNamesAt = Now;
+            groupNames = new HashSet<string>(party.Names, StringComparer.OrdinalIgnoreCase);
+            if (troop.Current is { } t) foreach (var m in t.Members) if (m.Group == t.OwnGroup) groupNames.Add(m.Name);
+            if (room.Current is { } r) foreach (var m in r.Members) groupNames.Add(m.Name);
+            if (localName is { Length: > 0 }) groupNames.Add(localName);
+            if (entities.LearnedLocalName is { Length: > 0 } learned) groupNames.Add(learned);
+        }
+        return groupNames.Contains(name);
+    }
     void CountDeath(int id, DateTime at)
     {
         if (!deaths.Add((id, at))) return;
-        engaged.Remove(id);
+        // Somebody else's kill (nobody of ours hit it): not counted for the fight, the farm session, the souls or the loot.
+        int own = OwnId();
+        if (!engaged.Remove(id, out var hitters) || !hitters.Any(h => Ours(h, own))) return;
         kills++; sessionKills++;
         pets.Killed(entities.NpcIdOf(id));
         observed.Killed(entities.NpcIdOf(id), at);
@@ -483,7 +554,10 @@ public sealed class CaptureEngine : IDisposable
             // The character record only arrives on some zone changes. The detailed-stats frames are sent to the
             // local player alone (hundreds vs. 0-5 for anyone else); accept that only when one id clearly dominates.
             bool inferred = false;
-            if (local <= 0 && entities.InferLocalPlayer() is int guess && guess > 0) { local = guess; inferred = true; }
+            if (local <= 0 && Guess() is int guess && guess > 0) { local = guess; inferred = true; }
+            // The guess can drop out for a moment: keep the id known on this map, so your DPS does not fall to 0 meanwhile.
+            if (local <= 0 && lastOwnId > 0) local = lastOwnId;
+            if (local > 0) lastOwnId = local;
             ownPos.LocalId = local; assistant.LocalId = local;
             double duration = started is null ? 0 : Math.Max(1, ((lastHit ?? started.Value) - started.Value).TotalSeconds);
             var bossTargets = new Dictionary<int, bool>();
@@ -593,7 +667,8 @@ public sealed class CaptureEngine : IDisposable
         lock(gate)
         {
             if (lastHit is not null && lastHit != savedLastHit) ended = BuildFight();
-            fight.Clear(); extras.Clear(); avoids.Clear(); playerDeaths.Clear(); started = lastHit = null; engaged.Clear(); savedLastHit = null;
+            // The kills shown beside the fight's damage are this fight's (they used to add up since the app opened).
+            fight.Clear(); extras.Clear(); avoids.Clear(); playerDeaths.Clear(); started = lastHit = null; engaged.Clear(); savedLastHit = null; kills = 0;
         }
         if (ended is not null) _ = Task.Run(() => FightEnded?.Invoke(ended));
     }
@@ -658,7 +733,7 @@ public sealed class CaptureEngine : IDisposable
         {
             var directory = entities.Snapshot();
             int local = LocalCombatId();
-            if (local <= 0 && entities.InferLocalPlayer() is int guess) local = guess;
+            if (local <= 0 && Guess() is int guess) local = guess;
             int actor = actorId > 0 ? actorId : local;
             string NameOf(int id) => directory.Names.GetValueOrDefault(id) ?? (id == local ? localName : null) ?? (NpcOf(id) is int npc ? Catalog.NpcName(npc) : $"Entidad {id}");
             // Players only: named, or the local one (an unannounced boss is "Entidad n" and hits too).

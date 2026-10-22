@@ -348,6 +348,12 @@ const I18N_PATTERNS=[
  [/^El servidor de seguridad del hosting o tu red devolvió una página en lugar de datos \(HTTP (\d+), «(.+)»\)$/,"The hosting's security server or your network returned a page instead of data (HTTP $1, «$2»)",'O servidor de segurança da hospedagem ou a sua rede devolveu uma página em vez de dados (HTTP $1, «$2»)',"Le serveur de sécurité de l'hébergeur ou ton réseau a renvoyé une page au lieu de données (HTTP $1, « $2 »)"],
  [/^El servidor de seguridad del hosting o tu red devolvió una página en lugar de datos \(HTTP (\d+)\)$/,"The hosting's security server or your network returned a page instead of data (HTTP $1)",'O servidor de segurança da hospedagem ou a sua rede devolveu uma página em vez de dados (HTTP $1)',"Le serveur de sécurité de l'hébergeur ou ton réseau a renvoyé une page au lieu de données (HTTP $1)"],
  [/^No se pudo vincular \(HTTP (\d+)\)$/,'Could not link (HTTP $1)','Não foi possível vincular (HTTP $1)',"Liaison impossible (HTTP $1)"],
+ // Arcanas
+ [/^No se pudieron leer tus arcanas: (.+)$/,'Could not read your arcana: $1','Não foi possível ler suas arcanas: $1',"Impossible de lire tes arcanes : $1"],
+ [/^Perfil público de NCSOFT · lectura de las (.+)$/,'NCSOFT public profile · read at $1','Perfil público da NCSOFT · lido às $1',"Profil public de NCSOFT · lu à $1"],
+ [/^Se activa · (.+) \((\d+)\)$/,'Turns on · $1 ($2)','Ativa · $1 ($2)',"S'active · $1 ($2)"],
+ [/^Se pierde · (.+) \((\d+)\)$/,'Lost · $1 ($2)','Perde · $1 ($2)',"Perdu · $1 ($2)"],
+ [/^Nv\. \+(\d+)$/,'Lv. +$1','Nv. +$1',"Niv. +$1"],
  // Last: a category and a quantity («Mascota · 1», the Atlas loot lines).
  [/^(.+) · (\d+(?:–\d+)?)$/,'$T1 · $2','$T1 · $2',"$T1 · $2"],
 ];
@@ -638,3 +644,71 @@ document.addEventListener('click',e=>{const t=e.target.closest?.('[data-ticket]'
  const r=e.target.closest?.('[data-reply]');if(r){send('support-reply',{id:r.dataset.reply,message:$('sup-reply')?.value||''});return;}
  const sec=e.target.closest?.('[data-section="support"]');if(sec&&data?.support?.paired&&!data.support.list)send('support-refresh');});
 const _rcSup=window.renderCompanion;window.renderCompanion=d=>{_rcSup?.(d);renderSupport(d.support);};
+// Arcanas (2026-10-22): your five cards from the official profile, the equipped effects added up as the game shows them
+// (each card's Empyrean Lord stat and its skills), the set effects lit up by the pieces worn, and a planner for levels and sets.
+// A card's id says its kind and set: 8 1 0 <kind 1-5> <grade> 0 0 0 <set 1 vigor, 2 magic>.
+const ARCANA_GODS={1:{1:'Tiempo [Siel]',2:'Espacio [Israphel]'},2:{1:'Vida [Yustiel]',2:'Destino [Marchutan]'},3:{1:'Libertad [Vaizel]',2:'Muerte [Triniel]'},4:{1:'Justicia [Nezekan]',2:'Destrucción [Zikel]'},5:{1:'Fantasía [Kaisinel]',2:'Sabiduría [Lumiel]'}};
+const ARCANA_KINDS={1:'Cáliz',2:'Pergamino',3:'Brújula',4:'Campana',5:'Espejo'};
+const ARCANA_SETS={1:{id:'Arcana_A_set_001',name:'Vitalidad primordial',short:'Vitalidad'},2:{id:'Arcana_A_set_002',name:'Armadura mágica',short:'Magia'}};
+let arcanaData=null,arcanaPlan={};
+const arcanaKind=id=>Math.floor(Number(id)/100000)%10,arcanaSetOf=id=>Number(id)%10;
+const arcanaPlanKey=()=>'arcana-plan:'+(arcanaData?.name||'');
+function arcanaLoadPlan(){try{arcanaPlan=JSON.parse(localStorage.getItem(arcanaPlanKey())||'{}')||{};}catch{arcanaPlan={};}}
+function arcanaSavePlan(){try{localStorage.setItem(arcanaPlanKey(),JSON.stringify(arcanaPlan));}catch{}}
+// What a set of cards adds up to: Empyrean Lord stats, skills (by id) and pieces per set.
+function arcanaTotals(cards){const gods=new Map(),skills=new Map(),sets=new Map();
+ for(const c of cards){if(c.god)gods.set(c.god,(gods.get(c.god)||0)+c.value);
+  for(const k of c.skills||[]){const s=skills.get(k.id)||{...k,level:0};s.level+=k.level;skills.set(k.id,s);}
+  if(c.setId)sets.set(c.setId,(sets.get(c.setId)||0)+1);}
+ return {gods,skills,sets};}
+// The cards as they are, and as the plan leaves them (level and set per slot).
+function arcanaCards(planned){return (arcanaData?.cards||[]).map(c=>{const kind=arcanaKind(c.id),set=arcanaSetOf(c.id),base=c.stat?.base??0;
+ const now={slot:c.slot,kind,set,name:c.name,icon:c.icon,grade:c.grade,level:c.enchant,max:c.max||5,god:c.stat?.name,value:base+(c.stat?.extra??c.enchant),skills:c.skills,setId:c.setId,known:true};
+ if(!planned)return now;const p=arcanaPlan[c.slot];if(!p)return now;
+ const pset=p.set??set,plevel=Math.min(now.max,Math.max(0,p.level??c.enchant)),same=pset===set;
+ const other=arcanaData.sets.find(s=>s.id===ARCANA_SETS[pset]?.id)?.members?.find(m=>arcanaKind(m.id)===kind);
+ return {...now,set:pset,level:plevel,god:same?now.god:ARCANA_GODS[kind]?.[pset]||now.god,value:base+plevel,name:same?c.name:other?.name||`${ARCANA_KINDS[kind]||''} · ${ARCANA_SETS[pset]?.short||''}`,
+  skills:same?c.skills:[],setId:ARCANA_SETS[pset]?.id||c.setId,known:same};});}
+function renderArcana(a){const view=$('arcana-view');if(!view)return;
+ if(a)arcanaData=a,arcanaLoadPlan();a=arcanaData;
+ const stage=data?.profile?.stage;
+ if(!a){const text=data?.profile?.card?'Leyendo tus arcanas…':stage&&stage!=='full'&&stage!=='missing'&&stage!=='error'?'Leyendo tu perfil oficial…':'Pulsa «Actualizar» para leer tus arcanas desde tu perfil oficial.';
+  const html=`<p class="empty">${esc(text)}</p>`;if(view.dataset.html!==html){view.innerHTML=html;view.dataset.html=html;}return;}
+ if(a.error){const html=`<p class="empty">${esc('No se pudieron leer tus arcanas: '+a.error)}</p>`;if(view.dataset.html!==html){view.innerHTML=html;view.dataset.html=html;}return;}
+ const now=arcanaCards(false),plan=arcanaCards(true),tn=arcanaTotals(now),tp=arcanaTotals(plan),planned=Object.keys(arcanaPlan).length>0;
+ const setInfo=id=>a.sets.find(s=>s.id===id)||{id,name:Object.values(ARCANA_SETS).find(s=>s.id===id)?.name||id,bonuses:[]};
+ const card=c=>`<article class="arcana-card grade-frame-${esc(c.grade)}">${c.icon?`<img src="${esc(c.icon)}" alt="" loading="lazy">`:''}<span class="arcana-level">+${c.level}</span><div><b class="grade-${esc(c.grade)}">${esc(c.name)}</b><small>${esc(c.god||'')} <em>${c.value||''}</em></small></div></article>`;
+ const gods=t=>[...t.gods].map(([g,v])=>`<div class="arcana-row"><span>${esc(g)}</span><b>${v}</b></div>`).join('');
+ const skills=t=>[...t.skills.values()].sort((x,y)=>y.level-x.level||x.name.localeCompare(y.name)).map(s=>`<div class="arcana-row skill">${s.icon?`<img src="${esc(s.icon)}" alt="">`:''}<span>${esc(s.name)}</span><b>Nv. +${s.level}</b></div>`).join('');
+ const sets=t=>{const ids=[...new Set([...t.sets.keys(),...a.sets.map(s=>s.id)])];return ids.map(id=>{const s=setInfo(id),n=t.sets.get(id)||0;
+  return `<div class="arcana-set"><h4>${esc(s.name)} <small>${n}/5</small></h4>${(s.bonuses||[]).map(b=>`<p class="${n>=b.degree?'on':''}"><i>${b.degree}</i>${esc((b.text||[]).join(' '))}</p>`).join('')||`<p>${esc('Sin efectos de set conocidos para este set.')}</p>`}</div>`;}).join('');};
+ // The plan against today, in full (2026-10-22, the user: only the changed god showed and it looked like the others were
+ // missing): every Empyrean Lord stat and every set with today's value and the plan's, the changes marked, and below
+ // the set effects that turn on or off.
+ const resultRow=(name,was,will,text=v=>v)=>{const d=will-was;return `<div class="arcana-result-row${d?'':' same'}"><span>${esc(name)}</span><b>${esc(text(was))}</b><b>${esc(text(will))}</b><em class="${d>0?'up':d<0?'down':''}">${d?(d>0?'+':'')+d:''}</em></div>`;};
+ const godNames=[...new Set([...tn.gods.keys(),...tp.gods.keys()])],setIds=[...new Set([...a.sets.map(s=>s.id),...tn.sets.keys(),...tp.sets.keys()])];
+ const changes=[];for(const s of a.sets)for(const b of s.bonuses||[]){const was=(tn.sets.get(s.id)||0)>=b.degree,will=(tp.sets.get(s.id)||0)>=b.degree;
+  if(was!==will)changes.push(`<p class="arcana-change ${will?'up':'down'}">${esc((will?'Se activa · ':'Se pierde · ')+s.name+' ('+b.degree+')')}</p>`);}
+ const moved=godNames.some(g=>(tn.gods.get(g)||0)!==(tp.gods.get(g)||0))||changes.length>0;
+ const result=`<div class="arcana-result"><div class="arcana-result-row head"><span>${esc('Resultado del plan')}</span><span>${esc('Ahora')}</span><span>${esc('Con el plan')}</span><span></span></div>
+  ${godNames.map(g=>resultRow(g,tn.gods.get(g)||0,tp.gods.get(g)||0)).join('')}
+  ${setIds.map(id=>resultRow(setInfo(id).name,tn.sets.get(id)||0,tp.sets.get(id)||0,v=>v+'/5')).join('')}
+  ${changes.join('')}${planned&&!moved?`<p class="muted-note">${esc('Con este plan no cambia nada.')}</p>`:''}</div>`;
+ const rows=plan.map(c=>{const o=now.find(x=>x.slot===c.slot);return `<div class="arcana-plan-row"><span>${esc(o.name)}</span>
+  <label>${esc('Nivel')} <select data-arcana-level="${esc(c.slot)}">${Array.from({length:c.max+1},(_,i)=>`<option value="${i}"${i===c.level?' selected':''}>+${i}</option>`).join('')}</select></label>
+  <label>${esc('Set')} <select data-arcana-set="${esc(c.slot)}">${[1,2].map(n=>`<option value="${n}"${n===c.set?' selected':''}>${esc(ARCANA_SETS[n].short)}</option>`).join('')}</select></label></div>`;}).join('');
+ const html=`<div class="arcana-layout"><div><div class="arcana-cards">${now.map(card).join('')}</div>
+  <p class="footnote">${esc('Perfil público de NCSOFT · lectura de las '+new Date(a.fetchedAt).toLocaleTimeString(uiLoc(),{hour:'2-digit',minute:'2-digit'}))}</p>
+  <article class="panel arcana-planner"><div class="panel-head"><h3>${esc('Planificador')}</h3><button data-arcana-reset${planned?'':' disabled'}>${esc('Restablecer')}</button></div>
+  <p class="muted-note">${esc('Prueba otro nivel o el otro set en cada carta y mira qué cambia.')}</p>${rows}
+  ${result}
+  ${planned&&plan.some(c=>!c.known)?`<p class="muted-note">${esc('Las habilidades de una carta que cambias de set salen al azar en el juego: no se suman en el plan.')}</p>`:''}</article></div>
+  <aside class="arcana-effects"><h3>${esc('Efectos de equipado')}</h3>${gods(planned?tp:tn)}${skills(planned?tp:tn)}<h3>${esc('Efectos de set')}</h3>${sets(planned?tp:tn)}${planned?`<p class="muted-note">${esc('Con el plan aplicado.')}</p>`:''}</aside></div>`;
+ if(view.dataset.html!==html){view.innerHTML=html;view.dataset.html=html;}}
+document.addEventListener('change',e=>{const lv=e.target.closest?.('[data-arcana-level]'),st=e.target.closest?.('[data-arcana-set]');if(!lv&&!st)return;
+ const slot=(lv||st).dataset[lv?'arcanaLevel':'arcanaSet'],c=arcanaData?.cards?.find(x=>x.slot===slot);if(!c)return;
+ const p={...(arcanaPlan[slot]||{})};if(lv)p.level=Number(lv.value);else p.set=Number(st.value);
+ if((p.level??c.enchant)===c.enchant&&(p.set??arcanaSetOf(c.id))===arcanaSetOf(c.id))delete arcanaPlan[slot];else arcanaPlan[slot]=p;
+ arcanaSavePlan();renderArcana();});
+document.addEventListener('click',e=>{if(!e.target.closest?.('[data-arcana-reset]'))return;arcanaPlan={};arcanaSavePlan();renderArcana();});
+const _rcArcana=window.renderCompanion;window.renderCompanion=d=>{_rcArcana?.(d);renderArcana(d.arcana);};

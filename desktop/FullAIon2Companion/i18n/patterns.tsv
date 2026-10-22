@@ -1,3 +1,5 @@
+^Nv\. \+(\d+)$	Lv. +$1	Nv. +$1	Niv. +$1
+^SET · (.+) · (\d+)/5$	SET · $1 · $2/5	CONJUNTO · $1 · $2/5	PANOPLIE · $1 · $2/5
 ^(\d+) objetos · (\d+) únicos o mejores · botín de su variante Nv\. (\d+)$	$1 items · $2 unique or better · loot of its Lv. $3 variant	$1 itens · $2 únicos ou melhores · saque da variante Nv. $3	$1 objets · $2 uniques ou mieux · butin de sa variante Niv. $3
 ^Tienes la (\S+) · (.+) MB · publicada el (.+)$	You have $1 · $2 MB · published $3	Você tem a $1 · $2 MB · publicada em $3	Tu as la $1 · $2 Mo · publiée le $3
 ^Multigolpe (\d+)% · Parada (\d+)% · Bloqueo (\d+)% · Esquiva (\d+)% · Muertes: (\d+) · Curación: (\S+) · HPS: (\S+) · (\d+) lanzamientos · (\d+) golpes$	Multi-hit $1% · Parry $2% · Block $3% · Dodge $4% · Deaths: $5 · Healing: $6 · HPS: $7 · $8 casts · $9 hits	Multigolpe $1% · Aparo $2% · Bloqueio $3% · Esquiva $4% · Mortes: $5 · Cura: $6 · HPS: $7 · $8 lançamentos · $9 golpes	Multi-coups $1% · Parade $2% · Blocage $3% · Esquive $4% · Morts : $5 · Soins : $6 · SPS : $7 · $8 utilisations · $9 coups

@@ -16,7 +16,8 @@ public sealed class PlayerWindow : Window
     static readonly Dictionary<string, string> GradeColors = new() { ["Epic"] = "#FFA568", ["Unique"] = "#ECC057", ["Legend"] = "#77B4FF", ["Rare"] = "#6ADA84", ["Special"] = "#69DFE0", ["Common"] = "#AAB4BE" };
     // Combat gear first, in the order of the game's character window; accessories and runes after; wings last.
     static readonly string[] SlotOrder = ["MainHand", "SubHand", "Helmet", "Torso", "Shoulder", "Gloves", "Pants", "Boots", "Cape", "Belt",
-        "Necklace", "Earring1", "Earring2", "Ring1", "Ring2", "Bracelet1", "Bracelet2", "Amulet", "Rune1", "Rune2", "Wing"];
+        "Necklace", "Earring1", "Earring2", "Ring1", "Ring2", "Bracelet1", "Bracelet2", "Amulet", "Rune1", "Rune2", "Wing",
+        "Arcana1", "Arcana2", "Arcana3", "Arcana4", "Arcana5"];
     static readonly Brush Muted = Paint("#95A4B6"), Gold = Paint("#E9C77E"), Teal = Paint("#71DED6"), Dim = Paint("#5F7480"), Cell = Paint("#141F28");
     static readonly Dictionary<string, ImageSource?> images = [];
     readonly Image portrait = new() { Width = 46, Height = 46, Stretch = Stretch.UniformToFill };
@@ -225,6 +226,23 @@ public sealed class PlayerWindow : Window
                 {
                     var c = Paint(GradeColors.GetValueOrDefault(S(st, "grade"), "#C3CFD9"));
                     Stat(S(st, "name"), S(st, "value"), c, c, Remote(S(st, "icon")));
+                }
+            }
+            // An arcana: its four skills (with the levels they add) and its set, the effects lit up from the pieces worn.
+            if (x.TryGetProperty("subSkills", out var skills) && skills.ValueKind == JsonValueKind.Array && skills.GetArrayLength() > 0)
+            {
+                Section("HABILIDADES");
+                foreach (var skill in skills.EnumerateArray()) Stat(S(skill, "name"), "Nv. +" + S(skill, "level"), Paint("#C3CFD9"), Teal, Remote(S(skill, "icon")));
+            }
+            if (x.TryGetProperty("set", out var set) && set.ValueKind == JsonValueKind.Object && set.TryGetProperty("bonuses", out var bonuses) && bonuses.ValueKind == JsonValueKind.Array)
+            {
+                int worn = int.TryParse(S(set, "equippedCount"), out int w) ? w : 0;
+                Section($"SET · {S(set, "name")} · {worn}/5");
+                foreach (var b in bonuses.EnumerateArray())
+                {
+                    bool on = int.TryParse(S(b, "degree"), out int degree) && worn >= degree;
+                    string text = b.TryGetProperty("descriptions", out var t) && t.ValueKind == JsonValueKind.Array ? string.Join(" ", t.EnumerateArray().Select(e => e.GetString())) : "";
+                    stack.Children.Add(new TextBlock { Text = $"{degree} · {text}", Foreground = on ? Paint("#6ADA84") : Dim, FontSize = 10.5, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 1, 0, 2) });
                 }
             }
             if (x.TryGetProperty("godStoneStat", out var gods) && gods.GetArrayLength() > 0)
