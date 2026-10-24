@@ -19,6 +19,7 @@ public sealed class MainWindow : Window
     ProfileState? ownProfile;
     // The Arcanas tab (ArcanaBook): the view of the own profile's arcanas, loaded once per profile reading.
     object? arcanaView;DateTimeOffset? arcanaFor;int arcanaVersion,arcanaSent=-1;
+    int roomsSent=-1; // the party finder's room lists (Salas tab), sent when they change
     /// <summary>Where donations go: the app and the website are free, and whoever wants can support them here.</summary>
     internal const string DonateUrl="https://paypal.me/martincito45";
     readonly CaptureEngine engine=new();
@@ -198,6 +199,9 @@ public sealed class MainWindow : Window
         await Refresh();
         ShowAction("Perfil de "+name+" abierto. Los datos oficiales se completan al recibirlos.");
     }
+    // The Salas tab: the last room list of each dungeon (newest first), with its time for «hace 5 s».
+    object RoomsView()=>engine.Board.Lists.Take(40).Select(l=>new{content=l.Content,category=l.Category,tab=l.Tab,dungeon=l.Dungeon,stars=l.Stars,level=l.Level,order=l.Order,at=new DateTimeOffset(l.At).ToUnixTimeMilliseconds(),
+        rooms=l.Rooms.Select(r=>new{key=r.Key,title=r.Title,capacity=r.Capacity,immediate=r.Immediate,members=r.Members.Select(m=>new{slot=m.Slot,name=m.Name,server=m.ServerTag,level=m.Level,gear=m.GearScore,power=m.CombatPower,cls=m.ClassKey,leader=m.Leader}).ToList()}).ToList()}).ToList();
     // The five arcanas' official detail (each card one request, kept by PlayerProfiles), then the panel gets the view.
     async Task LoadArcana(PlayerCard card)
     {
@@ -248,7 +252,7 @@ public sealed class MainWindow : Window
             view.CoreWebView2.NavigationStarting+=(_,e)=>{var uri=new Uri(e.Uri);if(uri.Host is not("companion.local" or "governanceai.me" or "aion2.plaync.com")) {e.Cancel=true;message="El enlace externo se ha bloqueado en el panel del juego";}};
             view.CoreWebView2.NewWindowRequested+=(_,e)=>{e.Handled=true;var uri=new Uri(e.Uri);if(uri.Host=="governanceai.me")view.Source=uri;};
             // The lists the panel only gets when they change (Mercado, marks) go again to a panel just loaded.
-            view.CoreWebView2.NavigationCompleted+=(_,_)=>{marketKey=boardKey=rankingKey="";marksSent=-1;arcanaSent=-1;};
+            view.CoreWebView2.NavigationCompleted+=(_,_)=>{marketKey=boardKey=rankingKey="";marksSent=-1;arcanaSent=-1;roomsSent=-1;};
             view.Source=new Uri("https://companion.local/ui/index.html");ready=true;
         }
         catch(Exception ex){message=ex.Message;File.AppendAllText(Path.Combine(Program.DataDirectory,"errors.log"),ex+"\n");if(!ready)Content=new TextBlock{Text="No se pudo iniciar WebView2: "+ex.Message,Foreground=Brushes.White,Margin=new Thickness(30),TextWrapping=TextWrapping.Wrap};}
@@ -449,7 +453,7 @@ public sealed class MainWindow : Window
             market.Want(marketServer);if(MarketViewServer!=marketServer)market.Want(MarketViewServer);
             {var gains=engine.Inventory.Loot;sessionMarket=(gains.Sum(g=>(market.Unit(marketServer,g.Item)??0)*g.Quantity),gains.Where(g=>market.Unit(marketServer,g.Item) is null&&!InventoryWatch.Bound(g.Item)).Select(g=>g.Item).Distinct().Count());}
             if(ticks%2==0&&ready&&view.Source is { } site&&WebPairing.FromSite(site.AbsoluteUri))PostToSite(JsonSerializer.Serialize(here));
-            overlay.Update(snapshot,events.FirstOrDefault(),snapshot.Actors.Where(a=>a.Id==snapshot.LocalId&&snapshot.LocalId>0||engine.Entities.NpcIdOf(a.Id) is null&&(settings.PartyOnly?party.Contains(a.Name):!a.Name.StartsWith("Entidad ",StringComparison.Ordinal))).ToList());
+            overlay.Update(snapshot,events.FirstOrDefault(),snapshot.Actors.Where(a=>a.Id==snapshot.LocalId&&snapshot.LocalId>0||(settings.PartyOnly?party.Contains(a.Name):!a.Name.StartsWith("Entidad ",StringComparison.Ordinal))).ToList());
             // Every 10 s: profiles of the players around, so a PvP target shows its card at once.
             if(ticks%20==0&&settings.OverlayDrops)PlayerProfiles.Prefetch(engine.RecentPlayers(30),snapshot.LocalServerId??settings.LastServerId,PlayerProfiles.RegionOf(settings.RegionOffset));
             // Every 5 s: follow the game if it opened a new connection (relog, reconnection, instance transfer).
@@ -484,7 +488,7 @@ public sealed class MainWindow : Window
             resourceBook.Update(snapshot.Character,snapshot.LocalServerId??settings.LastServerId,engine.Resources,engine.Inventory);
             // Captures for the website's tour (2026-10-19): a flag in the data folder asks for one copy of all the panel gets, heavy lists too.
             string dumpFlag=Path.Combine(Program.DataDirectory,"panel-dump.flag");bool dump=File.Exists(dumpFlag);
-            if(dump){marketKey=boardKey=rankingKey="";marksSent=-1;}
+            if(dump){marketKey=boardKey=rankingKey="";marksSent=-1;roomsSent=-1;}
             // The Mercado tab: sent when the inventory, a price or the server changed (it is the biggest list of the panel), and every 10 s.
             string mk=$"{engine.Inventory.Version}:{market.Version}:{marketServer}:{MarketViewServer}:{L.Language}:{market.Status}:{snapshot.Character}";
             object? marketView=null;if(mk!=marketKey||ticks%20==0){marketKey=mk;marketView=market.View(engine.Inventory,MarketViewServer,snapshot.Character,marketServer);}
@@ -495,7 +499,8 @@ public sealed class MainWindow : Window
             object? rankingView=null;if(rk!=rankingKey){rankingKey=rk;rankingView=engine.Rankings.View(snapshot.LocalServerId??settings.LastServerId,snapshot.Character);}
             if(ownProfile?.Card is { } ownCard&&ArcanaBook.Has(ownCard)&&arcanaFor!=ownCard.FetchedAt){arcanaFor=ownCard.FetchedAt;_=LoadArcana(ownCard);}
             object? arcanaSend=null;if(arcanaVersion!=arcanaSent||ticks%20==0){arcanaSent=arcanaVersion;arcanaSend=arcanaView;}
-            var data=new{news=new{unread=newsUnread},arcana=arcanaSend,market=marketView,marketBoard=boardView,atlasMarks=marksView,ranking=rankingView,recording=RecordingView(),support=new{list=supportList,open=supportOpen,status=supportStatus,paired=companion.Paired},resources=resourceBook.View(snapshot.Character,snapshot.LocalServerId??settings.LastServerId),farm,objective=ObjectiveNow(),cubes=new{cv.Active,cv.Distance,cv.Bearing,cv.Height,cv.SpotsNear,cv.NearestSpot,cv.NearestBearing,map=MinimapData.Map(cv.Map)?.Name,history=cv.History.Select(h=>new{h.At,h.GoneAt,h.LeftRangeAt,h.SeenFrom,h.Missing,h.EnvId,map=MinimapData.Map(h.Map)?.Name??h.Map,x=Math.Round(h.X/100),y=Math.Round(h.Y/100),z=Math.Round(h.Z/100)})},fieldBosses=ticks%4==0||fieldBossDirty?fieldBosses?.View():null,historyVersion=history.Version,classes,profile=ownProfile is null?null:new{stage=ownProfile.Stage,error=ownProfile.Error,card=ownProfile.Card},version=AppVersion.Current,update=UpdateView(),announcements=ActiveAnnouncements().Select(a=>new{a.Title,a.Body,a.Level}),diagnostics=companion.DiagnosticsStatus,features=new{pvp=license.Has("companionPvp"),minimap=license.Has("companionMinimap"),plan=license.View().Title},license=license.View(),minimapLayers=MinimapWindow.Layers.Select(l=>new{key=l.Key,label=l.Label,color=l.Color}),petList=petList??=PetTracker.All.Select(x=>new{id=x.Id,name=x.Name}).ToList(),snapshot,events,settings,petCollection=engine.Collection.Of(snapshot.Character,snapshot.LocalServerId??settings.LastServerId)??engine.Collection.All().OrderByDescending(c=>c.UpdatedAt).FirstOrDefault(),petsSync=companion.PetsStatus,cloud=new{state=companion.State.ToString(),pull=companion.LastPull,title=titles.View()},companion=companion.Status,paired=companion.Paired,message,overlay=overlay.Requested,locked=overlay.ClickThrough,assistantMoving=overlay.AssistantMoving,npc=snapshot.Target?.NpcId is int id?Catalog.Npc(id):null,mobs,alert=timers.LastAlert,atlas=here};
+            object? roomsView=null;if(engine.Board.Version!=roomsSent){roomsSent=engine.Board.Version;roomsView=RoomsView();}
+            var data=new{news=new{unread=newsUnread},arcana=arcanaSend,rooms=roomsView,market=marketView,marketBoard=boardView,atlasMarks=marksView,ranking=rankingView,recording=RecordingView(),support=new{list=supportList,open=supportOpen,status=supportStatus,paired=companion.Paired},resources=resourceBook.View(snapshot.Character,snapshot.LocalServerId??settings.LastServerId),farm,objective=ObjectiveNow(),cubes=new{cv.Active,cv.Distance,cv.Bearing,cv.Height,cv.SpotsNear,cv.NearestSpot,cv.NearestBearing,map=MinimapData.Map(cv.Map)?.Name,history=cv.History.Select(h=>new{h.At,h.GoneAt,h.LeftRangeAt,h.SeenFrom,h.Missing,h.EnvId,map=MinimapData.Map(h.Map)?.Name??h.Map,x=Math.Round(h.X/100),y=Math.Round(h.Y/100),z=Math.Round(h.Z/100)})},fieldBosses=ticks%4==0||fieldBossDirty?fieldBosses?.View():null,historyVersion=history.Version,classes,profile=ownProfile is null?null:new{stage=ownProfile.Stage,error=ownProfile.Error,card=ownProfile.Card},version=AppVersion.Current,update=UpdateView(),announcements=ActiveAnnouncements().Select(a=>new{a.Title,a.Body,a.Level}),diagnostics=companion.DiagnosticsStatus,features=new{pvp=license.Has("companionPvp"),minimap=license.Has("companionMinimap"),plan=license.View().Title},license=license.View(),minimapLayers=MinimapWindow.Layers.Select(l=>new{key=l.Key,label=l.Label,color=l.Color}),petList=petList??=PetTracker.All.Select(x=>new{id=x.Id,name=x.Name}).ToList(),snapshot,events,settings,petCollection=engine.Collection.Of(snapshot.Character,snapshot.LocalServerId??settings.LastServerId)??engine.Collection.All().OrderByDescending(c=>c.UpdatedAt).FirstOrDefault(),petsSync=companion.PetsStatus,cloud=new{state=companion.State.ToString(),pull=companion.LastPull,title=titles.View()},companion=companion.Status,paired=companion.Paired,message,overlay=overlay.Requested,locked=overlay.ClickThrough,assistantMoving=overlay.AssistantMoving,npc=snapshot.Target?.NpcId is int id?Catalog.Npc(id):null,mobs,alert=timers.LastAlert,atlas=here};
             string panelJson=UiContract.Serialize(data);
             if(dump){try{File.Delete(dumpFlag);File.WriteAllText(Path.Combine(Program.DataDirectory,"panel-dump.json"),panelJson);}catch{}}
             await view.ExecuteScriptAsync("window.renderCompanion?.("+panelJson+")");

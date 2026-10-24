@@ -674,6 +674,7 @@ public static class Program
                         DateTime at = DateTime.MinValue, nextSnap = DateTime.MinValue;
                         var hits = new List<(AionDPS.Combat.DamageEvent Hit, string? Source, string? Target)>(); // with the names known then
                         var worst = 0.0; int snaps = 0; object? worstAt = null;
+                        var worstTarget = 0.0; object? worstTargetAt = null; object? peakTarget = null; long peakDamage = 0; // DPS on the target
                         var groups = new List<(DateTime At, HashSet<string> Names)>(); // the group as it was at each snapshot
                         int lastId = 0; DateTime idSince = DateTime.MinValue;
                         var identity = new List<string>(); // who the overlay took you for, each time it changes
@@ -693,6 +694,7 @@ public static class Program
                             groups.Add((at, group));
                             // Until the engine knows who you are it cannot tell your hits: 15 s of grace after your id changes.
                             if (snap.LocalId <= 0 || snap.Damage <= 0 || (at - idSince).TotalSeconds < 15) continue;
+                            if (snap.TargetDamage > peakDamage) { peakDamage = snap.TargetDamage; peakTarget = new { at = at.ToString("HH:mm:ss"), target = engine.SelectedTarget, damage = snap.TargetDamage, dps = Math.Round(snap.TargetDps) }; }
                             // Your fight at this moment: the last run of damage you or your group dealt or took, without a 15 s gap.
                             HashSet<string> GroupAt(DateTime t) => groups.LastOrDefault(g => g.At <= t).Names ?? groups[0].Names;
                             bool Ours(int id, string? name, DateTime t) => id == snap.LocalId || name is not null && GroupAt(t).Contains(name);
@@ -700,18 +702,150 @@ public static class Program
                             int from = 0;
                             for (int i = 1; i < mine.Count; i++) if ((mine[i].Timestamp - mine[i - 1].Timestamp).TotalSeconds > 15) from = i;
                             if (mine.Count == 0) continue;
-                            double span = Math.Max(1, (mine[^1].Timestamp - mine[from].Timestamp).TotalSeconds);
-                            long dealt = mine.Skip(from).Where(h => h.SourceObjectId == snap.LocalId && !h.IsHeal).Sum(h => h.Amount);
+                            // Your DPS counts only the time you are hitting in that fight: pauses over 5 s left out (since 2026-10-24).
+                            var own = mine.Skip(from).Where(h => h.SourceObjectId == snap.LocalId && !h.IsHeal).ToList();
+                            if (own.Count == 0) continue;
+                            double span = CaptureEngine.ActiveSeconds(own.Select(h => h.Timestamp));
+                            long dealt = own.Sum(h => h.Amount);
+                            // Your DPS on the one you have selected, as the game's analyzer: only your hits on it, pauses over 4 s left out.
+                            var onTarget = own.Where(h => h.TargetObjectId == engine.SelectedTarget).ToList();
+                            double targetSpan = onTarget.Count == 0 ? 0 : CaptureEngine.ActiveSeconds(onTarget.Select(h => h.Timestamp), CaptureEngine.TargetGap);
+                            if (engine.SelectedTarget != 0 && targetSpan >= 8 && onTarget.Sum(h => h.Amount) / targetSpan >= 100)
+                            {
+                                double expectedTarget = onTarget.Sum(h => h.Amount) / targetSpan, offTarget = Math.Abs(snap.TargetDps - expectedTarget) / expectedTarget;
+                                if (offTarget > worstTarget) { worstTarget = offTarget; worstTargetAt = new { at = at.ToString("HH:mm:ss"), shownDps = Math.Round(snap.TargetDps), expectedDps = Math.Round(expectedTarget), shownDamage = snap.TargetDamage, ownDealt = onTarget.Sum(h => h.Amount), span = Math.Round(targetSpan, 1) }; }
+                            }
                             // The first seconds of a fight swing with half a second, and a few points of damage are no DPS.
                             if (dealt == 0 || span < 8 || dealt / span < 100) continue;
                             double expected = dealt / span, off = Math.Abs(snap.Dps - expected) / expected;
                             if (off > worst) { worst = off; worstAt = new { at = at.ToString("HH:mm:ss"), shownDps = Math.Round(snap.Dps), shownDuration = Math.Round(snap.Duration), expectedDps = Math.Round(expected), ownSpan = Math.Round(span), ownFrom = mine[from].Timestamp.ToString("HH:mm:ss"), ownLast = mine[^1].Timestamp.ToString("HH:mm:ss"), shownDamage = snap.Damage, ownDealt = dealt }; }
                         }
-                        bool fine = worst <= 0.10; ok &= fine;
+                        bool fine = worst <= 0.10 && worstTarget <= 0.10; ok &= fine;
                         report.Add(new { recording = Path.GetFileName(file), snaps, local = snap?.LocalId, damage = snap?.Damage, duration = Math.Round(snap?.Duration ?? 0), dps = Math.Round(snap?.Dps ?? 0),
-                            worstDpsError = Math.Round(worst * 100, 1) + " %", worstAt, identity, ok = fine });
+                            worstDpsError = Math.Round(worst * 100, 1) + " %", worstAt, worstTargetDpsError = Math.Round(worstTarget * 100, 1) + " %", worstTargetAt, peakTarget, identity, ok = fine });
                     }
                     File.WriteAllText(Path.GetFullPath(args[1]), JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true }));
+                }
+                finally { Directory.Delete(testDirectory, true); testDirectory = null; }
+                return ok ? 0 : 1;
+            }
+            if(args.FirstOrDefault() == "--own-hits")
+            {
+                // Diagnostic: every hit of yours in a recording (args[1]) as the engine counts it, to args[2]: time, target (and its
+                // creature), skill, amount, critical, tick, heal. For comparing with the game's own damage analyzer (2026-10-24).
+                testDirectory = Path.Combine(Path.GetTempPath(), "fa2c-replay-" + Guid.NewGuid().ToString("N"));
+                Directory.CreateDirectory(testDirectory);
+                try
+                {
+                    var rows = new List<string> { "time\tsource\ttarget\tnpc\tskill\tname\tamount\tcrit\ttick\theal" };
+                    DateTime at = DateTime.MinValue;
+                    using var engine = new CaptureEngine { ReplayClock = () => at };
+                    var all = new List<AionDPS.Combat.DamageEvent>();
+                    engine.Combat += h => all.Add(h);
+                    // Selection changes too, as «select» rows with the selected entity as the target.
+                    var selections = new List<string>(); int selected = 0;
+                    foreach (var line in File.ReadLines(args[1]))
+                    {
+                        var s = JsonSerializer.Deserialize<SegmentLog>(line)!; at = s.Timestamp;
+                        engine.Ingest(new(s.Timestamp, s.Source, s.Destination, s.Sequence, Convert.FromBase64String(s.Payload), s.FromServer));
+                        if (engine.SelectedTarget != selected)
+                        {
+                            selected = engine.SelectedTarget;
+                            selections.Add($"{s.Timestamp:HH:mm:ss.fff}\tselect\t{selected}\t{engine.Entities.NpcIdOf(selected)}\t\t\t\t\t\t");
+                        }
+                    }
+                    int own = engine.Snapshot().LocalId;
+                    // «received» (args[3]): the hits you take too, with you as the target.
+                    bool received = args.Length > 3 && args[3] == "received";
+                    foreach (var h in all.Where(h => h.SourceObjectId == own || received && h.TargetObjectId == own))
+                        rows.Add($"{h.Timestamp:HH:mm:ss.fff}\t{h.SourceObjectId}\t{h.TargetObjectId}\t{engine.Entities.NpcIdOf(h.TargetObjectId)}\t{h.SkillId}\t{h.Skill}\t{h.Amount}\t{(h.IsCritical ? 1 : 0)}\t{(h.IsTick ? 1 : 0)}\t{(h.IsHeal ? 1 : 0)}");
+                    if (received) rows = [rows[0], .. rows.Skip(1).Concat(selections).OrderBy(r => r[..12], StringComparer.Ordinal)];
+                    File.WriteAllLines(Path.GetFullPath(args[2]), rows);
+                    Console.WriteLine($"own {own}: {rows.Count - 1} hits");
+                }
+                finally { Directory.Delete(testDirectory, true); testDirectory = null; }
+                return 0;
+            }
+            if(args.FirstOrDefault() == "--rooms-test")
+            {
+                // Test: the party finder's room lists (0x0197) in a frame log («time opcode hex» lines, as rare-frames.log) read
+                // into args[1], and checked against the two screenshots of 2026-10-23 when those frames are in it.
+                var lists = new List<object>(); var checks = new List<string>(); bool ok = true; int noLeader = 0, unknownServer = 0;
+                void Check(bool pass, string what) { checks.Add((pass ? "ok " : "FALLA ") + what); ok &= pass; }
+                // A recording (.jsonl) instead: replayed through the capture engine, its lists as the Salas tab gets them.
+                if (args[2].EndsWith(".jsonl", StringComparison.OrdinalIgnoreCase))
+                {
+                    testDirectory = Path.Combine(Path.GetTempPath(), "fa2c-replay-" + Guid.NewGuid().ToString("N"));
+                    Directory.CreateDirectory(testDirectory);
+                    try
+                    {
+                        DateTime at = DateTime.MinValue;
+                        using var engine = new CaptureEngine { ReplayClock = () => at };
+                        foreach (var line in File.ReadLines(args[2]))
+                        {
+                            var s = JsonSerializer.Deserialize<SegmentLog>(line)!; at = s.Timestamp;
+                            engine.Ingest(new(s.Timestamp, s.Source, s.Destination, s.Sequence, Convert.FromBase64String(s.Payload), s.FromServer));
+                        }
+                        var seen = engine.Board.Lists;
+                        Check(seen.Count > 0 && engine.Board.Version > 0, $"{engine.Board.Version} listas en la grabación, {seen.Count} mazmorras");
+                        Check(seen.All(l => l.Rooms.All(r => r.Members.Any(m => m.Leader))), "todas las salas con líder");
+                        File.WriteAllText(Path.GetFullPath(args[1]), JsonSerializer.Serialize(new { ok, checks, lists = seen.Select(l => new { l.Content, l.Category, l.Tab, l.Dungeon, l.Stars, l.Level, l.At, rooms = l.Rooms.Select(r => new { r.Title, r.Capacity, r.Immediate, members = r.Members.Select(m => $"{m.Slot}:{m.Name} [{m.ServerTag}] {m.ClassKey} PE {m.GearScore}{(m.Leader ? " (líder)" : "")}") }) }) }, new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
+                    }
+                    finally { Directory.Delete(testDirectory, true); testDirectory = null; }
+                    return ok ? 0 : 1;
+                }
+                foreach (var line in File.ReadLines(args[2]))
+                {
+                    var parts = line.Split(' ', 4);
+                    if (parts.Length < 4 || parts[2] != "0x0197") continue;
+                    var list = RoomBoard.Read(Convert.FromHexString(parts[3]), DateTime.Parse(parts[0] + " " + parts[1]));
+                    if (list is null) continue; // an empty list without a dungeon (the window closing)
+                    noLeader += list.Rooms.Count(r => !r.Members.Any(m => m.Leader)); unknownServer += list.Rooms.Sum(r => r.Members.Count(m => RoomRoster.ServerName(m.ServerId) is null));
+                    lists.Add(new { at = parts[1], list.Content, list.Category, list.Tab, list.Dungeon, list.Stars, list.Level, rooms = list.Rooms.Select(r => new { r.Title, r.Capacity, r.Immediate, members = r.Members.Select(m => $"{m.Slot}:{m.Name} [{m.ServerTag}] {m.ClassKey} {m.Level} PE {m.GearScore}{(m.Leader ? " (líder)" : "")}") }) });
+                    string Room(BoardRoom r) => $"{r.Title}|{r.Members.Count}/{r.Capacity}|{(r.Immediate ? "inmediata" : "solicitud")}|{r.Members.FirstOrDefault(m => m.Leader)?.Name}";
+                    if (parts[1].StartsWith("18:27:13"))
+                        Check(list.Content == 600033 && list.Rooms.Select(Room).SequenceEqual(["Room title one|4/5|solicitud|LeaderOne", "Leaving now.|1/5|inmediata|LeaderTwo"])
+                            && list.Rooms[0].Members.All(m => m.Level == 45) && list.Rooms[0].Members[0].ServerTag == "AZP", "Draupnir (captura 1): " + string.Join(" · ", list.Rooms.Select(Room)));
+                    if (parts[1].StartsWith("18:27:27"))
+                        Check(list.Content == 600063 && list.Rooms.Select(Room).SequenceEqual(["Salimos de inmediato.|4/5|inmediata|LeaderThree", "Salimos de inmediato.|2/5|inmediata|LeaderFour", "Salimos de inmediato.|4/5|solicitud|LeaderFive"])
+                            && list.Rooms.Select(r => r.Members.First(m => m.Leader).ServerTag).SequenceEqual(["YUS", "ZIK", "KAI"]), "Arkanis (captura 2): " + string.Join(" · ", list.Rooms.Select(Room)));
+                }
+                Check(lists.Count > 0, $"{lists.Count} listas leídas");
+                Check(noLeader == 0, $"salas sin líder leído: {noLeader}");
+                Check(unknownServer == 0, $"miembros con un servidor desconocido: {unknownServer}");
+                File.WriteAllText(Path.GetFullPath(args[1]), JsonSerializer.Serialize(new { ok, checks, lists }, new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
+                return ok ? 0 : 1;
+            }
+            if(args.FirstOrDefault() == "--idchange-test")
+            {
+                // Test: replays recordings one after another (args[2..]) as one session and, each time your id changes while the
+                // last fight is still the one shown, compares it before and after: your damage and the names in its list must stay
+                // (2026-10-23: after a map load it showed «0 daño» for you and MemberTwo's old id under another player's name).
+                testDirectory = Path.Combine(Path.GetTempPath(), "fa2c-replay-" + Guid.NewGuid().ToString("N"));
+                Directory.CreateDirectory(testDirectory);
+                bool ok = true;
+                try
+                {
+                    var checks = new List<object>(); DateTime at = DateTime.MinValue, nextSnap = DateTime.MinValue; CaptureSnapshot? before = null;
+                    using var engine = new CaptureEngine { ReplayClock = () => at };
+                    foreach (var line in args.Skip(2).SelectMany(File.ReadLines))
+                    {
+                        var s = JsonSerializer.Deserialize<SegmentLog>(line)!; at = s.Timestamp;
+                        engine.Ingest(new(s.Timestamp, s.Source, s.Destination, s.Sequence, Convert.FromBase64String(s.Payload), s.FromServer));
+                        if (at < nextSnap) continue;
+                        nextSnap = at.AddSeconds(1);
+                        var snap = engine.Snapshot();
+                        if (snap.LocalId <= 0) continue;
+                        if (before is not null && snap.LocalId != before.LocalId && snap.Duration == before.Duration && before.Damage > 0)
+                        {
+                            var was = before.Actors.Select(a => $"{a.Name}={a.Damage}").ToList(); var now = snap.Actors.Select(a => $"{a.Name}={a.Damage}").ToList();
+                            bool same = snap.Damage == before.Damage && was.SequenceEqual(now); ok &= same;
+                            checks.Add(new { at = at.ToString("HH:mm:ss"), from = before.LocalId, to = snap.LocalId, damageBefore = before.Damage, damageAfter = snap.Damage, before = was, after = now, ok = same });
+                        }
+                        before = snap;
+                    }
+                    if (checks.Count == 0) ok = false; // the case never came up: nothing was tested
+                    File.WriteAllText(Path.GetFullPath(args[1]), JsonSerializer.Serialize(new { ok, checks }, new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
                 }
                 finally { Directory.Delete(testDirectory, true); testDirectory = null; }
                 return ok ? 0 : 1;
@@ -1027,7 +1161,8 @@ public static class Program
                     var players = new List<ActorRow> { new(325, "Darkni", 1_700_000, 21_808, 29_600), new(77, "Lyra", 1_180_000, 15_100, 0) };
                     var festival = new TimerRow("shugo", "Festival de Shugo", "#E9C77E", DateTimeOffset.Now.AddSeconds(407), 407, false, null, null);
                     CaptureSnapshot Snapshot(TargetInfo? target) => new("Captura activa · Ethernet", 1000, 900, 500, 0, "", 325, "Darkni", 1_700_000, 29_600, 21_808, 75, 7, 0, target, [], players,
-                        0, 0, 0, false, LocalServerId: 2401, PingMs: 57, Pet: new PetHunt(null, [], null, null, null, pins, 0), Od: new OdEnergy.State(30, 25, now), Troop: troop, World: 20);
+                        0, 0, 0, false, LocalServerId: 2401, PingMs: 57, Pet: new PetHunt(null, [], null, null, null, pins, 0), Od: new OdEnergy.State(30, 25, now), Troop: troop, World: 20,
+                        TargetDamage: target is null ? 0 : 1_520_000, TargetDps: target is null ? 0 : 23_450);
                     var nutah = new TargetInfo(9001, 2400353, "Nutah supervisor jefe", null, 113_200_000, 160_000_000, true, 2_400_000, 47, 17);
                     var written = new List<string>();
                     foreach (var style in OverlayWindow.Styles)
@@ -1079,6 +1214,68 @@ public static class Program
                 }
                 finally { try { Directory.Delete(testDirectory, true); } catch { } testDirectory = null; }
                 return 0;
+            }
+            if(args.FirstOrDefault() == "--fight-list-test")
+            {
+                // Test: the list under your DPS in a fight, with the room of the user's capture of 2026-10-24 (Draupnir, Lakshmi de
+                // ensueño at 0:48). It is the damage ranking, highest first, while the group fights, also after 6 s without your own
+                // hits (before: «EN ESPERA» and the room roster, PC in the room's order), and the roster comes back once the fight's
+                // quiet time (15 s) has passed. One PNG per step and fight-list.txt in args[1]; exit 1 if any step is wrong.
+                string outDir = Path.GetFullPath(args[1]); Directory.CreateDirectory(outDir);
+                string realCache = Path.Combine(DataDirectory, "player-cache.json");
+                testDirectory = Path.Combine(Path.GetTempPath(), "fa2c-fightlist-" + Guid.NewGuid().ToString("N"));
+                Directory.CreateDirectory(testDirectory);
+                try
+                {
+                    if (File.Exists(realCache)) File.Copy(realCache, Path.Combine(testDirectory, "player-cache.json"));
+                    var room = new RoomInfo("150k+ Salimos de inmediato.", "Draupnir · Difícil", 5, [
+                        new RoomMember(1, 1, "TankOne", 2002, "ZIK", 45, 2740, 162_900, true, false, 19),
+                        new RoomMember(2, 2, "DpsTwo", 2002, "ZIK", 45, 2692, 160_100, false, true, 13),
+                        new RoomMember(3, 3, "Darkni", 2401, "ISR", 45, 2773, 154_500, false, true, 8),
+                        new RoomMember(4, 4, "HealerOne", 2401, "ISR", 45, 2676, 133_100, false, true, 31),
+                        new RoomMember(5, 5, "DpsOne", 2401, "ISR", 45, 2849, 156_400, false, true, 9)]);
+                    // As the engine sends them: highest damage first.
+                    var players = new List<ActorRow> { new(11, "DpsTwo", 2_450_000, 51_384, 0), new(12, "DpsOne", 2_320_000, 51_485, 0),
+                        new(13, "TankOne", 2_070_000, 44_757, 0), new(325, "Darkni", 1_800_000, 52_442, 53_300), new(14, "HealerOne", 1_280_000, 28_258, 0) };
+                    CaptureSnapshot Snapshot(double duration) => new("Captura activa · Ethernet", 1000, 900, 500, 0, "", 325, "Darkni", 1_800_000, 53_300, 52_442, duration, 7, 0, null, [], players,
+                        0, 0, 0, false, LocalServerId: 2401, Room: room);
+                    var overlay = new OverlayWindow(new AppSettings { OverlayVisible = false }) { Preview = true };
+                    var content = (System.Windows.FrameworkElement)overlay.Content; overlay.Content = null;
+                    var host = new System.Windows.Controls.Border { Padding = new System.Windows.Thickness(14), Child = content,
+                        Background = new System.Windows.Media.LinearGradientBrush(System.Windows.Media.Color.FromRgb(58, 63, 67), System.Windows.Media.Color.FromRgb(22, 25, 27), 60) };
+                    // Each step: seconds with nothing new before it, the fight's clock (your damage stays 1.8 M after the first),
+                    // the list expected and the state line expected.
+                    var steps = new (string Name, double Quiet, double Clock, bool Ranking, string State)[]
+                    {
+                        ("1-combate", 0, 41, true, "EN COMBATE"),
+                        ("2-sin-tus-golpes-7s", 7, 48, true, "EN COMBATE"),   // the group goes on: the user's capture
+                        ("3-pausa-del-grupo-10s", 10, 48, true, "EN ESPERA"), // a boss phase: the fight is not over
+                        ("4-fin-16s", 16, 48, false, "EN ESPERA"),            // over: the room roster again
+                    };
+                    var lines = new List<string>(); bool ok = true;
+                    foreach (var step in steps)
+                    {
+                        if (step.Quiet > 0) overlay.PreviewQuiet(step.Quiet);
+                        overlay.Update(Snapshot(step.Clock), null, players);
+                        var (state, list) = overlay.PreviewList();
+                        bool roster = list.Any(t => t.StartsWith("SALA · ", StringComparison.Ordinal));
+                        var order = players.Select(p => list.ToList().FindIndex(t => t.StartsWith(p.Name, StringComparison.Ordinal))).ToList();
+                        bool ranking = !roster && order.All(i => i >= 0) && order.SequenceEqual(order.Order());
+                        bool pass = (step.Ranking ? ranking : roster) && state == step.State;
+                        ok &= pass;
+                        lines.Add($"{(pass ? "ok" : "FALLA")}\t{step.Name}\t{state}\t{(roster ? "sala" : ranking ? "ranking" : "otra")}\t{string.Join(" | ", list)}");
+                        double width = overlay.Width + 28;
+                        host.Measure(new System.Windows.Size(width, double.PositiveInfinity)); host.Arrange(new System.Windows.Rect(new System.Windows.Size(width, host.DesiredSize.Height))); host.UpdateLayout();
+                        var bmp = new System.Windows.Media.Imaging.RenderTargetBitmap((int)Math.Ceiling(width * 2), (int)Math.Ceiling(host.ActualHeight * 2), 192, 192, System.Windows.Media.PixelFormats.Pbgra32); bmp.Render(host);
+                        var png = new System.Windows.Media.Imaging.PngBitmapEncoder(); png.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(bmp));
+                        using (var f = File.Create(Path.Combine(outDir, $"{step.Name}.png"))) png.Save(f);
+                    }
+                    host.Child = null; overlay.Content = content; overlay.Close();
+                    File.WriteAllLines(Path.Combine(outDir, "fight-list.txt"), lines);
+                    Console.WriteLine(string.Join(Environment.NewLine, lines.Select(l => string.Join('\t', l.Split('\t').Take(4)))));
+                    return ok ? 0 : 1;
+                }
+                finally { try { Directory.Delete(testDirectory, true); } catch { } testDirectory = null; }
             }
             if(args.FirstOrDefault() == "--ranking-test")
             {

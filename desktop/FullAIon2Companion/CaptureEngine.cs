@@ -38,10 +38,12 @@ public sealed record TargetInfo(int EntityId, int? NpcId, string Name, int? Serv
 /// <summary>Exact: the game reported the player's own position lately; else the middle of the creatures announced around.</summary>
 public sealed record MapPosition(float X, float Y, bool Exact);
 public sealed record MobDot(int Npc, float X, float Y, bool Elite);
+/// <summary>TargetDamage, TargetDps: yours on the target you are hitting, as the game's own analyzer counts them (see Snapshot).</summary>
 public sealed record CaptureSnapshot(string Status, long Packets, long Frames, long DamageEvents, int DecodeErrors,
     string Zone, int LocalId, string? Character, long Damage, long Healing, double Dps, double Duration,
     int ConfirmedKills, int NearbyMobs, TargetInfo? Target, IReadOnlyList<SkillRow> Skills, IReadOnlyList<ActorRow> Actors,
-    long UnknownOpcodes, long Gaps, long Retransmissions, bool Paused, bool IdentityInferred = false, IReadOnlyList<CastRow>? Casts = null, IReadOnlyList<string>? Party = null, int? LocalServerId = null, int? PingMs = null, MapPosition? Position = null, IReadOnlyList<MobDot>? Mobs = null, PetHunt? Pet = null, RoomInfo? Room = null, OdEnergy.State? Od = null, TroopInfo? Troop = null, int? World = null, int MapLoads = 0);
+    long UnknownOpcodes, long Gaps, long Retransmissions, bool Paused, bool IdentityInferred = false, IReadOnlyList<CastRow>? Casts = null, IReadOnlyList<string>? Party = null, int? LocalServerId = null, int? PingMs = null, MapPosition? Position = null, IReadOnlyList<MobDot>? Mobs = null, PetHunt? Pet = null, RoomInfo? Room = null, OdEnergy.State? Od = null, TroopInfo? Troop = null, int? World = null, int MapLoads = 0,
+    long TargetDamage = 0, double TargetDps = 0);
 
 public sealed class CaptureEngine : IDisposable
 {
@@ -52,6 +54,14 @@ public sealed class CaptureEngine : IDisposable
     readonly Aion2FrameDecoder decoder;
     readonly List<ILiveDevice> devices = [];
     readonly List<DamageEvent> fight = [];
+    // The fight as it was when its hits came: the ids that were yours then and each actor's name then. A map load gives you
+    // a new id and hands the old ids to other entities (2026-10-23: after one, the last fight showed «0 daño» for you while
+    // the list had «Darkni» with 2.7 M under the old id, and MemberTwo's id 1537 read «MemberThree»). Under the gate.
+    readonly Dictionary<int, DateTime> fightOwnUntil = []; // each id that was yours, until its last hit while it was
+    readonly Dictionary<int, string> fightNames = [];
+    readonly Dictionary<int, int> fightNpcs = [];
+    readonly Dictionary<int, string> fightClasses = [];
+    int fightLoads;
     readonly HashSet<(int, DateTime)> deaths = [];
     // The monsters hit in this fight and who hit them: a death counts as a kill of ours only if one of them was us (Ours).
     readonly Dictionary<int, HashSet<int>> engaged = [];
@@ -72,6 +82,9 @@ public sealed class CaptureEngine : IDisposable
     readonly RankingWatch rankings=new();
     /// <summary>The player's places in the game's rankings (0x578D, sent when the ranking window is opened).</summary>
     public RankingWatch Rankings => rankings;
+    readonly RoomBoard board = new();
+    /// <summary>The party finder's room lists (0x0197, while the Expedición or Trascendencia window shows a dungeon).</summary>
+    public RoomBoard Board => board;
     public InventoryWatch Inventory => inventory;
     readonly CombatAssistant assistant=new();
     public CombatAssistant Assistant => assistant;
@@ -202,7 +215,9 @@ public sealed class CaptureEngine : IDisposable
     public DateTime Now => ReplayClock?.Invoke() ?? clockOrigin + clock.Elapsed;
     StreamWriter? recording;
     DateTime? started, lastHit;
-    int realTarget;
+    int realTarget, fightFocus;
+    /// <summary>The creature or player you have selected in the game (0 = nothing).</summary>
+    public int SelectedTarget => realTarget;
     // Own selection from 0x3438: 34 38 | 00 00 00 | entity varint (0 = nothing selected). The decoder's "TargetSelect"
     // (0x3538) is a different thing - "entity X now targets Y" for any creature or player (35 38 | X | 00 | Y) - so it
     // made whoever changed target nearby (a player, a skill helper) look like ours (2026-10-11 captures: 3438 ... A1B403
@@ -402,6 +417,7 @@ public sealed class CaptureEngine : IDisposable
                     od.Add(frame.Span);
                     resources.Add(frame.Span, segment.Timestamp);
                     rankings.Add(frame.Span, segment.Timestamp);
+                    board.Add(frame.Span, segment.Timestamp);
                     int loadsBefore = ownPos.Loads;
                     ownPos.Add(frame.Span);
                     // A map load: the monsters of the previous map must not vote for (or place the player on) the new one.
@@ -430,18 +446,27 @@ public sealed class CaptureEngine : IDisposable
                         // Only damage keeps a fight alive: heals (regeneration, heals over time) went on for minutes after the
                         // group stopped fighting in the Abyss on 2026-10-22, the fight never ended and your DPS kept falling.
                         // They still count inside a fight.
-                        bool mine = !hit.IsHeal && (localNow <= 0 || Ours(hit.SourceObjectId, localNow.Value) || Ours(hit.TargetObjectId, localNow.Value));
+                        // Once you were known, a moment without your id (a map load clears the detailed-stats frames until new
+                        // ones come) is not «everything counts»: only your group's hits do. On 2026-10-23 a stranger's hits in
+                        // those seconds stretched your fight by 5 s and your DPS fell from 37,012 to 29,972 with no new damage.
+                        if (localNow > 0) identitySeen = true;
+                        bool mine = !hit.IsHeal && (localNow > 0 ? Ours(hit.SourceObjectId, localNow.Value) || Ours(hit.TargetObjectId, localNow.Value)
+                            : !identitySeen || Ours(hit.SourceObjectId, 0) || Ours(hit.TargetObjectId, 0));
                         bool active = lastHit is DateTime previous && (hit.Timestamp - previous).TotalSeconds <= IdleSeconds;
                         if (!mine && !active) { Combat?.Invoke(hit); continue; }
                         if (mine)
                         {
                             // Start a new encounter after a quiet interval; old fights are exported explicitly.
                             if (lastHit is not null && !active) ResetFight();
-                            started ??= hit.Timestamp;
+                            if (started is null) { started = hit.Timestamp; fightLoads = ownPos.Loads; }
                             lastHit = hit.Timestamp;
                         }
                         if (fight.Count >= 100_000) fight.RemoveRange(0, 50_000);
                         fight.Add(hit);
+                        if (localNow > 0) fightOwnUntil[localNow.Value] = hit.Timestamp;
+                        if (!fightNames.ContainsKey(hit.SourceObjectId) && entities.NameOf(hit.SourceObjectId) is string named) fightNames[hit.SourceObjectId] = named;
+                        if (!fightNpcs.ContainsKey(hit.SourceObjectId) && entities.NpcIdOf(hit.SourceObjectId) is int creature) fightNpcs[hit.SourceObjectId] = creature;
+                        if (!fightClasses.ContainsKey(hit.SourceObjectId) && entities.ClassOf(hit.SourceObjectId) is string cls) fightClasses[hit.SourceObjectId] = cls;
                         if (hitDetails.Of(hit) is { } extra) { if (extras.Count > 200_000) extras.Clear(); extras[hit] = extra; }
                         if (entities.IsKnownMonster(hit.TargetObjectId))
                         {
@@ -466,13 +491,13 @@ public sealed class CaptureEngine : IDisposable
     // session, the souls per kill and the loot book took those kills of others as yours. Under the gate.
     HashSet<string> groupNames = new(StringComparer.OrdinalIgnoreCase);
     DateTime groupNamesAt;
-    bool ownKnown;
+    bool ownKnown, identitySeen;
     // Until the identity was known every hit counted, so strangers could have started the fight: when it becomes known,
     // the fight starts at your (or your group's) first damage, dealt or taken, or it is dropped if you were not in it. Under the gate.
     void RebaseFight(int local)
     {
         var ours = fight.Where(h => !h.IsHeal && (Ours(h.SourceObjectId, local) || Ours(h.TargetObjectId, local))).ToList();
-        if (ours.Count == 0) { fight.Clear(); extras.Clear(); avoids.Clear(); started = lastHit = null; return; }
+        if (ours.Count == 0) { fight.Clear(); extras.Clear(); avoids.Clear(); fightOwnUntil.Clear(); fightNames.Clear(); fightNpcs.Clear(); fightClasses.Clear(); started = lastHit = null; return; }
         // Your last run of hits: an earlier one, more than the idle time before, was another fight.
         int from = 0;
         for (int i = 1; i < ours.Count; i++) if ((ours[i].Timestamp - ours[i - 1].Timestamp).TotalSeconds > IdleSeconds) from = i;
@@ -514,7 +539,7 @@ public sealed class CaptureEngine : IDisposable
         if (!deaths.Add((id, at))) return;
         // Somebody else's kill (nobody of ours hit it): not counted for the fight, the farm session, the souls or the loot.
         int own = OwnId();
-        if (!engaged.Remove(id, out var hitters) || !hitters.Any(h => Ours(h, own))) return;
+        if (!engaged.Remove(id, out var hitters) || !hitters.Any(h => Ours(h, own) || fightOwnUntil.ContainsKey(h))) return;
         kills++; sessionKills++;
         pets.Killed(entities.NpcIdOf(id));
         observed.Killed(entities.NpcIdOf(id), at);
@@ -535,6 +560,33 @@ public sealed class CaptureEngine : IDisposable
     /// names of this game session restored from disk (PlayerMemory) held 14 ids for «Darkni». At Gran Vigía Nahma the old
     /// 9580 was taken for the player (325), and the overlay counted 0 damage while the player had done 2.9 M. Under the gate.
     /// </summary>
+    /// <summary>Pauses longer than this, in seconds, do not count for DPS (see Snapshot).</summary>
+    public const double ActiveGap = 5;
+    /// <summary>The same for the DPS on your target, as the game's analyzer pauses its clock (see Snapshot).</summary>
+    public const double TargetGap = 4;
+    /// <summary>The seconds of hitting in these times: each run without a pause over the gap, at least 1 s each.</summary>
+    public static double ActiveSeconds(IEnumerable<DateTime> times, double gap = ActiveGap)
+    {
+        double total = 0; DateTime? start = null, previous = null;
+        foreach (var t in times.Order())
+        {
+            if (previous is DateTime p && (t - p).TotalSeconds > gap) { total += Math.Max(1, (p - start!.Value).TotalSeconds); start = t; }
+            start ??= t; previous = t;
+        }
+        if (previous is DateTime last) total += Math.Max(1, (last - start!.Value).TotalSeconds);
+        return Math.Max(1, total);
+    }
+    // A hit of yours in this fight: by your id now, or by an id that was yours when the hit came (an earlier map). Under the gate.
+    bool WasMine(DamageEvent h, int local) => h.SourceObjectId == local || fightOwnUntil.TryGetValue(h.SourceObjectId, out var until) && h.Timestamp <= until;
+    // An actor's name and kind as they were in this fight: once a map load has handed its ids to others, today's directory is
+    // only right for your own current id. Under the gate.
+    string FightName(int id, int local, Func<int, string?> nameNow)
+    {
+        bool sameMap = fightLoads == ownPos.Loads;
+        return (id == local ? nameNow(id) ?? fightNames.GetValueOrDefault(id) ?? localName : null) ?? fightNames.GetValueOrDefault(id)
+            ?? (sameMap ? nameNow(id) : null) ?? (FightNpc(id) is int npc ? Catalog.NpcName(npc) : $"Entidad {id}");
+    }
+    int? FightNpc(int id) => fightLoads == ownPos.Loads ? NpcOf(id) : fightNpcs.TryGetValue(id, out int npc) ? npc : null;
     int LocalCombatId()
     {
         if (entities.LocalCharacter is { Restored: false } record) return record.CombatId;
@@ -564,15 +616,36 @@ public sealed class CaptureEngine : IDisposable
             bool Counts(DamageEvent h) => !BossOnly || (bossTargets.TryGetValue(h.TargetObjectId, out bool boss) ? boss
                 : bossTargets[h.TargetObjectId] = NpcOf(h.TargetObjectId) is int n && Catalog.IsElite(n));
             var counted = BossOnly ? fight.Where(Counts).ToList() : fight;
-            var own = counted.Where(h => h.SourceObjectId == local).ToList();
+            var own = counted.Where(h => WasMine(h, local)).ToList();
             long total = own.Where(h => !h.IsHeal).Sum(h => h.Amount), healing = own.Where(h => h.IsHeal).Sum(h => h.Amount);
             var skills = own.Where(h => !h.IsHeal).GroupBy(h => h.SkillId).Select(g => new SkillRow(g.Key,
                 Aion2SkillNames.Display(g.First().Skill), Aion2SkillIcons.PathFor(g.Key),
                 g.Sum(h => h.Amount), g.Count(), g.Count(h => h.IsCritical), total == 0 ? 0 : (double)g.Sum(h => h.Amount) / total * 100)).OrderByDescending(s => s.Damage).ToList();
-            var actors = counted.GroupBy(h => h.SourceObjectId).Select(g => new ActorRow(g.Key,
-                directory.Names.GetValueOrDefault(g.Key) ?? (g.Key == local ? localName : null) ?? (NpcOf(g.Key) is int npc ? Catalog.NpcName(npc) : $"Entidad {g.Key}"),
-                g.Where(h => !h.IsHeal).Sum(h => h.Amount), duration == 0 ? 0 : g.Where(h => !h.IsHeal).Sum(h => h.Amount) / duration,
-                g.Where(h => h.IsHeal).Sum(h => h.Amount))).OrderByDescending(a => a.Damage).Take(16).ToList();
+            // Each one's DPS counts only the time they are hitting: their runs of damage, a pause of more than ActiveGap seconds
+            // (running to the next pack, waiting) not counted. 2026-10-23: from the first hit to the fight's end, a dungeon run
+            // kept going for 3:38 and showed 29,845 while the game's own analyzer said 44,900 on its target (and before that,
+            // the user: «mi DPS contando desde mi primer golpe», a fight joined 40 s late showed 18.2K instead of ~27.7K).
+            double Since(IEnumerable<DamageEvent> hits) => ActiveSeconds(hits.Where(h => !h.IsHeal).Select(h => h.Timestamp));
+            // Players only, then the top 16: monsters (their damage on you) and nameless entities used to take places first and
+            // leave players out of big fights, and an unowned summon showed by its internal name («Hechicero_Skill020_A1_Invisible»,
+            // 2nd place in the Abyss on 2026-10-22). No player name has an underscore (3,161 seen); internal ones do.
+            // Your hits under an earlier id count as yours, in one row (see fightOwnUntil).
+            var actors = counted.GroupBy(h => local > 0 && WasMine(h, local) ? local : h.SourceObjectId)
+                .Select(g => (Hits: g, Name: FightName(g.Key, local, id => directory.Names.GetValueOrDefault(id))))
+                .Where(a => a.Hits.Key == local || FightNpc(a.Hits.Key) is null && !a.Name.StartsWith("Entidad ", StringComparison.Ordinal) && !a.Name.Contains('_'))
+                .Select(a => new ActorRow(a.Hits.Key, a.Name, a.Hits.Where(h => !h.IsHeal).Sum(h => h.Amount),
+                    duration == 0 ? 0 : a.Hits.Where(h => !h.IsHeal).Sum(h => h.Amount) / Since(a.Hits), a.Hits.Where(h => h.IsHeal).Sum(h => h.Amount)))
+                .OrderByDescending(a => a.Damage).Take(16).ToList();
+            // Your DPS on your target, as the game's own analyzer counts it (Ctrl+X, «Objetivo»): your hits on the one you have
+            // selected, over your time hitting it, pauses of more than TargetGap seconds left out. It is the target once you hit
+            // it in this fight, and it stays after you clear the selection, as the analyzer keeps the last one. 2026-10-24: the
+            // game counts only that target («Danar fundido 01:53 · 3,51M» while the overlay said 4.8M with the adds). Its clock
+            // matched within 2 %: Berk 130.6 s against 2:10, Danar fundido 115.4 s against 1:53. The damage on Danar matched the
+            // other meter's to the hit (4,186,251 in 581); the analyzer's own 3.51M is lower, for reasons not known.
+            if (realTarget != 0 && own.Any(h => h.TargetObjectId == realTarget && !h.IsHeal)) fightFocus = realTarget;
+            var onFocus = fightFocus == 0 ? [] : own.Where(h => h.TargetObjectId == fightFocus && !h.IsHeal).ToList();
+            long focusDamage = onFocus.Sum(h => h.Amount);
+            double focusDps = onFocus.Count == 0 ? 0 : focusDamage / ActiveSeconds(onFocus.Select(h => h.Timestamp), TargetGap);
             TargetInfo? target = null;
             if (realTarget != 0)
             {
@@ -631,10 +704,11 @@ public sealed class CaptureEngine : IDisposable
             }
             return new(Status, packets, stream.Frames, damageEvents, errors, decoder.CurrentZone, local,
                 entities.LearnedLocalName ?? (local > 0 ? directory.Names.GetValueOrDefault(local) : null) ?? (inferred ? localName : null),
-                total, healing, duration == 0 ? 0 : total / duration, duration, kills, entities.LiveMobs().Count, target, skills, actors,
+                total, healing, duration == 0 ? 0 : total / Since(own), duration, kills, entities.LiveMobs().Count, target, skills, actors,
                 decoder.UnknownOpcodes, stream.Gaps, stream.Retransmissions, paused, inferred,
                 casts.Recent(clockOrigin + clock.Elapsed, TimeSpan.FromSeconds(20), NpcOf, realTarget), party.Names.Order().ToList(), local > 0 ? entities.ServerIdOf(local) : null, ping.Milliseconds, Position(),
-                entities.LiveMobs().Where(m => !Catalog.IsHelper(m.NpcId)).Select(m => new MobDot(m.NpcId, m.X, m.Y, Catalog.IsElite(m.NpcId))).ToList(), pets.Hunt(entities.LocalPetStates, target?.NpcId, PinnedPets), RoomNow(), od.Current, troop.Current, ownPos.World, ownPos.Loads);
+                entities.LiveMobs().Where(m => !Catalog.IsHelper(m.NpcId)).Select(m => new MobDot(m.NpcId, m.X, m.Y, Catalog.IsElite(m.NpcId))).ToList(), pets.Hunt(entities.LocalPetStates, target?.NpcId, PinnedPets), RoomNow(), od.Current, troop.Current, ownPos.World, ownPos.Loads,
+                focusDamage, focusDps);
         }
     }
     /// <summary>Players the game named lately (newest last), for the PvP panel to load their profiles ahead of a target.</summary>
@@ -669,6 +743,7 @@ public sealed class CaptureEngine : IDisposable
             if (lastHit is not null && lastHit != savedLastHit) ended = BuildFight();
             // The kills shown beside the fight's damage are this fight's (they used to add up since the app opened).
             fight.Clear(); extras.Clear(); avoids.Clear(); playerDeaths.Clear(); started = lastHit = null; engaged.Clear(); savedLastHit = null; kills = 0;
+            fightOwnUntil.Clear(); fightNames.Clear(); fightNpcs.Clear(); fightClasses.Clear(); fightFocus = 0;
         }
         if (ended is not null) _ = Task.Run(() => FightEnded?.Invoke(ended));
     }
@@ -690,7 +765,7 @@ public sealed class CaptureEngine : IDisposable
         if (started is not DateTime start || lastHit is not DateTime end || fight.Count == 0) return null;
         var s = Snapshot();
         double seconds = Math.Max(1, (end - start).TotalSeconds);
-        var players = s.Actors.Where(a => entities.NpcIdOf(a.Id) is null && a.Damage + a.Healing > 0 && !a.Name.StartsWith("Entidad ", StringComparison.Ordinal))
+        var players = s.Actors.Where(a => a.Damage + a.Healing > 0 && !a.Name.StartsWith("Entidad ", StringComparison.Ordinal))
             .OrderByDescending(a => a.Damage).ThenByDescending(a => a.Healing).Take(16).ToList();
         long total = players.Sum(p => p.Damage);
         if (seconds < 5 || total <= 0) return null;
@@ -698,7 +773,7 @@ public sealed class CaptureEngine : IDisposable
         {
             var skills = (Breakdown(a.Id, null, a.Damage == 0)?.Skills ?? []).Take(12)
                 .Select(k => new FightSkill(k.Name, k.Icon, k.Amount, k.Hits, Math.Round(k.CritPct, 1), Math.Round(k.Share, 1))).ToList();
-            return new FightPlayer(a.Name, entities.ClassOf(a.Id), a.Damage, Math.Round(a.Damage / seconds), a.Healing,
+            return new FightPlayer(a.Name, a.Id == s.LocalId || fightLoads == ownPos.Loads ? entities.ClassOf(a.Id) : fightClasses.GetValueOrDefault(a.Id), a.Damage, Math.Round(a.Dps), a.Healing, // from each one's first hit, as shown
                 total > 0 ? Math.Round(a.Damage * 100.0 / total, 1) : 0, a.Id == s.LocalId || sessionIdentity is { } own && (a.Id == own.Id || a.Name.Equals(own.Name, StringComparison.OrdinalIgnoreCase)) || s.Character is { } me && a.Name.Equals(me, StringComparison.OrdinalIgnoreCase), skills);
         }).ToList();
         var main = fight.Where(h => !h.IsHeal && NpcOf(h.TargetObjectId) is not null).GroupBy(h => h.TargetObjectId)
@@ -735,13 +810,16 @@ public sealed class CaptureEngine : IDisposable
             int local = LocalCombatId();
             if (local <= 0 && Guess() is int guess) local = guess;
             int actor = actorId > 0 ? actorId : local;
-            string NameOf(int id) => directory.Names.GetValueOrDefault(id) ?? (id == local ? localName : null) ?? (NpcOf(id) is int npc ? Catalog.NpcName(npc) : $"Entidad {id}");
+            string NameOf(int id) => FightName(id, local, id => directory.Names.GetValueOrDefault(id));
+            // Your hits under an earlier id of this fight are yours too (see fightOwnUntil).
+            bool By(DamageEvent h, int who) => who == local && local > 0 ? WasMine(h, local) : h.SourceObjectId == who;
+            int KeyOf(DamageEvent h) => local > 0 && WasMine(h, local) ? local : h.SourceObjectId;
             // Players only: named, or the local one (an unannounced boss is "Entidad n" and hits too).
-            var players = fight.Where(h => !h.IsHeal && entities.NpcIdOf(h.SourceObjectId) is null && (h.SourceObjectId == local || directory.Names.ContainsKey(h.SourceObjectId))).GroupBy(h => h.SourceObjectId)
-                .Select(g => new ActorRow(g.Key, NameOf(g.Key), g.Sum(h => h.Amount), 0, fight.Where(h => h.IsHeal && h.SourceObjectId == g.Key).Sum(h => h.Amount)))
+            var players = fight.Where(h => !h.IsHeal).GroupBy(KeyOf).Where(g => g.Key == local || FightNpc(g.Key) is null && !NameOf(g.Key).StartsWith("Entidad ", StringComparison.Ordinal) && !NameOf(g.Key).Contains('_'))
+                .Select(g => new ActorRow(g.Key, NameOf(g.Key), g.Sum(h => h.Amount), 0, fight.Where(h => h.IsHeal && By(h, g.Key)).Sum(h => h.Amount)))
                 .OrderByDescending(a => a.Damage).Take(24).ToList();
             if (actor <= 0) return null;
-            var mine = fight.Where(h => h.SourceObjectId == actor && h.IsHeal == healing).ToList();
+            var mine = fight.Where(h => By(h, actor) && h.IsHeal == healing).ToList();
             var targets = mine.GroupBy(h => h.TargetObjectId).Select(g => new BreakdownTarget(g.Key, NameOf(g.Key), g.Sum(h => h.Amount))).OrderByDescending(t => t.Amount).Take(12).ToList();
             if (targetId is int only) mine = mine.Where(h => h.TargetObjectId == only).ToList();
             double duration = mine.Count == 0 ? 0 : Math.Max(1, (mine[^1].Timestamp - mine[0].Timestamp).TotalSeconds);
@@ -772,7 +850,7 @@ public sealed class CaptureEngine : IDisposable
             // Attacks of this player the target avoided (parry, block, dodge), as a share of its attacks.
             var avoided = avoids.Where(a => a.SourceObjectId == actor && (targetId is not int t || a.TargetObjectId == t)).ToList();
             double AvoidPct(AvoidKind kind) => direct.Count + avoided.Count == 0 ? 0 : (double)avoided.Count(a => a.Kind == kind) / (direct.Count + avoided.Count) * 100;
-            long heals = fight.Where(h => h.IsHeal && h.SourceObjectId == actor).Sum(h => h.Amount);
+            long heals = fight.Where(h => h.IsHeal && By(h, actor)).Sum(h => h.Amount);
             double Rate(Func<HitExtra, bool> test) { var known = direct.Select(h => extras.TryGetValue(h, out var e) ? e : (HitExtra?)null).Where(e => e is not null).ToList(); return known.Count == 0 ? 0 : (double)known.Count(e => test(e!.Value)) / known.Count * 100; }
             return new(actor, NameOf(actor), healing, duration, total, total / Math.Max(1, duration), allCasts, mine.Count,
                 direct.Count == 0 ? 0 : (double)direct.Count(h => h.IsCritical) / direct.Count * 100, Rate(e => e.Count > 1), Rate(e => (e.Mod & 0x80) != 0),

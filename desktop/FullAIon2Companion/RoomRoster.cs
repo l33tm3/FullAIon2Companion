@@ -67,6 +67,8 @@ public sealed class RoomRoster
     }
     /// <summary>A server's name from data/rooms.json (null when unknown).</summary>
     public static string? ServerName(int id) => servers.GetValueOrDefault(id);
+    /// <summary>A dungeon difficulty's name from data/rooms.json («Draupnir · Transcendencia»), or «Mazmorra n».</summary>
+    public static string DungeonName(uint id) => dungeons.TryGetValue(id.ToString(), out var d) ? $"{d.Dungeon} · {d.Difficulty}" : $"Mazmorra {id}";
     public RoomInfo? Current { get { lock (gate) return room; } }
     /// <summary>
     /// Leaving the dungeon (or the party, from inside it) sends no 1D 97: the roster simply stops coming (2026-10-13 21:03,
@@ -159,7 +161,8 @@ public sealed class RoomRoster
         bool inside = false;
         for (int i = p + 4; i + 32 < f.Length; i++)
             if (TryMember(f, i, leader, out var member, out int next, out bool instance)) { members.Add(member); inside |= instance; i = next - 1; }
-        string dungeon = dungeons.TryGetValue(dungeonId.ToString(), out var d) ? $"{d.Dungeon} · {d.Difficulty}" : $"Mazmorra {dungeonId}";
+        // As the game's windows name it («Cueva de Krao · Difícil»; 2026-10-23 the overlay said «Krao Cave · Transcendencia»).
+        string dungeon = RoomBoard.PlaceName(dungeonId) ?? (dungeons.TryGetValue(dungeonId.ToString(), out var d) ? $"{d.Dungeon} · {d.Difficulty}" : $"Mazmorra {dungeonId}");
         lock (gate)
         {
             // The full roster states who is ready (bit 0x02 of each slot); the 16 97 / 15 97 frames update it in between.
@@ -172,7 +175,7 @@ public sealed class RoomRoster
         }
     }
     // One slot, accepted only when every field fits: the server repeated twice after the stats, the 04 tag before the PC.
-    static bool TryMember(ReadOnlySpan<byte> f, int i, uint leader, out RoomMember member, out int next, out bool instance, bool extraByte = false)
+    internal static bool TryMember(ReadOnlySpan<byte> f, int i, uint leader, out RoomMember member, out int next, out bool instance, bool extraByte = false)
     {
         member = null!; next = i; instance = false;
         int slot = f[i + 1];
@@ -212,7 +215,7 @@ public sealed class RoomRoster
         return true;
     }
     static int? ServerAt(ReadOnlySpan<byte> f, int at) => at + 2 <= f.Length && BinaryPrimitives.ReadUInt16LittleEndian(f[at..]) is var s and >= 1000 and <= 9999 ? s : null;
-    static string? Utf8(ReadOnlySpan<byte> bytes)
+    internal static string? Utf8(ReadOnlySpan<byte> bytes)
     {
         foreach (byte b in bytes) if (b < 0x20) return null;
         try { return new UTF8Encoding(false, true).GetString(bytes); } catch { return null; }

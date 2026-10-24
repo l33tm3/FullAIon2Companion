@@ -354,6 +354,12 @@ const I18N_PATTERNS=[
  [/^Se activa · (.+) \((\d+)\)$/,'Turns on · $1 ($2)','Ativa · $1 ($2)',"S'active · $1 ($2)"],
  [/^Se pierde · (.+) \((\d+)\)$/,'Lost · $1 ($2)','Perde · $1 ($2)',"Perdu · $1 ($2)"],
  [/^Nv\. \+(\d+)$/,'Lv. +$1','Nv. +$1',"Niv. +$1"],
+ // Salas
+ [/^(\d+) salas$/,'$1 rooms','$1 salas',"$1 salles"],
+ [/^hace (\d+) s$/,'$1 s ago','há $1 s',"il y a $1 s"],
+ [/^Fase (\d+)$/,'Phase $1','Fase $1',"Phase $1"],
+ [/^PE medio (.+)$/,'Avg. GS $1','PE médio $1',"GS moyen $1"],
+ [/^PE (\d[\d.,\s]*)$/,'GS $1','PE $1',"GS $1"],
  // Last: a category and a quantity («Mascota · 1», the Atlas loot lines).
  [/^(.+) · (\d+(?:–\d+)?)$/,'$T1 · $2','$T1 · $2',"$T1 · $2"],
 ];
@@ -712,3 +718,43 @@ document.addEventListener('change',e=>{const lv=e.target.closest?.('[data-arcana
  arcanaSavePlan();renderArcana();});
 document.addEventListener('click',e=>{if(!e.target.closest?.('[data-arcana-reset]'))return;arcanaPlan={};arcanaSavePlan();renderArcana();});
 const _rcArcana=window.renderCompanion;window.renderCompanion=d=>{_rcArcana?.(d);renderArcana(d.arcana);};
+// Salas (2026-10-23): the party finder's rooms of each dungeon as the game last listed them (0x0197, RoomBoard), live while
+// the Expedición or Trascendencia window stays open. One chip per dungeon seen, the newest first; filters kept in localStorage.
+let roomsData=[],roomsSel=null;
+const ROOM_CLASS_ES={gladiator:'Gladiador',templar:'Templario',ranger:'Cazador',assassin:'Asesino',sorcerer:'Hechicero',elementalist:'Espiritista',cleric:'Clérigo',chanter:'Cantor'};
+const roomsFilter=k=>{try{return localStorage.getItem('rooms:'+k)==='1';}catch{return false;}};
+function roomsAge(at){const s=Math.max(0,Math.round((Date.now()-at)/1000));return s<60?`hace ${s} s`:s<3600?`hace ${Math.floor(s/60)} min`:`hace ${Math.floor(s/3600)} h`;}
+function renderRooms(list){const view=$('rooms-view');if(!view)return;
+ if(list)roomsData=list;
+ document.querySelectorAll('[data-rooms-filter]').forEach(c=>{c.checked=roomsFilter(c.dataset.roomsFilter);});
+ if(!roomsData.length){const html=`<p class="empty">${esc('Abre Expedición o Trascendencia en el juego y elige una mazmorra: sus salas aparecen aquí y se actualizan solas mientras la ventana siga abierta.')}</p>`;if(view.dataset.html!==html){view.innerHTML=html;view.dataset.html=html;}return;}
+ if(!roomsData.some(l=>l.content===roomsSel))roomsSel=roomsData[0].content;
+ const sel=roomsData.find(l=>l.content===roomsSel),free=roomsFilter('free'),now=roomsFilter('immediate');
+ // As the game's windows: Expedición (Conquista, then Exploración), Trascendencia; the dungeons by stars, then their levels.
+ const groupRank=l=>l.category==='Expedición'?(l.tab==='Conquista'?0:1):l.category==='Trascendencia'?2:3;
+ const levelRank=v=>v==='Exploración'?0:v==='Normal'?1:v==='Difícil'?2:/^Fase (\d+)$/.test(v)?10+Number(RegExp.$1):5;
+ const groups=[];for(const l of [...roomsData].sort((x,y)=>groupRank(x)-groupRank(y)||x.order-y.order||levelRank(x.level)-levelRank(y.level))){
+  const g=`${l.category}|${l.tab}`;let group=groups.find(x=>x.key===g);if(!group)groups.push(group={key:g,category:l.category,tab:l.tab,dungeons:[]});
+  let d=group.dungeons.find(x=>x.name===l.dungeon);if(!d)group.dungeons.push(d={name:l.dungeon,stars:l.stars,lists:[]});d.lists.push(l);}
+ const stars=n=>n>0?`<span class="rooms-stars">${'★'.repeat(n)}</span>`:'';
+ const levelButton=l=>`<button class="rooms-level${l.content===roomsSel?' active':''}${Date.now()-l.at>600000?' old':''}" data-rooms-dungeon="${l.content}"><span>${esc(l.level||'Salas')}</span><small>${l.rooms.length}</small></button>`;
+ const nav=groups.map(g=>`<div class="rooms-group"><h4><span>${esc(g.category)}</span>${g.tab?` · <span>${esc(g.tab)}</span>`:''}</h4>${g.dungeons.map(d=>`<div class="rooms-dungeon"><div>${stars(d.stars)}<b>${esc(d.name)}</b></div><div class="rooms-levels">${d.lists.map(levelButton).join('')}</div></div>`).join('')}</div>`).join('');
+ const shown=sel.rooms.filter(r=>(!free||r.members.length<r.capacity)&&(!now||r.immediate));
+ const slot=(r,n)=>{const m=r.members.find(x=>x.slot===n);if(!m)return `<span class="rooms-slot free" title="${esc('libre')}"></span>`;
+  const color=CLASS_COLOR[m.cls]||'#3fb8af';return `<span class="rooms-slot" data-color="${esc(color)}" title="${esc(m.name)}">${m.cls?`<img src="/assets/ui/class_icon_${esc(m.cls)}.png" alt="">`:''}</span>`;};
+ const card=r=>{const gear=r.members.length?Math.round(r.members.reduce((s,m)=>s+m.gear,0)/r.members.length):0;
+  return `<article class="rooms-card${r.members.length>=r.capacity?' full':''}"><header><h4>${esc(r.title||'—')}</h4><span class="rooms-join ${r.immediate?'now':'ask'}">${esc(r.immediate?'Entrada inmediata':'Con solicitud')}</span></header>
+  <div class="rooms-slots">${Array.from({length:r.capacity},(_,i)=>slot(r,i+1)).join('')}<b>${r.members.length}/${r.capacity}</b></div>
+  <div class="rooms-members">${r.members.map(m=>`<div class="rooms-member"><i data-color="${esc(CLASS_COLOR[m.cls]||'#3fb8af')}"></i><span>${m.leader?'♛ ':''}${esc(m.name)} <small>${esc(m.server)}</small></span><em>${esc(ROOM_CLASS_ES[m.cls]||'')}</em><small>${esc('Nv. '+m.level)}</small><b>${esc('PE '+m.gear.toLocaleString(uiLoc()))}</b></div>`).join('')}</div>
+  ${gear?`<footer>${esc('PE medio '+gear.toLocaleString(uiLoc()))}</footer>`:''}</article>`;};
+ const head=`<div class="rooms-head"><div><h3>${stars(sel.stars)}<span>${esc(sel.dungeon)}</span>${sel.level?` · <span>${esc(sel.level)}</span>`:''}</h3><small><span>${esc(sel.category)}</span>${sel.tab?` · <span>${esc(sel.tab)}</span>`:''} · <span>${esc(sel.rooms.length===1?'1 sala':sel.rooms.length+' salas')}</span> · <span data-rooms-at="${sel.at}"></span></small></div></div>`;
+ const body=shown.length?`<div class="rooms-grid">${shown.map(card).join('')}</div>`:`<p class="empty">${esc(sel.rooms.length?'Ninguna sala cumple los filtros.':'No hay salas abiertas en este nivel.')}</p>`;
+ const html=`<div class="rooms-layout"><nav class="rooms-nav">${nav}</nav><div class="rooms-main">${head}<p class="rooms-note">${esc('La lista se actualiza sola cada pocos segundos mientras la ventana de la mazmorra siga abierta en el juego.')}</p>${body}</div></div>`;
+ if(view.dataset.html!==html){view.innerHTML=html;view.dataset.html=html;view.querySelectorAll('[data-color]').forEach(e=>e.style.setProperty('--c',e.dataset.color));}
+ roomsAges();}
+document.addEventListener('click',e=>{const b=e.target.closest?.('[data-rooms-dungeon]');if(!b)return;roomsSel=Number(b.dataset.roomsDungeon);renderRooms();});
+document.addEventListener('change',e=>{const c=e.target.closest?.('[data-rooms-filter]');if(!c)return;try{localStorage.setItem('rooms:'+c.dataset.roomsFilter,c.checked?'1':'0');}catch{}renderRooms();});
+// «hace 5 s» keeps counting between lists, outside the rendered HTML so the cards are not rebuilt every second.
+function roomsAges(){document.querySelectorAll('[data-rooms-at]').forEach(s=>{const t=roomsAge(Number(s.dataset.roomsAt));if(s.textContent!==t)s.textContent=t;});}
+setInterval(roomsAges,1000);
+const _rcRooms=window.renderCompanion;window.renderCompanion=d=>{_rcRooms?.(d);renderRooms(d.rooms);};

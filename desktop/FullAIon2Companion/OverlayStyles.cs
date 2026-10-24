@@ -151,6 +151,20 @@ public sealed partial class OverlayWindow
     internal bool Preview;
     /// <summary>For the previews: the last damage is old, so the overlay is out of a fight.</summary>
     internal void PreviewCalm() => lastChange = DateTime.MinValue;
+    /// <summary>For --fight-list-test: nothing of the fight moved for these seconds.</summary>
+    internal void PreviewQuiet(double seconds) => lastChange = DateTime.Now.AddSeconds(-seconds);
+    /// <summary>For --fight-list-test: the state line and every text of the list under your DPS, in order.</summary>
+    internal (string State, IReadOnlyList<string> List) PreviewList()
+    {
+        var texts = new List<string>();
+        void Walk(object node)
+        {
+            if (node is TextBlock text) texts.Add(string.Concat(text.Inlines.OfType<Run>().Select(r => r.Text))); // the ranking's names are runs
+            if (node is DependencyObject element) foreach (object child in LogicalTreeHelper.GetChildren(element)) Walk(child);
+        }
+        Walk(party);
+        return (state.Text, texts);
+    }
 
     // Pulido and the others: an empty-target box instead of the line, figures in white, a compact cube.
     readonly Border noTarget = new() { CornerRadius = new CornerRadius(7), BorderThickness = new Thickness(1), Padding = new Thickness(9, 5, 9, 6), Margin = new Thickness(0, 2, 0, 4) };
@@ -546,6 +560,7 @@ public sealed partial class OverlayWindow
         targetRow.Visibility = classic || t is not null ? Visibility.Visible : Visibility.Collapsed;
         if (!classic && s.LocalId > 0)
         {
+            if (s.TargetDamage > 0) Figure(targetLine, Short(s.TargetDps), "DPS al objetivo");
             Figure(dmgLine, Short(s.Damage), "daño");
             if (s.Healing > 0) Figure(healLine, Short(s.Healing), "curación");
             Figure(killLine, s.ConfirmedKills.ToString("N0"), s.ConfirmedKills == 1 ? "criatura" : "criaturas");

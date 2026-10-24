@@ -70,7 +70,7 @@ public sealed partial class OverlayWindow : Window
     bool castBlink;
     double hpLagRatio;
     readonly TextBlock dps = Label("—", 28, Teal), dpsUnit = Label(" DPS", 12, Muted);
-    readonly TextBlock dmgLine = Label("", 10.5, Muted), healLine = Label("", 10.5, Muted), killLine = Label("", 10.5, Muted);
+    readonly TextBlock targetLine = Label("", 10.5, Muted), dmgLine = Label("", 10.5, Muted), healLine = Label("", 10.5, Muted), killLine = Label("", 10.5, Muted);
     // Footer, as other meters have it: own class and name on the left; Od energy and the ping (bars + figure) on the right.
     readonly Image selfIcon = new() { Width = 16, Height = 16, Margin = new Thickness(0, 0, 6, 0) }, odIcon = new() { Width = 17, Height = 17, Margin = new Thickness(0, 0, 4, 0) };
     readonly TextBlock selfName = Label("", 11, Teal), odText = Label("", 11, Paint("#D5DEE6")), pingFooter = Label("", 10.5, Muted);
@@ -426,6 +426,7 @@ public sealed partial class OverlayWindow : Window
     DateTime gameChecked = DateTime.MinValue;
     bool gameRunning;
     DateTime lastChange = DateTime.MinValue;
+    double lastDuration = -1;
     public bool Requested { get => settings.OverlayVisible; set { settings.OverlayVisible = value; settings.Save(); } }
     public bool ClickThrough { get; private set; } = true;
     /// <summary>The companion panel is open over the game: the overlay must not climb back above it.</summary>
@@ -478,8 +479,8 @@ public sealed partial class OverlayWindow : Window
         castBanner.Child = castRow; castBanner.Visibility = Visibility.Collapsed;
         castLog.Margin = new Thickness(0, -3, 0, 6); castLog.Visibility = Visibility.Collapsed;
         hint.TextWrapping = TextWrapping.Wrap; hint.Foreground = MoveFrame; hint.Margin = new Thickness(0, 6, 0, 0);
-        // DPS block: the figure large on the left, damage / healing / kills stacked on the right.
-        foreach (var t in new[] { dmgLine, healLine, killLine }) { t.HorizontalAlignment = HorizontalAlignment.Right; dpsNumbers.Children.Add(t); }
+        // DPS block: the figure large on the left, your DPS on the target / damage / healing / kills stacked on the right.
+        foreach (var t in new[] { targetLine, dmgLine, healLine, killLine }) { t.HorizontalAlignment = HorizontalAlignment.Right; dpsNumbers.Children.Add(t); }
         DockPanel.SetDock(dpsNumbers, Dock.Right); dpsBlock.Children.Add(dpsNumbers);
         dpsRow = Row(dps, dpsUnit); dpsUnit.VerticalAlignment = VerticalAlignment.Bottom; dpsUnit.Margin = new Thickness(0, 0, 0, 6); dps.FontWeight = FontWeights.SemiBold;
         dpsBlock.Children.Add(dpsRow);
@@ -693,8 +694,16 @@ public sealed partial class OverlayWindow : Window
     public void Update(CaptureSnapshot s, TimerRow? e, IReadOnlyList<ActorRow> players)
     {
         var now = DateTime.Now;
-        if (s.Damage != lastDamage) { lastDamage = s.Damage; lastChange = now; }
-        bool fighting = s.Damage > 0 && (now - lastChange).TotalSeconds < 6;
+        // The fight goes on while its clock runs: the engine's clock (Duration) moves with the damage you or your group deal or
+        // take. Only your own damage counted before: on 2026-10-24, 6 s without your hits halfway through Lakshmi de ensueño
+        // (0:48, the boss at 51.8 %) said «EN ESPERA» and swapped the damage ranking for the room roster (PC in the room's order,
+        // read as an unsorted ranking with wrong numbers) while the group kept fighting.
+        if (s.Damage != lastDamage || s.Duration != lastDuration) { lastDamage = s.Damage; lastDuration = s.Duration; lastChange = now; }
+        double quiet = (now - lastChange).TotalSeconds;
+        bool fighting = s.Duration > 0 && quiet < 6;
+        // The ranking stays until the engine ends the fight (the same quiet time): a pause of the whole group (a boss phase) or
+        // the boss's death leaves it on screen, and the roster comes back after.
+        bool ranking = s.Duration > 0 && quiet < Math.Max(6, settings.CombatIdleSeconds);
         if (s.Packets != lastPackets) { lastPackets = s.Packets; lastPacket = now; }
         // The game streams constantly while a character is in the world; ten silent seconds means nothing is captured.
         bool idle = !s.Status.StartsWith("Captura activa", StringComparison.Ordinal) || (now - lastPacket).TotalSeconds > 10;
@@ -773,6 +782,10 @@ public sealed partial class OverlayWindow : Window
         dps.Text = s.LocalId > 0 ? s.Dps.ToString("N0") : "—";
         dps.Foreground = fighting || s.LocalId <= 0 ? Teal : IdleTeal;
         dmgLine.Text = s.LocalId > 0 ? $"{Short(s.Damage)} daño" : "Esperando tu personaje";
+        // Beside the total, the DPS on the target as the game's analyzer shows it (only the target, its pauses left out).
+        bool onTarget = s.LocalId > 0 && s.TargetDamage > 0;
+        targetLine.Text = onTarget ? $"{Short(s.TargetDps)} DPS al objetivo" : "";
+        targetLine.Visibility = onTarget ? Visibility.Visible : Visibility.Collapsed;
         healLine.Text = s.Healing > 0 ? $"{Short(s.Healing)} curación" : "";
         healLine.Visibility = s.Healing > 0 ? Visibility.Visible : Visibility.Collapsed;
         killLine.Text = s.ConfirmedKills == 1 ? "1 criatura" : $"{s.ConfirmedKills} criaturas";
@@ -791,7 +804,7 @@ public sealed partial class OverlayWindow : Window
         long? PowerOf(string name) => shown?.FirstOrDefault(m => m.Name.Equals(name, StringComparison.OrdinalIgnoreCase)) is { CombatPower: > 0 } tm ? tm.CombatPower
             : RoomOf(name) is { CombatPower: > 0 } rm ? rm.CombatPower
             : PlayerProfiles.Get(name, s.LocalServerId ?? settings.LastServerId, troopRegion).Card?.CombatPower;
-        if (fighting && top.Count > 0)
+        if (ranking && top.Count > 0)
         {
             if (wholeTroop) party.Children.Add(Label($"TROPA · DAÑO · {players.Count(p => p.Damage > 0)} con daño", 9.5, Dim));
             for (int i = 0; i < top.Count; i++) party.Children.Add(PartyRow(i + 1, top[i], top[i].Id == s.LocalId, (double)top[i].Damage / best, (double)top[i].Damage / sum, ClassOf(top[i].Name), PowerOf(top[i].Name)));

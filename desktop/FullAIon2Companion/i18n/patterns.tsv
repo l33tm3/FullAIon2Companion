@@ -75,6 +75,7 @@
 ^hoy (\d+) almas? · (\d+) muertes(.*)$	today $1 souls · $2 kills$3	hoje $1 almas · $2 abates$3	aujourd'hui $1 âmes · $2 éliminations$3
 ^(.+) · ~(\d+) más$	$1 · ~$2 more	$1 · ~$2 mais	$1 · ~$2 de plus
 ^(.+) · (\d[\d.,]*) muertes · (\d[\d.,]*) almas$	$1 · $2 kills · $3 souls	$1 · $2 abates · $3 almas	$1 · $2 éliminations · $3 âmes
+^(.+) DPS al objetivo$	$1 DPS on target	$1 DPS no alvo	$1 DPS sur la cible
 ^(.+) daño$	$1 damage	$1 de dano	$1 dégâts
 ^(.+) curación$	$1 healing	$1 de cura	$1 soins
 ^(\d+) criaturas$	$1 creatures	$1 criaturas	$1 créatures

@@ -1115,3 +1115,20 @@ Sin efectos de set conocidos para este set.	No known set effects for this set.	S
 Las habilidades de una carta que cambias de set salen al azar en el juego: no se suman en el plan.	A card's skills are random in the game when you move it to the other set: the plan doesn't add them.	As habilidades de uma carta que você troca de conjunto saem aleatórias no jogo: o plano não as soma.	Les compétences d'une carte que tu changes de panoplie sont aléatoires dans le jeu : le plan ne les compte pas.
 Resultado del plan	Plan result	Resultado do plano	Résultat du plan
 Con el plan	With the plan	Com o plano	Avec le plan
+Salas	Rooms	Salas	Salles
+Las salas de Expedición y Trascendencia que ves en el juego, en tiempo real	The Expedition and Transcendence rooms you see in the game, in real time	As salas de Expedição e Transcendência que você vê no jogo, em tempo real	Les salles d'Expédition et de Transcendance que tu vois dans le jeu, en temps réel
+Solo con plazas libres	Only with free places	Só com vagas livres	Seulement avec des places libres
+Solo entrada inmediata	Only instant join	Só entrada imediata	Seulement l'entrée immédiate
+Abre Expedición o Trascendencia en el juego y elige una mazmorra: sus salas aparecen aquí y se actualizan solas mientras la ventana siga abierta.	Open Expedition or Transcendence in the game and pick a dungeon: its rooms show here and update by themselves while the window stays open.	Abra Expedição ou Transcendência no jogo e escolha uma masmorra: as salas aparecem aqui e se atualizam sozinhas enquanto a janela continuar aberta.	Ouvre Expédition ou Transcendance dans le jeu et choisis un donjon : ses salles s'affichent ici et se mettent à jour toutes seules tant que la fenêtre reste ouverte.
+La lista se actualiza sola cada pocos segundos mientras la ventana de la mazmorra siga abierta en el juego.	The list updates by itself every few seconds while the dungeon's window stays open in the game.	A lista se atualiza sozinha a cada poucos segundos enquanto a janela da masmorra continuar aberta no jogo.	La liste se met à jour toute seule toutes les quelques secondes tant que la fenêtre du donjon reste ouverte dans le jeu.
+Entrada inmediata	Instant join	Entrada imediata	Entrée immédiate
+Con solicitud	By request	Com pedido	Sur demande
+Ninguna sala cumple los filtros.	No room matches the filters.	Nenhuma sala corresponde aos filtros.	Aucune salle ne correspond aux filtres.
+libre	free	livre	libre
+1 sala	1 room	1 sala	1 salle
+Conquista	Conquest	Conquista	Conquête
+Exploración	Exploration	Exploração	Exploration
+Trascendencia	Transcendence	Transcendência	Transcendance
+Difícil	Hard	Difícil	Difficile
+Otras	Others	Outras	Autres
+No hay salas abiertas en este nivel.	No rooms open at this level.	Não há salas abertas neste nível.	Aucune salle ouverte à ce niveau.
