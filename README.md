@@ -7,7 +7,7 @@
 **A free overlay and companion app for AION 2: DPS meter, boss timers, soul hunting, minimap, market prices, rankings and much more, on top of your game.**
 
 [![Download](https://img.shields.io/github/v/release/l33tm3/FullAIon2Companion?label=Download&logo=windows&color=2ea44f)](https://github.com/l33tm3/FullAIon2Companion/releases/latest)
-[![VirusTotal 1.0.24](https://img.shields.io/badge/VirusTotal%201.0.24-1%2F65-yellowgreen?logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/file/295cac2e20af20e77e7fb72871a9049ace39c17b7896bc7160c1fbfbd062d7a6)
+[![VirusTotal 1.0.25](https://img.shields.io/badge/VirusTotal%201.0.25-0%2F68-brightgreen?logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/file/649c65806b116937b9813f5f24cdd6e4cb36a4556f9c3ba559cf5c3d62ca43d8)
 [![Languages](https://img.shields.io/badge/Languages-EN%20%7C%20ES%20%7C%20PT%20%7C%20FR-8a6dd8)](#features)
 [![Donate with PayPal](https://img.shields.io/badge/Donate-PayPal-e36cb8?logo=paypal&logoColor=white)](https://paypal.me/martincito45)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -31,7 +31,7 @@ FullAIon2Companion reads the AION 2 traffic that already reaches your PC and sho
 |---|---|
 | **Latest version** | [**FullAIon2Companion 1.0.25**](https://github.com/l33tm3/FullAIon2Companion/releases/latest) (Windows 10/11, 64-bit, ~99 MB) |
 | **SHA-256** | `649c65806b116937b9813f5f24cdd6e4cb36a4556f9c3ba559cf5c3d62ca43d8` |
-| **VirusTotal** | The 1.0.25 report is coming. The last one: [![VirusTotal 1.0.24](https://img.shields.io/badge/VirusTotal%201.0.24-1%2F65-yellowgreen?logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/file/295cac2e20af20e77e7fb72871a9049ace39c17b7896bc7160c1fbfbd062d7a6) — 1 of 65 engines: DeepInstinct's machine-learning engine flags it, the other 64 report it clean (the same engine flagged [1.0.23](https://www.virustotal.com/gui/file/3698a6389d00a28ad603c505aba46c7c83005d586cc265c657911882a096a76b) and 1.0.20; [1.0.21](https://www.virustotal.com/gui/file/2ff0039f7b18a8fdd1ee7e602c5183fb630e1f4a1b2a1c2d1248e464696c30da) got 0 of 65). Unsigned installers often trip such heuristics; the full source of this installer is in this repository. |
+| **VirusTotal** | [![VirusTotal 1.0.25](https://img.shields.io/badge/VirusTotal%201.0.25-0%2F68-brightgreen?logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/file/649c65806b116937b9813f5f24cdd6e4cb36a4556f9c3ba559cf5c3d62ca43d8) — 0 of 68 engines: none flags it (DeepInstinct's machine-learning engine had flagged [1.0.24](https://www.virustotal.com/gui/file/295cac2e20af20e77e7fb72871a9049ace39c17b7896bc7160c1fbfbd062d7a6), [1.0.23](https://www.virustotal.com/gui/file/3698a6389d00a28ad603c505aba46c7c83005d586cc265c657911882a096a76b) and 1.0.20). Unsigned installers often trip such heuristics; the full source of this installer is in this repository. |
 | **Also on** | [governanceai.me](https://governanceai.me/?lang=en#home?download=1) |
 
 **Requirements**
