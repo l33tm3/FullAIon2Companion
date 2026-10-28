@@ -19,6 +19,8 @@ public sealed class MainWindow : Window
     ProfileState? ownProfile;
     // The Arcanas tab (ArcanaBook): the view of the own profile's arcanas, loaded once per profile reading.
     object? arcanaView;DateTimeOffset? arcanaFor;int arcanaVersion,arcanaSent=-1;
+    // «Mi perfil»: your whole official profile (ProfileBook), loaded for each reading of your card and sent as its parts arrive.
+    ProfileLoad? profileLoad;int profileSent=-1,daevanionSeen;bool profileReset;
     int roomsSent=-1; // the party finder's room lists (Salas tab), sent when they change
     /// <summary>Where donations go: the app and the website are free, and whoever wants can support them here.</summary>
     internal const string DonateUrl="https://paypal.me/martincito45";
@@ -110,7 +112,7 @@ public sealed class MainWindow : Window
         var bar=new DockPanel{Background=new SolidColorBrush(Color.FromRgb(18,26,35)),Height=47};
         var top=new StackPanel{Orientation=Orientation.Horizontal};
         var close=BarButton("Minimizar  —","Vuelve al juego; el panel queda en la barra de tareas y el overlay sigue activo");close.Click+=(_,_)=>TogglePanel();
-        var quit=BarButton("Salir","Cierra FullAIon2Companion y su overlay");quit.Click+=(_,_)=>{exiting=true;Close();};
+        var quit=BarButton("Salir","Cierra FullAIon2Companion y su overlay");quit.Click+=(_,_)=>{SessionLog.Write("Salir pressed");exiting=true;Close();};
         quit.Foreground=new SolidColorBrush(Color.FromRgb(0xFF,0x8A,0x65));
         var right=new StackPanel{Orientation=Orientation.Horizontal};right.Children.Add(quit);right.Children.Add(close);
         DockPanel.SetDock(right,Dock.Right);bar.Children.Add(right);bar.Children.Add(top);
@@ -134,9 +136,11 @@ public sealed class MainWindow : Window
         atlasMarks.Open(Path.Combine(Program.DataDirectory,"atlas-marks.json"));overlay.OwnMarks=atlasMarks.Of;
         engine.Rankings.Open(Path.Combine(Program.DataDirectory,"rankings.json"));engine.Rankings.ImportFrom(Path.Combine(Program.DataDirectory,"rare-frames.log"));
         overlay.AbyssRank=()=>engine.Rankings.Abyss(marketServer,rankCharacter);
+        // The Abyss card: the points now and what the farming there has given, per character (abyss-sessions.json).
+        engine.Abyss.Open(Path.Combine(Program.DataDirectory,"abyss-sessions.json"));overlay.AbyssNow=engine.Abyss.Now;overlay.AbyssReset=engine.Abyss.Reset;
         // The panel's X minimizes to the taskbar; closing it from the taskbar (already minimized) quits, like "Salir".
-        Closing+=(_,e)=>{if(exiting)return;if(WindowState==WindowState.Minimized){exiting=true;return;}e.Cancel=true;TogglePanel();};
-        Closed+=(_,_)=>{tick.Stop();assistTick.Stop();if(engine.EndedFight(force:true) is { } last)history.Save(last);license.Dispose();engine.Collection.Flush();engine.Observed.Flush();engine.Dispose();overlay.Close();var h=new WindowInteropHelper(this).Handle;for(int id=1;id<=Hotkeys.Actions.Length;id++)UnregisterHotKey(h,id);view.Dispose();
+        Closing+=(_,e)=>{if(exiting){SessionLog.Write("panel closing: quitting (Salir or an update)");return;}if(WindowState==WindowState.Minimized){SessionLog.Write("panel closing: quitting (closed while minimized)");exiting=true;return;}e.Cancel=true;TogglePanel();};
+        Closed+=(_,_)=>{tick.Stop();assistTick.Stop();if(engine.EndedFight(force:true) is { } last)history.Save(last);license.Dispose();engine.Collection.Flush();engine.Observed.Flush();engine.Abyss.Flush();engine.Dispose();overlay.Close();var h=new WindowInteropHelper(this).Handle;for(int id=1;id<=Hotkeys.Actions.Length;id++)UnregisterHotKey(h,id);view.Dispose();
             // Hidden helper windows (fight details, news, boss panel) would keep the app alive: quit for real.
             Application.Current.Shutdown();};
         engine.Combat+=hit=>companion.Add(new{type="combat",at=CompanionClient.Utc(hit.Timestamp),eventId=Guid.NewGuid().ToString("N"),sourceId=hit.SourceObjectId.ToString(),targetId=hit.TargetObjectId.ToString(),skillId=hit.SkillId,damage=hit.IsHeal?0:hit.Amount,healing=hit.IsHeal?hit.Amount:0,critical=hit.IsCritical});
@@ -145,6 +149,7 @@ public sealed class MainWindow : Window
     // The shortcuts of Configuración > Atajos (by default Ctrl+Alt+F overlay, M move, B drops, P panel).
     IntPtr Hook(IntPtr hwnd,int msg,IntPtr wp,IntPtr lp,ref bool handled)
     {
+        if(msg is 0x10 or 0x11 or 0x16 or 0x112)SessionLog.Message(msg,wp,lp,$"panel {WindowState}{(exiting?", quitting":"")}");
         if(msg!=0x312)return IntPtr.Zero;
         switch(Hotkeys.ActionOf(wp.ToInt32()))
         {
@@ -195,6 +200,9 @@ public sealed class MainWindow : Window
         ShowAction("Buscando el perfil público de "+name+"…");
         // A public profile is presentation only: cached/inferred identity never selects a Plus license.
         ownProfile=PlayerProfiles.Get(name,identity?.ServerId>0?identity.Value.ServerId:s.LocalServerId??settings.LastServerId,PlayerProfiles.RegionOf(settings.RegionOffset));
+        // «Mi perfil» / «Actualizar perfil» read the boards and pieces again: one that failed before is asked for anew.
+        // Another character than the one loaded (or none found): the panel drops it at once (profileFull reset).
+        if(tab=="profile"&&profileLoad is not null){profileReset=ownProfile.Card?.CharacterId!=profileLoad.Card.CharacterId;profileLoad=null;profileSent=-1;}
         await Open("https://companion.local/ui/index.html#"+tab);
         await Refresh();
         ShowAction("Perfil de "+name+" abierto. Los datos oficiales se completan al recibirlos.");
@@ -252,7 +260,7 @@ public sealed class MainWindow : Window
             view.CoreWebView2.NavigationStarting+=(_,e)=>{var uri=new Uri(e.Uri);if(uri.Host is not("companion.local" or "governanceai.me" or "aion2.plaync.com")) {e.Cancel=true;message="El enlace externo se ha bloqueado en el panel del juego";}};
             view.CoreWebView2.NewWindowRequested+=(_,e)=>{e.Handled=true;var uri=new Uri(e.Uri);if(uri.Host=="governanceai.me")view.Source=uri;};
             // The lists the panel only gets when they change (Mercado, marks) go again to a panel just loaded.
-            view.CoreWebView2.NavigationCompleted+=(_,_)=>{marketKey=boardKey=rankingKey="";marksSent=-1;arcanaSent=-1;roomsSent=-1;};
+            view.CoreWebView2.NavigationCompleted+=(_,_)=>{marketKey=boardKey=rankingKey="";marksSent=-1;arcanaSent=-1;roomsSent=-1;profileSent=-1;};
             view.Source=new Uri("https://companion.local/ui/index.html");ready=true;
         }
         catch(Exception ex){message=ex.Message;File.AppendAllText(Path.Combine(Program.DataDirectory,"errors.log"),ex+"\n");if(!ready)Content=new TextBlock{Text="No se pudo iniciar WebView2: "+ex.Message,Foreground=Brushes.White,Margin=new Thickness(30),TextWrapping=TextWrapping.Wrap};}
@@ -378,6 +386,7 @@ public sealed class MainWindow : Window
         updateStatus=$"Instalando {rel.Version}…";
         await Task.Delay(800);
         System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(updateFile,"/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /CLOSEAPPLICATIONS /NOCANCEL"){UseShellExecute=true});
+        SessionLog.Write($"installing {rel.Version}: closing for the update");
         exiting=true;Close();
     }
     object UpdateView()
@@ -443,12 +452,12 @@ public sealed class MainWindow : Window
             // game sent its roster, else the party list.
             var party=snapshot.Troop is { } troop?troop.Members.Where(m=>settings.OverlayTroopAll&&troop.IsTroop||m.Group==troop.OwnGroup).Select(m=>m.Name).ToList():(IReadOnlyCollection<string>)(snapshot.Party??[]);
             // The instance room's members count as the group too: someone who joined by the room finder may be missing from
-            // the party list for a while (2026-10-13: Elymas, 5th of the room, left out of the ranking).
+            // the party list for a while (2026-10-13: MemberFour, 5th of the room, left out of the ranking).
             if(snapshot.Room is { Members.Count: >0 } roomNow)party=party.Concat(roomNow.Members.Select(m=>m.Name)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
             // Where the player is on the atlas: the Atlas of this panel (data.atlas) and the website's, every second.
             var here=atlas.Locate(snapshot);
             // The session's loot at Market prices, for the overlay (only items with a price count; the others are told apart).
-            marketServer=snapshot.LocalServerId??settings.LastServerId;rankCharacter=snapshot.Character;
+            marketServer=snapshot.LocalServerId??settings.LastServerId;rankCharacter=snapshot.Character;engine.Abyss.SetCharacter(marketServer,rankCharacter);
             // The Market of the character's server (loot HUD) and of the one the Mercado tab shows, asked again every 30 min.
             market.Want(marketServer);if(MarketViewServer!=marketServer)market.Want(MarketViewServer);
             {var gains=engine.Inventory.Loot;sessionMarket=(gains.Sum(g=>(market.Unit(marketServer,g.Item)??0)*g.Quantity),gains.Where(g=>market.Unit(marketServer,g.Item) is null&&!InventoryWatch.Bound(g.Item)).Select(g=>g.Item).Distinct().Count());}
@@ -499,8 +508,14 @@ public sealed class MainWindow : Window
             object? rankingView=null;if(rk!=rankingKey){rankingKey=rk;rankingView=engine.Rankings.View(snapshot.LocalServerId??settings.LastServerId,snapshot.Character);}
             if(ownProfile?.Card is { } ownCard&&ArcanaBook.Has(ownCard)&&arcanaFor!=ownCard.FetchedAt){arcanaFor=ownCard.FetchedAt;_=LoadArcana(ownCard);}
             object? arcanaSend=null;if(arcanaVersion!=arcanaSent||ticks%20==0){arcanaSent=arcanaVersion;arcanaSend=arcanaView;}
+            if(ownProfile?.Card is { CharacterId: not null } profileCard){if(profileLoad?.Card.FetchedAt!=profileCard.FetchedAt){profileLoad=new ProfileLoad(profileCard);profileSent=-1;}}
+            // Another character asked for (still loading, or not found): the one loaded before must not stay as «Mi perfil».
+            else if(profileLoad is not null&&ownProfile is not null&&ownProfile.Card?.CharacterId!=profileLoad.Card.CharacterId){profileLoad=null;profileSent=-1;profileReset=true;}
+            // Your open Daevanion nodes from the game (Ariel, which the official profile does not give yet): kept per character.
+            if(engine.Daevanion.Version!=daevanionSeen&&engine.Daevanion.Latest is { } nodes&&snapshot.Character is { Length: > 0 } who){daevanionSeen=engine.Daevanion.Version;DaevanionNodes.Save(who,snapshot.LocalServerId??settings.LastServerId,nodes.At,nodes.Boards);profileLoad?.Touch();}
+            object? profileSend=profileReset?new{reset=true}:null;profileReset=false;if(profileLoad is { } pl&&(pl.Version!=profileSent||ticks%20==0)){profileSent=pl.Version;profileSend=pl.View();}
             object? roomsView=null;if(engine.Board.Version!=roomsSent){roomsSent=engine.Board.Version;roomsView=RoomsView();}
-            var data=new{news=new{unread=newsUnread},arcana=arcanaSend,rooms=roomsView,market=marketView,marketBoard=boardView,atlasMarks=marksView,ranking=rankingView,recording=RecordingView(),support=new{list=supportList,open=supportOpen,status=supportStatus,paired=companion.Paired},resources=resourceBook.View(snapshot.Character,snapshot.LocalServerId??settings.LastServerId),farm,objective=ObjectiveNow(),cubes=new{cv.Active,cv.Distance,cv.Bearing,cv.Height,cv.SpotsNear,cv.NearestSpot,cv.NearestBearing,map=MinimapData.Map(cv.Map)?.Name,history=cv.History.Select(h=>new{h.At,h.GoneAt,h.LeftRangeAt,h.SeenFrom,h.Missing,h.EnvId,map=MinimapData.Map(h.Map)?.Name??h.Map,x=Math.Round(h.X/100),y=Math.Round(h.Y/100),z=Math.Round(h.Z/100)})},fieldBosses=ticks%4==0||fieldBossDirty?fieldBosses?.View():null,historyVersion=history.Version,classes,profile=ownProfile is null?null:new{stage=ownProfile.Stage,error=ownProfile.Error,card=ownProfile.Card},version=AppVersion.Current,update=UpdateView(),announcements=ActiveAnnouncements().Select(a=>new{a.Title,a.Body,a.Level}),diagnostics=companion.DiagnosticsStatus,features=new{pvp=license.Has("companionPvp"),minimap=license.Has("companionMinimap"),plan=license.View().Title},license=license.View(),minimapLayers=MinimapWindow.Layers.Select(l=>new{key=l.Key,label=l.Label,color=l.Color}),petList=petList??=PetTracker.All.Select(x=>new{id=x.Id,name=x.Name}).ToList(),snapshot,events,settings,petCollection=engine.Collection.Of(snapshot.Character,snapshot.LocalServerId??settings.LastServerId)??engine.Collection.All().OrderByDescending(c=>c.UpdatedAt).FirstOrDefault(),petsSync=companion.PetsStatus,cloud=new{state=companion.State.ToString(),pull=companion.LastPull,title=titles.View()},companion=companion.Status,paired=companion.Paired,message,overlay=overlay.Requested,locked=overlay.ClickThrough,assistantMoving=overlay.AssistantMoving,npc=snapshot.Target?.NpcId is int id?Catalog.Npc(id):null,mobs,alert=timers.LastAlert,atlas=here};
+            var data=new{news=new{unread=newsUnread},arcana=arcanaSend,profileFull=profileSend,rooms=roomsView,market=marketView,marketBoard=boardView,atlasMarks=marksView,ranking=rankingView,recording=RecordingView(),support=new{list=supportList,open=supportOpen,status=supportStatus,paired=companion.Paired},resources=resourceBook.View(snapshot.Character,snapshot.LocalServerId??settings.LastServerId),farm,objective=ObjectiveNow(),cubes=new{cv.Active,cv.Distance,cv.Bearing,cv.Height,cv.SpotsNear,cv.NearestSpot,cv.NearestBearing,map=MinimapData.Map(cv.Map)?.Name,history=cv.History.Select(h=>new{h.At,h.GoneAt,h.LeftRangeAt,h.SeenFrom,h.Missing,h.EnvId,map=MinimapData.Map(h.Map)?.Name??h.Map,x=Math.Round(h.X/100),y=Math.Round(h.Y/100),z=Math.Round(h.Z/100)})},fieldBosses=ticks%4==0||fieldBossDirty?fieldBosses?.View():null,historyVersion=history.Version,classes,profile=ownProfile is null?null:new{stage=ownProfile.Stage,error=ownProfile.Error,card=ownProfile.Card},version=AppVersion.Current,update=UpdateView(),announcements=ActiveAnnouncements().Select(a=>new{a.Title,a.Body,a.Level}),diagnostics=companion.DiagnosticsStatus,features=new{pvp=license.Has("companionPvp"),minimap=license.Has("companionMinimap"),plan=license.View().Title},license=license.View(),minimapLayers=MinimapWindow.Layers.Select(l=>new{key=l.Key,label=l.Label,color=l.Color}),petList=petList??=PetTracker.All.Select(x=>new{id=x.Id,name=x.Name}).ToList(),snapshot,events,settings,petCollection=engine.Collection.Of(snapshot.Character,snapshot.LocalServerId??settings.LastServerId)??engine.Collection.All().OrderByDescending(c=>c.UpdatedAt).FirstOrDefault(),petsSync=companion.PetsStatus,cloud=new{state=companion.State.ToString(),pull=companion.LastPull,title=titles.View()},companion=companion.Status,paired=companion.Paired,message,overlay=overlay.Requested,locked=overlay.ClickThrough,assistantMoving=overlay.AssistantMoving,npc=snapshot.Target?.NpcId is int id?Catalog.Npc(id):null,mobs,alert=timers.LastAlert,atlas=here};
             string panelJson=UiContract.Serialize(data);
             if(dump){try{File.Delete(dumpFlag);File.WriteAllText(Path.Combine(Program.DataDirectory,"panel-dump.json"),panelJson);}catch{}}
             await view.ExecuteScriptAsync("window.renderCompanion?.("+panelJson+")");

@@ -127,12 +127,18 @@ public static class PlayerProfiles
         }
         catch (Exception ex) { if (state.Card is null) { state.Error = ex.Message; state.Stage = "error"; } }
     }
+    // A section that is an object: the official API sends some as null, and TryGetProperty on null throws (the card failed).
+    static bool Obj(JsonElement e, string name, out JsonElement value)
+    {
+        value = default;
+        return e.ValueKind == JsonValueKind.Object && e.TryGetProperty(name, out value) && value.ValueKind == JsonValueKind.Object;
+    }
     static PlayerCard Parse(JsonElement info, JsonElement equipment)
     {
         var profile = info.GetProperty("profile");
         int? itemLevel = null;
         var attributes = new Dictionary<string, StatValue>();
-        if (info.TryGetProperty("stat", out var stat) && stat.TryGetProperty("statList", out var stats))
+        if (Obj(info, "stat", out var stat) && stat.TryGetProperty("statList", out var stats) && stats.ValueKind == JsonValueKind.Array)
             foreach (var st in stats.EnumerateArray())
             {
                 if (!st.TryGetProperty("value", out var v) || v.ValueKind != JsonValueKind.Number) continue;
@@ -140,23 +146,23 @@ public static class PlayerProfiles
                 else attributes[Str(st, "type")] = new(Str(st, "name"), v.GetInt32());
             }
         var gear = new List<GearRow>();
-        if (equipment.TryGetProperty("equipment", out var inner) && inner.TryGetProperty("equipmentList", out var items))
+        if (Obj(equipment, "equipment", out var inner) && inner.TryGetProperty("equipmentList", out var items) && items.ValueKind == JsonValueKind.Array)
             foreach (var it in items.EnumerateArray())
                 gear.Add(new(Str(it, "slotPosName"), Str(it, "name"), Str(it, "grade"), it.TryGetProperty("enchantLevel", out var en) ? en.GetInt32() : 0, Str(it, "icon"),
                     it.TryGetProperty("id", out var iid) ? iid.GetInt64() : 0, it.TryGetProperty("slotPos", out var sp) ? sp.GetInt32() : 0,
                     it.TryGetProperty("exceedLevel", out var ex) ? ex.GetInt32() : 0));
-        if (equipment.TryGetProperty("petwing", out var pw) && pw.TryGetProperty("wing", out var wing) && wing.ValueKind == JsonValueKind.Object)
+        if (Obj(equipment, "petwing", out var pw) && pw.TryGetProperty("wing", out var wing) && wing.ValueKind == JsonValueKind.Object)
             gear.Add(new("Wing", Str(wing, "name"), Str(wing, "grade"), wing.TryGetProperty("enchantLevel", out var we) ? we.GetInt32() : 0, Str(wing, "icon")));
         // The level of each skill learned (the combat assistant's hover card shows that level's text, as the game does).
         var skillLevels = new Dictionary<int, int>();
-        if (equipment.TryGetProperty("skill", out var skill))
+        if (Obj(equipment, "skill", out var skill))
             foreach (string list in new[] { "skillList", "stigmaList" })
                 if (skill.TryGetProperty(list, out var sl) && sl.ValueKind == JsonValueKind.Array)
                     foreach (var sk in sl.EnumerateArray())
                         if (sk.TryGetProperty("id", out var sid) && sid.TryGetInt32(out int skillId) && sk.TryGetProperty("skillLevel", out var slv) && slv.TryGetInt32(out int level) && level > 0)
                             skillLevels[skillId] = level;
         var ranks = new List<string>();
-        if (info.TryGetProperty("ranking", out var ranking) && ranking.TryGetProperty("rankingList", out var rl) && rl.ValueKind == JsonValueKind.Array)
+        if (Obj(info, "ranking", out var ranking) && ranking.TryGetProperty("rankingList", out var rl) && rl.ValueKind == JsonValueKind.Array)
             foreach (var r in rl.EnumerateArray())
             {
                 string label = Str(r, "rankingContentsName") is { Length: > 0 } n ? n : Str(r, "name");
@@ -177,11 +183,16 @@ public static class PlayerProfiles
         string key = $"{card.CharacterId}|{gear.SlotPos}|{gear.Id}|{gear.Enchant}|{gear.Exceed}";
         lock (gate)
         {
-            if (items.TryGetValue(key, out var hit) && !hit.IsFaulted) return hit;
+            // A request that failed or timed out (a canceled task, not a faulted one) is asked for again.
+            if (items.TryGetValue(key, out var hit) && !hit.IsFaulted && !hit.IsCanceled) return hit;
             async Task<JsonElement?> Load() => await Json($"https://aion2.plaync.com/api/character/equipment/item?region={card.Region}&lang=es-ES&serverId={card.ServerId}&characterId={Uri.EscapeDataString(card.CharacterId)}&id={gear.Id}&enchantLevel={gear.Enchant}&exceedLevel={gear.Exceed}&slotPos={gear.SlotPos}");
             return items[key] = Load();
         }
     }
+    /// <summary>Another endpoint of this card's official profile (the «Mi perfil» tab reads info, equipment and each Daevanion board).</summary>
+    public static Task<JsonElement> Official(PlayerCard card, string endpoint, string extra = "") =>
+        card.CharacterId is null ? Task.FromException<JsonElement>(new InvalidOperationException("Sin identificador oficial."))
+        : Json($"https://aion2.plaync.com/api/character/{endpoint}?region={card.Region}&lang=es-ES&serverId={card.ServerId}&characterId={Uri.EscapeDataString(card.CharacterId)}{extra}");
     static async Task<JsonElement> Json(string url)
     {
         using var response = await http.GetAsync(url);

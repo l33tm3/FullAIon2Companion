@@ -1,3 +1,8 @@
+^Objeto (\d+)$	Item $1	Objeto $1	Objet $1
+^Puesto visto (\d+:\d\d) · se renueva (\d+:\d\d)$	Place seen $1 · renews $2	Posição vista $1 · renova $2	Place vue $1 · renouvelée à $2
+^Puesto de las (\d+:\d\d): ábrela de nuevo en el juego para renovarlo$	Place from $1: open it again in the game to renew it	Posição das $1: abra de novo no jogo para renová-la	Place de $1 : rouvre-le dans le jeu pour la renouveler
+^(\d+) veces$	$1 times	$1 vezes	$1 fois
+^y (\d+) objetos más$	and $1 more items	e mais $1 itens	et $1 objets de plus
 ^Nv\. \+(\d+)$	Lv. +$1	Nv. +$1	Niv. +$1
 ^SET · (.+) · (\d+)/5$	SET · $1 · $2/5	CONJUNTO · $1 · $2/5	PANOPLIE · $1 · $2/5
 ^(\d+) objetos · (\d+) únicos o mejores · botín de su variante Nv\. (\d+)$	$1 items · $2 unique or better · loot of its Lv. $3 variant	$1 itens · $2 únicos ou melhores · saque da variante Nv. $3	$1 objets · $2 uniques ou mieux · butin de sa variante Niv. $3
@@ -57,7 +62,7 @@
 ^EN ESPERA · (.+)$	IDLE · $1	EM ESPERA · $1	EN ATTENTE · $1
 ^EN COMBATE · (.+)$	IN COMBAT · $1	EM COMBATE · $1	EN COMBAT · $1
 ^(.+) perdidos$	$1 lost	$1 perdidos	$1 perdus
-^de ([\d.,\u00a0]+) · top ([\d.,\u00a0]+) %$	of $1 · top $2 %	de $1 · top $2 %	sur $1 · top $2 %
+^de ([\d.,\s\u00a0]+) · top ([\d.,\s\u00a0]+) %$	of $1 · top $2 %	de $1 · top $2 %	sur $1 · top $2 %
 ^Clase vista (\d+:\d\d) · general (\d+:\d\d) · se renueva (\d+:\d\d)$	Class seen $1 · overall $2 · renews $3	Classe vista $1 · geral $2 · renova $3	Classe vue $1 · général $2 · renouvelé à $3
 ^Vista (\d+:\d\d) · se renueva (\d+:\d\d)$	Seen $1 · renews $2	Vista $1 · renova $2	Vu $1 · renouvelé à $2
 ^Hay datos nuevos desde las (\d+:\d\d): abre la clasificación en el juego$	New data since $1: open the ranking in the game	Há dados novos desde as $1: abra a classificação no jogo	Nouvelles données depuis $1 : ouvre le classement dans le jeu

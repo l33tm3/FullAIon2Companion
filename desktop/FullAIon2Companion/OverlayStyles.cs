@@ -465,7 +465,7 @@ public sealed partial class OverlayWindow
     void ThemeFamily(bool all = false)
     {
         var font = new FontFamily(look.Font);
-        foreach (Window w in new Window[] { this, dock, drops, player, minimap, centerAlert, bossWindow, toast, assistant, assistant.Card })
+        foreach (Window w in new Window[] { this, dock, drops, abyssCard, player, minimap, centerAlert, bossWindow, toast, assistant, assistant.Card })
         {
             if (!all && !w.IsVisible && !(Preview && w == this)) continue;
             ThemeWindow(w, font);
@@ -646,14 +646,14 @@ public sealed partial class OverlayWindow
     void BuildShareBars(CaptureSnapshot s, IReadOnlyList<ActorRow> players)
     {
         shareBars.Children.Clear();
-        var top = players.Where(p => p.Damage > 0).Take(6).ToList();
+        var top = CaptureEngine.TopByDps(players.Where(p => p.Damage > 0), 6, s.LocalId);
         shareBars.Visibility = top.Count > 0 && settings.OverlayShowParty ? Visibility.Visible : Visibility.Collapsed;
         if (top.Count == 0) return;
-        long best = Math.Max(1, top[0].Damage), sum = Math.Max(1, players.Sum(p => p.Damage));
+        double best = CaptureEngine.BestDps(top); long most = top.Max(p => p.Damage), sum = Math.Max(1, players.Sum(p => p.Damage));
         foreach (var a in top)
         {
             string? cls = ClassOfPlayer(a.Name, s); var c = ClassColor(cls);
-            double fill = Math.Clamp((double)a.Damage / best, 0, 1);
+            double fill = CaptureEngine.BarOf(a, best, most);
             var grid = new Grid { Height = 18, Margin = new Thickness(0, 2, 0, 0) };
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(fill, GridUnitType.Star) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1 - fill, GridUnitType.Star) });

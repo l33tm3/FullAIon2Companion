@@ -14,7 +14,9 @@ namespace FullAIon2Companion;
 
 public sealed record SegmentLog(DateTime Timestamp, string Source, string Destination, uint Sequence, string Payload, bool FromServer);
 public sealed record SkillRow(int Id, string Name, string? Icon, long Damage, int Hits, int Criticals, double Share);
-public sealed record ActorRow(int Id, string Name, long Damage, double Dps, long Healing);
+/// <summary>A row of the damage list. <paramref name="Active"/>: the seconds of its sustained hitting (runs of two hits or more,
+/// <see cref="CaptureEngine.SustainedSeconds"/>), which decide whether its DPS orders the list.</summary>
+public sealed record ActorRow(int Id, string Name, long Damage, double Dps, long Healing, double Active = 0);
 /// <summary>One skill in the breakdown window. Casts: hits grouped by the frame's sequence byte; Average: per cast.</summary>
 public sealed record BreakdownSkill(int Id, string Name, string? Icon, long Amount, double Share, int Casts, int Hits, double MultiPct, double CritPct, long Max, long Average,
     double BackPct = 0, double PerfectPct = 0, double DoublePct = 0);
@@ -85,6 +87,13 @@ public sealed class CaptureEngine : IDisposable
     readonly RoomBoard board = new();
     /// <summary>The party finder's room lists (0x0197, while the Expedición or Trascendencia window shows a dungeon).</summary>
     public RoomBoard Board => board;
+    readonly DaevanionWatch daevanion = new();
+    readonly AbyssWatch abyss = new();
+    (int, DateTime) lastRecord;
+    /// <summary>The Abyss ranking points and Abyss Points (0x73E2, 0xA9FF) and the session farming there.</summary>
+    public AbyssWatch Abyss => abyss;
+    /// <summary>Your open Daevanion nodes as the game last sent them (0x26E2).</summary>
+    public DaevanionWatch Daevanion => daevanion;
     public InventoryWatch Inventory => inventory;
     readonly CombatAssistant assistant=new();
     public CombatAssistant Assistant => assistant;
@@ -258,12 +267,22 @@ public sealed class CaptureEngine : IDisposable
         cubes.MapNow = MapId;
         room.LocalName = () => entities.LocalCharacter?.Name ?? localName;
         room.World = () => ownPos.World;
-        inventory.Gained += (item, quantity, at) => { pets.ItemGained(item, quantity); observed.Gained(item, quantity, at, gathered: cubes.UsedUpWithin(at, 3)); };
+        inventory.Gained += (item, quantity, at) => { pets.ItemGained(item, quantity); observed.Gained(item, quantity, at, gathered: cubes.UsedUpWithin(at, 3)); abyss.ItemGained(item, quantity, at); };
+        inventory.KinahGained += abyss.KinahGained;
+        abyss.Held = () => inventory.Holdings(i => i == AbyssWatch.AbyssPoints) is { Count: > 0 } held ? held.Values.Sum() : inventory.Complete ? 0 : null;
         cubes.OwnNow = () => Position() is { } me ? (me.X, me.Y) : null;
         enrage.NpcOf = id => entities.NpcIdOf(id);
         enrage.HpPctOf = id => entities.HitPoints.Latest(id) is { } h && entities.HitPoints.HighestSeen(id) is long top && top > 0 ? h.Hp * 100.0 / top : null;
         enrage.CandidateLog = Path.Combine(Program.DataDirectory, "enrage-candidates.log");
-        entities.CharacterChanged += c => { lock(gate) { if (!c.Restored && c.CombatId > 0) { carriedIdentity = null; identityClass = null; } if (!c.Restored && c.CombatId > 0) sessionIdentity = (c.CombatId, c.Name, c.ServerId > 0 ? c.ServerId : entities.ServerIdOf(c.CombatId) ?? 0); } };
+        entities.CharacterChanged += c => { lock(gate) { if (!c.Restored && c.CombatId > 0) { carriedIdentity = null; identityClass = null; } if (!c.Restored && c.CombatId > 0) sessionIdentity = (c.CombatId, c.Name, c.ServerId > 0 ? c.ServerId : entities.ServerIdOf(c.CombatId) ?? 0); }
+            // The Abyss values of a login belong to the character this record names (they come just before it). The vendor also
+            // raises this event with the stored record for every list it receives (equipment, which is 0x1156 the login inventory
+            // itself, skills, titles...): only a new record (another id or receive time) is the login's.
+            if (!c.Restored && c.CombatId > 0)
+            {
+                bool fresh = (c.CombatId, c.ReceivedAt) != lastRecord; lastRecord = (c.CombatId, c.ReceivedAt);
+                abyss.SetCharacter(c.ServerId > 0 ? c.ServerId : entities.ServerIdOf(c.CombatId), c.Name, record: fresh);
+            } };
     }
     public void Start(string? recordPath = null)
     {
@@ -418,6 +437,8 @@ public sealed class CaptureEngine : IDisposable
                     resources.Add(frame.Span, segment.Timestamp);
                     rankings.Add(frame.Span, segment.Timestamp);
                     board.Add(frame.Span, segment.Timestamp);
+                    daevanion.Add(frame.Span, segment.Timestamp);
+                    abyss.Add(frame.Span, segment.Timestamp);
                     int loadsBefore = ownPos.Loads;
                     ownPos.Add(frame.Span);
                     // A map load: the monsters of the previous map must not vote for (or place the player on) the new one.
@@ -564,6 +585,42 @@ public sealed class CaptureEngine : IDisposable
     public const double ActiveGap = 5;
     /// <summary>The same for the DPS on your target, as the game's analyzer pauses its clock (see Snapshot).</summary>
     public const double TargetGap = 4;
+    /// <summary>
+    /// Seconds of sustained hitting a row needs before its DPS orders the list. A run counts at least 1 s for the DPS, so one 90k
+    /// hit at the end of a fight was 90k/s and went first, and a Cleric hitting every 6–8 s showed his hit size as DPS (reviews of
+    /// 2026-10-27). Only runs of two hits or more count here, at their real length. The rows below it go after the ones that rank,
+    /// by damage (then healing), with a bar of their damage and their DPS dimmed, and do not set the bars' scale. At least half of
+    /// the time the DPS counts must be that sustained hitting: a few pairs of hits do not lift a hitter whose other hits each count
+    /// 1 s. The same for you: your row is always in the list, but ranks only by the same rule.
+    /// </summary>
+    public const double RankMinActive = ActiveGap;
+    public static bool Ranks(ActorRow a) => a.Active >= RankMinActive && a.Dps > 0 && a.Active >= .5 * (a.Damage / a.Dps);
+    public static List<ActorRow> ByDps(IEnumerable<ActorRow> rows) =>
+        rows.OrderByDescending(Ranks).ThenByDescending(a => Ranks(a) ? a.Dps : a.Damage).ThenByDescending(a => a.Healing).ToList();
+    /// <summary>The seconds of the runs of two hits or more in these times (pauses over the gap split runs), at their real length.</summary>
+    public static double SustainedSeconds(IEnumerable<DateTime> times, double gap = ActiveGap)
+    {
+        double total = 0; DateTime? start = null, previous = null; int hits = 0;
+        foreach (var t in times.Order())
+        {
+            if (previous is DateTime p && (t - p).TotalSeconds > gap) { if (hits > 1) total += (p - start!.Value).TotalSeconds; start = t; hits = 0; }
+            start ??= t; previous = t; hits++;
+        }
+        if (previous is DateTime last && hits > 1) total += (last - start!.Value).TotalSeconds;
+        return total;
+    }
+    /// <summary>A row's bar, 0 to 1: its DPS against the best that ranks, or, below the ranked ones, its damage against the most.</summary>
+    public static double BarOf(ActorRow a, double bestDps, long mostDamage) => Math.Clamp(Ranks(a) ? a.Dps / Math.Max(1, bestDps) : (double)a.Damage / Math.Max(1, mostDamage), 0, 1);
+    /// <summary>The rows a list shows: the <paramref name="n"/> with the most damage, yours always among them, ordered by DPS.</summary>
+    public static List<ActorRow> TopByDps(IEnumerable<ActorRow> rows, int n, int local)
+    {
+        var all = rows.ToList();
+        var top = all.OrderByDescending(a => a.Damage).Take(n).ToList();
+        if (local > 0 && top.Count == n && top.All(a => a.Id != local) && all.FirstOrDefault(a => a.Id == local) is { } me) top[^1] = me;
+        return ByDps(top);
+    }
+    /// <summary>The scale of the DPS bars: the best DPS among the rows that rank.</summary>
+    public static double BestDps(IEnumerable<ActorRow> rows) => Math.Max(1, rows.Where(Ranks).Select(a => a.Dps).DefaultIfEmpty(1).Max());
     /// <summary>The seconds of hitting in these times: each run without a pause over the gap, at least 1 s each.</summary>
     public static double ActiveSeconds(IEnumerable<DateTime> times, double gap = ActiveGap)
     {
@@ -625,17 +682,25 @@ public sealed class CaptureEngine : IDisposable
             // (running to the next pack, waiting) not counted. 2026-10-23: from the first hit to the fight's end, a dungeon run
             // kept going for 3:38 and showed 29,845 while the game's own analyzer said 44,900 on its target (and before that,
             // the user: «mi DPS contando desde mi primer golpe», a fight joined 40 s late showed 18.2K instead of ~27.7K).
+            // Each one's DPS over their own time hitting, as the game's analyzer runs its clock: pauses of more than ActiveGap
+            // seconds left out, from their first hit. 2026-10-25 the user, with the analyzer on Lakshmi de ensueño at «1,38M
+            // (105,31A)» in 0:13 and the overlay at 34,409 («104 vs 29»): the group's time for everyone (the night before, for
+            // a ranking in order) spread your damage over the 41 s the group had been fighting before you came. The list is
+            // ordered by DPS instead, so it always goes down (see Actors).
             double Since(IEnumerable<DamageEvent> hits) => ActiveSeconds(hits.Where(h => !h.IsHeal).Select(h => h.Timestamp));
             // Players only, then the top 16: monsters (their damage on you) and nameless entities used to take places first and
             // leave players out of big fights, and an unowned summon showed by its internal name («Hechicero_Skill020_A1_Invisible»,
             // 2nd place in the Abyss on 2026-10-22). No player name has an underscore (3,161 seen); internal ones do.
             // Your hits under an earlier id count as yours, in one row (see fightOwnUntil).
-            var actors = counted.GroupBy(h => local > 0 && WasMine(h, local) ? local : h.SourceObjectId)
+            var actors = TopByDps(counted.GroupBy(h => local > 0 && WasMine(h, local) ? local : h.SourceObjectId)
                 .Select(g => (Hits: g, Name: FightName(g.Key, local, id => directory.Names.GetValueOrDefault(id))))
                 .Where(a => a.Hits.Key == local || FightNpc(a.Hits.Key) is null && !a.Name.StartsWith("Entidad ", StringComparison.Ordinal) && !a.Name.Contains('_'))
-                .Select(a => new ActorRow(a.Hits.Key, a.Name, a.Hits.Where(h => !h.IsHeal).Sum(h => h.Amount),
-                    duration == 0 ? 0 : a.Hits.Where(h => !h.IsHeal).Sum(h => h.Amount) / Since(a.Hits), a.Hits.Where(h => h.IsHeal).Sum(h => h.Amount)))
-                .OrderByDescending(a => a.Damage).Take(16).ToList();
+                .Select(a =>
+                {
+                    long damage = a.Hits.Where(h => !h.IsHeal).Sum(h => h.Amount);
+                    var times = a.Hits.Where(h => !h.IsHeal).Select(h => h.Timestamp).ToList();
+                    return new ActorRow(a.Hits.Key, a.Name, damage, duration == 0 || damage == 0 ? 0 : damage / ActiveSeconds(times), a.Hits.Where(h => h.IsHeal).Sum(h => h.Amount), SustainedSeconds(times));
+                }), 16, local);
             // Your DPS on your target, as the game's own analyzer counts it (Ctrl+X, «Objetivo»): your hits on the one you have
             // selected, over your time hitting it, pauses of more than TargetGap seconds left out. It is the target once you hit
             // it in this fight, and it stays after you clear the selection, as the analyzer keeps the last one. 2026-10-24: the
@@ -765,16 +830,15 @@ public sealed class CaptureEngine : IDisposable
         if (started is not DateTime start || lastHit is not DateTime end || fight.Count == 0) return null;
         var s = Snapshot();
         double seconds = Math.Max(1, (end - start).TotalSeconds);
-        var players = s.Actors.Where(a => a.Damage + a.Healing > 0 && !a.Name.StartsWith("Entidad ", StringComparison.Ordinal))
-            .OrderByDescending(a => a.Damage).ThenByDescending(a => a.Healing).Take(16).ToList();
+        var players = TopByDps(s.Actors.Where(a => a.Damage + a.Healing > 0 && !a.Name.StartsWith("Entidad ", StringComparison.Ordinal)), 16, s.LocalId); // by DPS, as the overlay
         long total = players.Sum(p => p.Damage);
         if (seconds < 5 || total <= 0) return null;
         var rows = players.Select(a =>
         {
             var skills = (Breakdown(a.Id, null, a.Damage == 0)?.Skills ?? []).Take(12)
                 .Select(k => new FightSkill(k.Name, k.Icon, k.Amount, k.Hits, Math.Round(k.CritPct, 1), Math.Round(k.Share, 1))).ToList();
-            return new FightPlayer(a.Name, a.Id == s.LocalId || fightLoads == ownPos.Loads ? entities.ClassOf(a.Id) : fightClasses.GetValueOrDefault(a.Id), a.Damage, Math.Round(a.Dps), a.Healing, // from each one's first hit, as shown
-                total > 0 ? Math.Round(a.Damage * 100.0 / total, 1) : 0, a.Id == s.LocalId || sessionIdentity is { } own && (a.Id == own.Id || a.Name.Equals(own.Name, StringComparison.OrdinalIgnoreCase)) || s.Character is { } me && a.Name.Equals(me, StringComparison.OrdinalIgnoreCase), skills);
+            return new FightPlayer(a.Name, a.Id == s.LocalId || fightLoads == ownPos.Loads ? entities.ClassOf(a.Id) : fightClasses.GetValueOrDefault(a.Id), a.Damage, Math.Round(a.Dps), a.Healing, // over each one's time hitting, as shown
+                total > 0 ? Math.Round(a.Damage * 100.0 / total, 1) : 0, a.Id == s.LocalId || sessionIdentity is { } own && (a.Id == own.Id || a.Name.Equals(own.Name, StringComparison.OrdinalIgnoreCase)) || s.Character is { } me && a.Name.Equals(me, StringComparison.OrdinalIgnoreCase), skills, Ranks(a));
         }).ToList();
         var main = fight.Where(h => !h.IsHeal && NpcOf(h.TargetObjectId) is not null).GroupBy(h => h.TargetObjectId)
             .OrderByDescending(g => g.Sum(h => h.Amount)).Select(g => g.Key).FirstOrDefault();
@@ -823,6 +887,8 @@ public sealed class CaptureEngine : IDisposable
             var targets = mine.GroupBy(h => h.TargetObjectId).Select(g => new BreakdownTarget(g.Key, NameOf(g.Key), g.Sum(h => h.Amount))).OrderByDescending(t => t.Amount).Take(12).ToList();
             if (targetId is int only) mine = mine.Where(h => h.TargetObjectId == only).ToList();
             double duration = mine.Count == 0 ? 0 : Math.Max(1, (mine[^1].Timestamp - mine[0].Timestamp).TotalSeconds);
+            // Per second over the time hitting (pauses over ActiveGap left out), as the overlay's row and the game's analyzer.
+            double active = mine.Count == 0 ? 0 : ActiveSeconds(mine.Select(h => h.Timestamp));
             long total = mine.Sum(h => h.Amount);
             var rows = new List<BreakdownSkill>();
             int allCasts = 0;
@@ -852,12 +918,12 @@ public sealed class CaptureEngine : IDisposable
             double AvoidPct(AvoidKind kind) => direct.Count + avoided.Count == 0 ? 0 : (double)avoided.Count(a => a.Kind == kind) / (direct.Count + avoided.Count) * 100;
             long heals = fight.Where(h => h.IsHeal && By(h, actor)).Sum(h => h.Amount);
             double Rate(Func<HitExtra, bool> test) { var known = direct.Select(h => extras.TryGetValue(h, out var e) ? e : (HitExtra?)null).Where(e => e is not null).ToList(); return known.Count == 0 ? 0 : (double)known.Count(e => test(e!.Value)) / known.Count * 100; }
-            return new(actor, NameOf(actor), healing, duration, total, total / Math.Max(1, duration), allCasts, mine.Count,
+            return new(actor, NameOf(actor), healing, duration, total, total / Math.Max(1, active), allCasts, mine.Count,
                 direct.Count == 0 ? 0 : (double)direct.Count(h => h.IsCritical) / direct.Count * 100, Rate(e => e.Count > 1), Rate(e => (e.Mod & 0x80) != 0),
                 targetId, targets, rows.OrderByDescending(r => r.Amount).ToList(), players,
                 Rate(e => (e.Mod & 0x04) != 0), Rate(e => (e.Mod & 0x08) != 0),
                 AvoidPct(AvoidKind.Parry), AvoidPct(AvoidKind.Block), AvoidPct(AvoidKind.Dodge),
-                playerDeaths.Count(d => d.VictimObjectId == actor), heals, heals / Math.Max(1, duration),
+                playerDeaths.Count(d => d.VictimObjectId == actor), heals, heals / Math.Max(1, healing ? active : ActiveSeconds(fight.Where(h => h.IsHeal && By(h, actor)).Select(h => h.Timestamp))),
                 Extra(actor, mine, rows, direct.Count, avoided, NameOf, healing));
         }
     }

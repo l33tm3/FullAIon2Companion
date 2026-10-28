@@ -5,7 +5,7 @@ namespace FullAIon2Companion;
 
 /// <summary>One player of a saved fight: damage, healing and the per-skill breakdown.</summary>
 public sealed record FightPlayer(string Name, string? Class, long Damage, double Dps, long Healing, double Share, bool Self,
-    IReadOnlyList<FightSkill> Skills);
+    IReadOnlyList<FightSkill> Skills, bool? Ranked = null);
 public sealed record FightSkill(string Name, string? Icon, long Damage, int Hits, double CritPct, double Share);
 /// <summary>The list entry of a saved fight (history/index.json).</summary>
 public sealed record FightSummary(string Id, DateTime Start, DateTime End, double Seconds, string Place, string Target, bool Boss, bool Killed,

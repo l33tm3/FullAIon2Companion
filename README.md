@@ -29,9 +29,9 @@ FullAIon2Companion reads the AION 2 traffic that already reaches your PC and sho
 
 | | |
 |---|---|
-| **Latest version** | [**FullAIon2Companion 1.0.24**](https://github.com/l33tm3/FullAIon2Companion/releases/latest) (Windows 10/11, 64-bit, ~99 MB) |
-| **SHA-256** | `295cac2e20af20e77e7fb72871a9049ace39c17b7896bc7160c1fbfbd062d7a6` |
-| **VirusTotal** | [![VirusTotal 1.0.24](https://img.shields.io/badge/VirusTotal%201.0.24-1%2F65-yellowgreen?logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/file/295cac2e20af20e77e7fb72871a9049ace39c17b7896bc7160c1fbfbd062d7a6) — 1 of 65 engines: DeepInstinct's machine-learning engine flags it, the other 64 report it clean (the same engine flagged [1.0.23](https://www.virustotal.com/gui/file/3698a6389d00a28ad603c505aba46c7c83005d586cc265c657911882a096a76b) and 1.0.20; [1.0.21](https://www.virustotal.com/gui/file/2ff0039f7b18a8fdd1ee7e602c5183fb630e1f4a1b2a1c2d1248e464696c30da) got 0 of 65). Unsigned installers often trip such heuristics; the full source of this installer is in this repository. |
+| **Latest version** | [**FullAIon2Companion 1.0.25**](https://github.com/l33tm3/FullAIon2Companion/releases/latest) (Windows 10/11, 64-bit, ~99 MB) |
+| **SHA-256** | `649c65806b116937b9813f5f24cdd6e4cb36a4556f9c3ba559cf5c3d62ca43d8` |
+| **VirusTotal** | The 1.0.25 report is coming. The last one: [![VirusTotal 1.0.24](https://img.shields.io/badge/VirusTotal%201.0.24-1%2F65-yellowgreen?logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/file/295cac2e20af20e77e7fb72871a9049ace39c17b7896bc7160c1fbfbd062d7a6) — 1 of 65 engines: DeepInstinct's machine-learning engine flags it, the other 64 report it clean (the same engine flagged [1.0.23](https://www.virustotal.com/gui/file/3698a6389d00a28ad603c505aba46c7c83005d586cc265c657911882a096a76b) and 1.0.20; [1.0.21](https://www.virustotal.com/gui/file/2ff0039f7b18a8fdd1ee7e602c5183fb630e1f4a1b2a1c2d1248e464696c30da) got 0 of 65). Unsigned installers often trip such heuristics; the full source of this installer is in this repository. |
 | **Also on** | [governanceai.me](https://governanceai.me/?lang=en#home?download=1) |
 
 **Requirements**
@@ -47,7 +47,7 @@ FullAIon2Companion reads the AION 2 traffic that already reaches your PC and sho
 ## Features
 
 ### The overlay, always on top of your game
-Your DPS, damage and healing, your group's ranking with each player's class, the target with its health and, beside it, the loot table of what you are hunting. Your Abyss rank and the next events sit in its header.
+Your DPS, damage and healing, your group's ranking by DPS with each player's class (each one over their own time hitting, like the game's analyzer), the target with its health and, beside it, the loot table of what you are hunting. Your Abyss rank and the next events sit in its header.
 
 ### Know whether you will beat the enrage
 <img src="docs/images/boss-card.webp" alt="Boss card" width="420" align="right">
@@ -126,6 +126,18 @@ Prices of every item per server, with rises and drops, and your inventory valued
 Abyss, bosses, expedition, awakening and arenas: your rank in your class and overall, how much you went up or down, and the hourly history.
 
 <img src="docs/images/panel-ranking.webp" alt="Rankings tab" width="900">
+
+### Your Abyss farming, counted
+<img src="docs/images/overlay-abyss.webp" alt="Abyss card" width="380" align="right">
+
+The medal on the overlay's strip opens the Abyss card: your place in the Abyss ranking, your ranking points live, your Abyss Points with their cap, and what you have farmed there this session. Ranking points won and lost on death, Abyss Points, kinah and loot, with hourly rates. It counts from your first Abyss reward and is kept per character. Drag it anywhere by its header and resize it from its corner.
+
+<br clear="right">
+
+### Your profile, the way the game shows it
+Your whole official profile in the app: gear by group with each piece's full tooltip (stats, manastones, godstone, appearance, source), skills and stigmas with their level and text, stats, skins, and every Daevanion board drawn with the game's own node art. Ariel included: the official site does not have it yet, so your open nodes come from the game when you open its Daevanion window.
+
+<img src="docs/images/panel-profile.webp" alt="My profile: Daevanion boards" width="900">
 
 ### Your arcanas, planned
 Your five arcana cards from your official profile, with their Empyrean Lord stats, skills and set effects added up the way the game shows them. The planner tries another level or the other set on each card and shows the result next to what you have now. Other players' arcanas show on their PvP card too.
@@ -206,7 +218,7 @@ dotnet build desktop/FullAIon2Companion -c Release -o desktop/build
 desktop/build/FullAIon2Companion.exe
 
 # Installer (self-contained, written to desktop/release/<version>)
-powershell -ExecutionPolicy Bypass -File scripts/build-companion.ps1 -Version 1.0.24 -Output desktop/release/1.0.24
+powershell -ExecutionPolicy Bypass -File scripts/build-companion.ps1 -Version 1.0.25 -Output desktop/release/1.0.25
 ```
 
 The app has offline self-tests, for example `FullAIon2Companion.exe --license-test out.json`, `--verify-test out.json`, `--overlay-styles <folder> [en]` (draws the overlay in all 36 styles) or `--skill-card-test <folder>`.

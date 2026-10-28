@@ -628,6 +628,84 @@ public static class Program
                 finally { Directory.Delete(testDirectory, true); testDirectory = null; }
                 return 0;
             }
+            if(args.FirstOrDefault() == "--session-log-test")
+            {
+                // Test: session-log.txt in a throwaway data folder. A run that left no «end» (killed) is reported by the next start,
+                // with its last line; a run that ended is not. Written to args[1].
+                testDirectory = Path.Combine(Path.GetTempPath(), "fa2c-session-" + Guid.NewGuid().ToString("N"));
+                Directory.CreateDirectory(testDirectory);
+                try
+                {
+                    string log = Path.Combine(DataDirectory, "session-log.txt");
+                    File.WriteAllLines(log, ["2026-10-24 16:00:00.000 [111] start 1.0.24 · dev", "2026-10-24 16:10:00.000 [111] WM_CLOSE received (panel Normal)"]);
+                    SessionLog.Start("test");
+                    var afterKill = File.ReadAllLines(log);
+                    bool reported = afterKill.Any(l => l.Contains("previous run [111] ended without closing") && l.Contains("WM_CLOSE received"));
+                    SessionLog.End("test closed");
+                    File.AppendAllLines(log, ["2026-10-24 16:20:00.000 [222] start 1.0.24 · dev", "2026-10-24 16:30:00.000 [222] end: app closed normally"]);
+                    int before = File.ReadAllLines(log).Length;
+                    SessionLog.Start("test");
+                    var afterClean = File.ReadAllLines(log);
+                    bool quiet = !afterClean.Skip(before).Any(l => l.Contains("ended without closing"));
+                    bool ok = reported && quiet;
+                    File.WriteAllText(Path.GetFullPath(args[1]), string.Join(Environment.NewLine, afterClean) + Environment.NewLine + (ok ? "ok" : "FALLA"));
+                    Console.WriteLine(ok ? "ok" : "FALLA");
+                    return ok ? 0 : 1;
+                }
+                finally { Directory.Delete(testDirectory, true); testDirectory = null; }
+            }
+            if(args.FirstOrDefault() == "--daevanion-test")
+            {
+                // Test: your open Daevanion nodes from the game (0x26E2, DaevanionWatch) in a recording (args[2], by default the one of
+                // 2026-10-12 02:35 where they came), against Darkni's official profile of then: Nezekan 56 + start, Zikel 61, Vaizel 57,
+                // Triniel 70 and Azphel 35. Written to args[1].
+                string rec = args.Length > 2 ? args[2] : Path.Combine(DataDirectory, "captures", "20261012-023537.jsonl");
+                testDirectory = Path.Combine(Path.GetTempPath(), "fa2c-replay-" + Guid.NewGuid().ToString("N"));
+                Directory.CreateDirectory(testDirectory);
+                try
+                {
+                    DateTime at = DateTime.MinValue;
+                    using var engine = new CaptureEngine { ReplayClock = () => at };
+                    foreach (var line in File.ReadLines(rec))
+                    {
+                        var s = JsonSerializer.Deserialize<SegmentLog>(line)!; at = s.Timestamp;
+                        engine.Ingest(new(s.Timestamp, s.Source, s.Destination, s.Sequence, Convert.FromBase64String(s.Payload), s.FromServer));
+                    }
+                    var latest = engine.Daevanion.Latest;
+                    var counts = latest?.Boards.OrderBy(kv => kv.Key).ToDictionary(kv => kv.Key.ToString(), kv => kv.Value.Length);
+                    var expected = new Dictionary<string, int> { ["11"] = 57, ["12"] = 62, ["13"] = 58, ["14"] = 71, ["16"] = 36 };
+                    bool ok = counts is not null && expected.All(kv => counts.GetValueOrDefault(kv.Key) == kv.Value)
+                        && latest!.Value.Boards.All(kv => kv.Value.Contains(kv.Key * 10000 + 113)); // every board's start node, row 8 column 8
+                    File.WriteAllText(Path.GetFullPath(args[1]), JsonSerializer.Serialize(new { recording = Path.GetFileName(rec), at = latest?.At, counts, expected, ok }, new JsonSerializerOptions { WriteIndented = true }));
+                    Console.WriteLine(ok ? "ok" : "FALLA");
+                    return ok ? 0 : 1;
+                }
+                finally { Directory.Delete(testDirectory, true); testDirectory = null; }
+            }
+            if(args.FirstOrDefault() == "--profile-test")
+            {
+                // Test: a character's whole official profile (args[2] name, args[3] server, default Darkni 2401, la) as the panel's
+                // «Mi perfil» receives it once every board and piece arrived (ProfileBook), written to args[1].
+                string who = args.Length > 2 ? args[2] : "Darkni"; int server = args.Length > 3 ? int.Parse(args[3]) : 2401;
+                // A throwaway data folder with a copy of the profile cache: the running app's files are not touched.
+                string realCache = Path.Combine(DataDirectory, "player-cache.json");
+                string realNodes = Path.Combine(DataDirectory, "daevanion-nodes.json");
+                testDirectory = Path.Combine(Path.GetTempPath(), "fa2c-profile-" + Guid.NewGuid().ToString("N"));
+                Directory.CreateDirectory(testDirectory);
+                if (File.Exists(realCache)) File.Copy(realCache, Path.Combine(testDirectory, "player-cache.json"));
+                // And your open Daevanion nodes as the game sent them (Ariel, which the official profile does not give yet).
+                if (File.Exists(realNodes)) File.Copy(realNodes, Path.Combine(testDirectory, "daevanion-nodes.json"));
+                var state = PlayerProfiles.Get(who, server, "la");
+                for (int wait = 0; (state.Card is null || state.Stale) && state.Stage is not ("missing" or "error") && wait < 60; wait++) Thread.Sleep(500);
+                if (state.Card is not { } card) { Console.WriteLine($"no profile: {state.Stage} {state.Error}"); return 1; }
+                var started = DateTime.Now; var load = new ProfileLoad(card);
+                for (int wait = 0; !load.Done && wait < 240; wait++) Thread.Sleep(250);
+                File.WriteAllText(Path.GetFullPath(args[1]), JsonSerializer.Serialize(load.View(), new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
+                using var written = JsonDocument.Parse(File.ReadAllText(Path.GetFullPath(args[1])));
+                var root = written.RootElement;
+                Console.WriteLine($"{card.Name}: {root.GetProperty("itemsLoaded")}/{root.GetProperty("itemsTotal")} piezas, {root.GetProperty("boardsLoaded")}/{root.GetProperty("boardsTotal")} tableros en {(DateTime.Now - started).TotalSeconds:0.0} s{(root.GetProperty("error").ValueKind == JsonValueKind.String ? " · " + root.GetProperty("error") : "")}");
+                return root.GetProperty("done").GetBoolean() && root.GetProperty("error").ValueKind != JsonValueKind.String ? 0 : 1;
+            }
             if(args.FirstOrDefault() == "--arcana-test")
             {
                 // Test: a character's arcanas from the official profile (args[2] name, args[3] server, default Darkni 2401, la)
@@ -671,6 +749,8 @@ public static class Program
                     var report = new List<object>();
                     foreach (var file in args.Skip(2))
                     {
+                        // A clean data folder for each recording: the players and groups one leaves on disk are not the next one's.
+                        Directory.Delete(testDirectory, true); Directory.CreateDirectory(testDirectory);
                         DateTime at = DateTime.MinValue, nextSnap = DateTime.MinValue;
                         var hits = new List<(AionDPS.Combat.DamageEvent Hit, string? Source, string? Target)>(); // with the names known then
                         var worst = 0.0; int snaps = 0; object? worstAt = null;
@@ -702,7 +782,7 @@ public static class Program
                             int from = 0;
                             for (int i = 1; i < mine.Count; i++) if ((mine[i].Timestamp - mine[i - 1].Timestamp).TotalSeconds > 15) from = i;
                             if (mine.Count == 0) continue;
-                            // Your DPS counts only the time you are hitting in that fight: pauses over 5 s left out (since 2026-10-24).
+                            // Your DPS counts your own time hitting in that fight, as the game's analyzer: pauses over 5 s left out.
                             var own = mine.Skip(from).Where(h => h.SourceObjectId == snap.LocalId && !h.IsHeal).ToList();
                             if (own.Count == 0) continue;
                             double span = CaptureEngine.ActiveSeconds(own.Select(h => h.Timestamp));
@@ -718,7 +798,7 @@ public static class Program
                             // The first seconds of a fight swing with half a second, and a few points of damage are no DPS.
                             if (dealt == 0 || span < 8 || dealt / span < 100) continue;
                             double expected = dealt / span, off = Math.Abs(snap.Dps - expected) / expected;
-                            if (off > worst) { worst = off; worstAt = new { at = at.ToString("HH:mm:ss"), shownDps = Math.Round(snap.Dps), shownDuration = Math.Round(snap.Duration), expectedDps = Math.Round(expected), ownSpan = Math.Round(span), ownFrom = mine[from].Timestamp.ToString("HH:mm:ss"), ownLast = mine[^1].Timestamp.ToString("HH:mm:ss"), shownDamage = snap.Damage, ownDealt = dealt }; }
+                            if (off > worst) { worst = off; worstAt = new { at = at.ToString("HH:mm:ss"), shownDps = Math.Round(snap.Dps), shownDuration = Math.Round(snap.Duration), expectedDps = Math.Round(expected), ownSpan = Math.Round(span), ownFrom = mine[from].Timestamp.ToString("HH:mm:ss"), ownLast = mine[^1].Timestamp.ToString("HH:mm:ss"), shownDamage = snap.Damage, ownDealt = dealt, group = GroupAt(at).Order().ToList(), mineSources = hits.Where(x => mine.Skip(from).Contains(x.Hit)).GroupBy(x => x.Source ?? x.Hit.SourceObjectId.ToString()).Select(g => $"{g.Key}:{g.Count()}").Take(12).ToList(), actors = snap.Actors.Select(x => $"{x.Name} {x.Damage} {Math.Round(x.Dps)}").ToList() }; }
                         }
                         bool fine = worst <= 0.10 && worstTarget <= 0.10; ok &= fine;
                         report.Add(new { recording = Path.GetFileName(file), snaps, local = snap?.LocalId, damage = snap?.Damage, duration = Math.Round(snap?.Duration ?? 0), dps = Math.Round(snap?.Dps ?? 0),
@@ -1015,6 +1095,125 @@ public static class Program
                 File.WriteAllText(Path.GetFullPath(args[1]), JsonSerializer.Serialize(checks.Select(c => (c.Ok ? "ok " : "FALLA ") + c.Name), new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
                 return checks.All(c => c.Ok) ? 0 : 1;
             }
+            if(args.FirstOrDefault() == "--abyss-test")
+            {
+                // Test: the Abyss card. args[1] a recording (.jsonl, through the whole engine) or a frame log («date time opcode hex»
+                // lines, as rare-frames.log; args[4] and args[5] the first and last time, «2026-10-24 12:10»); args[2] the picture
+                // (and a .json beside it); args[3] the language. The Abyss Points earned (0xA9FF) must rise as the stacks of item
+                // 930100003 in the inventory, a source of their own.
+                if (args.Length > 3 && args[3] is "en" or "pt" or "fr") L.Language = args[3];
+                testDirectory = Path.Combine(Path.GetTempPath(), "fa2c-abyss-" + Guid.NewGuid().ToString("N"));
+                Directory.CreateDirectory(testDirectory);
+                try
+                {
+                    AbyssWatch watch; RankingWatch rankings; int server = 2401; string name = "Darkni"; bool isLog = !args[1].EndsWith(".jsonl", StringComparison.OrdinalIgnoreCase);
+                    long itemRise = 0, lastItem = -1, earnedRise = 0, lastEarned = -1, rankUp = 0, rankDown = 0, lastRank = -1; int downs = 0;
+                    // The logins of a frame log (0x1156): a 0xA9FF up to 2 s before one is that login's value, not a rise.
+                    var logins = new List<DateTime>();
+                    if (isLog)
+                        foreach (var line in File.ReadLines(args[1]))
+                            if (line.Split(' ', 4) is { Length: 4 } q && q[2] == "0x1156" && q[3].Length > 80 && DateTime.TryParse(q[0] + " " + q[1], out var lt)) logins.Add(lt);
+                    DateTime checkAt = DateTime.MinValue;
+                    void Check(byte[] x)
+                    {
+                        if (x.Length < 2) return;
+                        int op = System.Buffers.Binary.BinaryPrimitives.ReadUInt16BigEndian(x);
+                        if (op == 0x1156 && x.Length > 40 && isLog) { lastEarned = -1; lastRank = -1; }
+                        if (op == 0x1B56 && x.Length >= 25 && x[2] == 1 && System.Buffers.Binary.BinaryPrimitives.ReadInt32LittleEndian(x.AsSpan(13)) == AbyssWatch.AbyssPoints)
+                        { long n = System.Buffers.Binary.BinaryPrimitives.ReadInt64LittleEndian(x.AsSpan(17)); if (lastItem >= 0 && n > lastItem) itemRise += n - lastItem; lastItem = n; }
+                        if (op == 0xA9FF && x.Length >= 18)
+                        {
+                            long n = System.Buffers.Binary.BinaryPrimitives.ReadInt64LittleEndian(x.AsSpan(2));
+                            bool login = logins.Any(l => l >= checkAt && l - checkAt <= TimeSpan.FromSeconds(2));
+                            if (lastEarned >= 0 && n > lastEarned && !login) earnedRise += n - lastEarned; lastEarned = n;
+                        }
+                        if (op == 0x73E2 && x.Length >= 11) { long n = System.Buffers.Binary.BinaryPrimitives.ReadInt64LittleEndian(x.AsSpan(3)); if (lastRank >= 0) { if (n > lastRank) rankUp += n - lastRank; else if (n < lastRank) { rankDown += lastRank - n; downs++; } } lastRank = n; }
+                    }
+                    if (args[1].EndsWith(".jsonl", StringComparison.OrdinalIgnoreCase))
+                    {
+                        DateTime at = DateTime.MinValue;
+                        var engine = new CaptureEngine { ReplayClock = () => at };
+                        engine.Tap = (f, t) => Frames.Walk(f, x => Check(x.ToArray()));
+                        engine.Abyss.Open(Path.Combine(DataDirectory, "abyss-sessions.json"));
+                        foreach (var line in File.ReadLines(args[1]))
+                        {
+                            var seg = JsonSerializer.Deserialize<SegmentLog>(line)!; at = seg.Timestamp;
+                            engine.Ingest(new(seg.Timestamp, seg.Source, seg.Destination, seg.Sequence, Convert.FromBase64String(seg.Payload), seg.FromServer));
+                        }
+                        var snap = engine.Snapshot();
+                        server = snap.LocalServerId ?? server; name = snap.Character is { Length: > 0 } c ? c : name;
+                        engine.Abyss.SetCharacter(server, name);
+                        watch = engine.Abyss; rankings = engine.Rankings;
+                    }
+                    else
+                    {
+                        watch = new AbyssWatch(); watch.Open(Path.Combine(DataDirectory, "abyss-sessions.json")); watch.SetCharacter(server, name);
+                        var inventory = new InventoryWatch();
+                        inventory.Gained += watch.ItemGained; inventory.KinahGained += watch.KinahGained;
+                        watch.Held = () => inventory.Holdings(i => i == AbyssWatch.AbyssPoints) is { Count: > 0 } held ? held.Values.Sum() : null;
+                        rankings = new RankingWatch(); rankings.Open(Path.Combine(DataDirectory, "rankings.json"));
+                        DateTime from = args.Length > 4 ? DateTime.Parse(args[4]) : DateTime.MinValue, to = args.Length > 5 ? DateTime.Parse(args[5]) : DateTime.MaxValue;
+                        foreach (var line in File.ReadLines(args[1]))
+                        {
+                            var parts = line.Split(' ', 4);
+                            if (parts.Length < 4 || parts[2] is not ("0x73E2" or "0xA9FF" or "0x1B56" or "0x1156" or "0x578D" or "0x3336") || !DateTime.TryParse(parts[0] + " " + parts[1], out var when)) continue;
+                            // The character record, as the engine passes it on live (the login's 0xA9FF that waited becomes its baseline).
+                            if (parts[2] == "0x3336") { if (when >= from && when <= to) watch.SetCharacter(server, name, record: true); continue; }
+                            byte[] frame; try { frame = Convert.FromHexString(parts[3]); } catch { continue; }
+                            if (parts[2] == "0x578D") { rankings.Add(frame, when); continue; }
+                            if (when < from || when > to) continue;
+                            checkAt = when; Check(frame); watch.Add(frame, when); inventory.Add(frame, when);
+                        }
+                    }
+                    watch.Flush(); // as on closing: a 0xA9FF that came alone at the end counts
+                    var view = watch.Now(); var (mine, all) = rankings.Abyss(server, name);
+                    var s = view.Session;
+                    var checks = new List<object>
+                    {
+                        new { check = "una sesión del Abismo con recompensas", ok = s is { Rewards: > 0 } },
+                        new { check = "puntos de Abismo de la sesión = subidas de 0xA9FF", ok = s?.ApGained == earnedRise, session = s?.ApGained, frames = earnedRise },
+                        new { check = "subidas de 0xA9FF = subidas del objeto 930100003 del inventario", ok = isLog || earnedRise == itemRise, earned = earnedRise, item = itemRise, note = isLog ? "no aplica: el registro guarda solo las primeras 50 tramas 0x1B56 de cada sesión" : null },
+                        new { check = "clasificación ganada y perdida = cambios de 0x73E2 tras el primero", ok = s?.RankGained == rankUp && s?.RankLost == rankDown && s?.Deaths == downs, gained = s?.RankGained, lost = s?.RankLost, deaths = s?.Deaths, framesUp = rankUp, framesDown = rankDown, framesDeaths = downs },
+                    };
+                    // A character switch, in the order the game sends a login (2026-10-25 02:45): the new character's 0xA9FF, the
+                    // inventory (0x1156), its 0xA9FF again, then its record (SetCharacter from the engine). Each keeps its own figures.
+                    {
+                        var sw = new AbyssWatch(); sw.Open(Path.Combine(DataDirectory, "abyss-switch.json"));
+                        var t = new DateTime(2026, 10, 25, 2, 30, 0);
+                        byte[] Rank(long v) { var b = new byte[11]; b[0] = 0x73; b[1] = 0xE2; System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian(b.AsSpan(3), v); return b; }
+                        byte[] Earn(long v) { var b = new byte[18]; b[0] = 0xA9; b[1] = 0xFF; System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian(b.AsSpan(2), v); System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian(b.AsSpan(10), 2_000_000); return b; }
+                        byte[] Login() { var b = new byte[48]; b[0] = 0x11; b[1] = 0x56; return b; }
+                        void Feed(byte[] f, double seconds) => sw.Add(f, t.AddSeconds(seconds));
+                        sw.SetCharacter(2401, "Uno", record: true);
+                        Feed(Earn(500_000), 0);                        // the login value of «Uno»: waits, then becomes its baseline
+                        Feed(Rank(700_000), 10); Feed(Earn(500_010), 10); // a reward: +10
+                        Feed(Rank(700_020), 20); Feed(Earn(500_030), 20); // another: +20
+                        Feed(Earn(0), 100); Feed(Login(), 100.15); sw.SetCharacter(2401, "Uno"); Feed(Earn(0), 108); sw.SetCharacter(2401, "Uno");
+                        sw.SetCharacter(2401, "Dos", record: true);   // «Dos» logs in with 0 earned
+                        var dos = sw.Now();
+                        Feed(Earn(500_030), 200); Feed(Login(), 200.2); sw.SetCharacter(2401, "Dos"); Feed(Earn(500_030), 208);
+                        sw.SetCharacter(2401, "Uno", record: true);   // back to «Uno»
+                        var uno = sw.Now();
+                        checks.Add(new { check = "cambio de personaje: cada uno conserva sus puntos de Abismo obtenidos y su sesión",
+                            ok = dos.Earned == 0 && dos.Session is null && uno.Earned == 500_030 && uno.Session?.ApGained == 30 && uno.Session?.RankGained == 20,
+                            dosEarned = dos.Earned, dosSession = dos.Session is not null, unoEarned = uno.Earned, unoAp = uno.Session?.ApGained, unoRank = uno.Session?.RankGained });
+                    }
+                    var card = new AbyssWindow(.92);
+                    card.Render(view, mine, all, s?.Last.AddSeconds(30) ?? DateTime.Now);
+                    var host = (System.Windows.FrameworkElement)card.Content; card.Content = null;
+                    host.Measure(new System.Windows.Size(300, double.PositiveInfinity)); host.Arrange(new System.Windows.Rect(host.DesiredSize)); host.UpdateLayout();
+                    var bmp = new System.Windows.Media.Imaging.RenderTargetBitmap((int)Math.Ceiling(host.ActualWidth * 2), (int)Math.Ceiling(host.ActualHeight * 2), 192, 192, System.Windows.Media.PixelFormats.Pbgra32);
+                    bmp.Render(host);
+                    var png = new System.Windows.Media.Imaging.PngBitmapEncoder(); png.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(bmp));
+                    using (var f = File.Create(Path.GetFullPath(args[2]))) png.Save(f);
+                    bool ok = checks.All(c => (bool)c.GetType().GetProperty("ok")!.GetValue(c)!);
+                    File.WriteAllText(Path.ChangeExtension(Path.GetFullPath(args[2]), ".json"), JsonSerializer.Serialize(new { ok, checks, view, mine = mine?.Rank, all = all?.Rank },
+                        new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
+                    Console.WriteLine(ok ? "ok" : "FALLA");
+                    return ok ? 0 : 1;
+                }
+                finally { Directory.Delete(testDirectory, true); testDirectory = null; }
+            }
             if(args.FirstOrDefault() == "--rank-badge-test")
             {
                 // Test: the overlay header with the Abyss medal (the 0x578D frames of a rare-frames.log, args[2], the data folder's by
@@ -1234,9 +1433,9 @@ public static class Program
                         new RoomMember(3, 3, "Darkni", 2401, "ISR", 45, 2773, 154_500, false, true, 8),
                         new RoomMember(4, 4, "HealerOne", 2401, "ISR", 45, 2676, 133_100, false, true, 31),
                         new RoomMember(5, 5, "DpsOne", 2401, "ISR", 45, 2849, 156_400, false, true, 9)]);
-                    // As the engine sends them: highest damage first.
-                    var players = new List<ActorRow> { new(11, "DpsTwo", 2_450_000, 51_384, 0), new(12, "DpsOne", 2_320_000, 51_485, 0),
-                        new(13, "TankOne", 2_070_000, 44_757, 0), new(325, "Darkni", 1_800_000, 52_442, 53_300), new(14, "HealerOne", 1_280_000, 28_258, 0) };
+                    // As the engine sends them since 1.0.25: by DPS, each one over their own time hitting (the last figure, seconds).
+                    var players = new List<ActorRow> { new(325, "Darkni", 1_800_000, 52_442, 53_300, 34.3), new(12, "DpsOne", 2_320_000, 51_485, 0, 45.1),
+                        new(11, "DpsTwo", 2_450_000, 51_384, 0, 47.7), new(13, "TankOne", 2_070_000, 44_757, 0, 46.2), new(14, "HealerOne", 1_280_000, 28_258, 0, 45.3) };
                     CaptureSnapshot Snapshot(double duration) => new("Captura activa · Ethernet", 1000, 900, 500, 0, "", 325, "Darkni", 1_800_000, 53_300, 52_442, duration, 7, 0, null, [], players,
                         0, 0, 0, false, LocalServerId: 2401, Room: room);
                     var overlay = new OverlayWindow(new AppSettings { OverlayVisible = false }) { Preview = true };
@@ -1727,12 +1926,16 @@ public static class Program
             }
             // Exceptions off the UI thread (capture callbacks) end the process without the dispatcher handler seeing them.
             AppDomain.CurrentDomain.UnhandledException += (_, e) => File.AppendAllText(Path.Combine(DataDirectory, "errors.log"), $"{DateTime.Now:o} fatal: {e.ExceptionObject}" + Environment.NewLine);
+            // When and why this run ends, to find the closes nobody asked for (session-log.txt).
+            SessionLog.Start(AppVersion.Current);
             var app = new Application();
-            app.DispatcherUnhandledException += (_, e) => { File.AppendAllText(Path.Combine(DataDirectory, "errors.log"), e.Exception + "\n"); MessageBox.Show(e.Exception.Message, "FullAIon2Companion"); e.Handled = true; };
+            app.DispatcherUnhandledException += (_, e) => { File.AppendAllText(Path.Combine(DataDirectory, "errors.log"), e.Exception + "\n"); SessionLog.Write("UI exception, shown and kept running: " + e.Exception.GetType().Name + " " + e.Exception.Message); MessageBox.Show(e.Exception.Message, "FullAIon2Companion"); e.Handled = true; };
+            app.SessionEnding += (_, e) => SessionLog.Write("Windows session ending: " + e.ReasonSessionEnding);
             app.Run(new MainWindow());
+            SessionLog.End("app closed normally");
             return 0;
         }
-        catch(Exception ex) { File.WriteAllText(Path.Combine(DataDirectory, "startup-error.log"), ex.ToString()); return 1; }
+        catch(Exception ex) { File.WriteAllText(Path.Combine(DataDirectory, "startup-error.log"), ex.ToString()); SessionLog.End("startup error: " + ex.GetType().Name + " " + ex.Message); return 1; }
     }
 }
 

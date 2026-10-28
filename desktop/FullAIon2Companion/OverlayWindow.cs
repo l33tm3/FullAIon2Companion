@@ -49,6 +49,11 @@ public sealed partial class OverlayWindow : Window
     public event Action<int>? BreakdownRequested;
     readonly OverlayDock dock = new();
     readonly DropsWindow drops;
+    readonly AbyssWindow abyssCard;
+    /// <summary>The Abyss totals and the session farming there (CaptureEngine.Abyss), set by the main window.</summary>
+    public Func<AbyssWatch.View>? AbyssNow { get; set; }
+    /// <summary>«Reiniciar» on the Abyss card, set by the main window.</summary>
+    public Action? AbyssReset { get; set; }
     readonly CenterAlert centerAlert = new();
     readonly PlayerWindow player = new();
     readonly MinimapWindow minimap;
@@ -351,7 +356,7 @@ public sealed partial class OverlayWindow : Window
         System.Windows.Documents.Run Change(int change) => new(Arrow(change)) { Foreground = ArrowColor(change) };
         System.Windows.Documents.Run Rest(RankingWatch.Entry e) => new("  " + L.T($"de {e.Total:N0} · top {Math.Max(0.1, e.Rank * 100.0 / Math.Max(1, e.Total)):0.0} %")) { Foreground = Muted };
         if (mine is not null) Row("Tu clase", Strong($"#{mine.Rank:N0}"), Change(mine.Change), Rest(mine));
-        if (all is not null) Row("General", Strong($"#{all.Rank:N0}"), Change(all.Change), Rest(all));
+        if (all is not null) Row("Todas las clases", Strong($"#{all.Rank:N0}"), Change(all.Change), Rest(all));
         Row("Puntos", Strong($"{latest.Points:N0}"));
         int? Count(string field) => latest.Detail.ValueKind == System.Text.Json.JsonValueKind.Object && latest.Detail.TryGetProperty(field, out var v) && v.TryGetInt32(out int n) ? n : null;
         if (Count("kill_count") is int kills && Count("death_count") is int deaths && Count("assist_count") is int assists)
@@ -509,6 +514,10 @@ public sealed partial class OverlayWindow : Window
         SourceInitialized+=(_,_)=>ApplyStyle();
         MouseLeftButtonDown+=(_,e)=>{if(ClickThrough||e.ButtonState!=MouseButtonState.Pressed)return;DragMove();SavePosition();};
         drops=new(settings.OverlayOpacity);
+        abyssCard=new(settings.OverlayOpacity);abyssCard.CloseRequested+=ToggleAbyss;abyssCard.ResetRequested=()=>AbyssReset?.Invoke();
+        abyssCard.Placed+=at=>{settings.AbyssLeft=at is Point p?Math.Round(p.X):null;settings.AbyssTop=at is Point q?Math.Round(q.Y):null;settings.Save();PlaceAbyss();};
+        abyssCard.Resized+=k=>{settings.AbyssScale=Math.Round(k,2);settings.Save();};
+        dock.SetAbyssOn(settings.OverlayAbyss);dock.AbyssClicked+=ToggleAbyss;
         dock.SetDropsOn(settings.OverlayDrops);
         dock.DropsClicked+=ToggleDrops;
         dock.SettingsClicked+=()=>SettingsRequested?.Invoke();
@@ -523,7 +532,7 @@ public sealed partial class OverlayWindow : Window
         LocationChanged+=(_,_)=>Arrange(fromDock:false);
         dock.LocationChanged+=(_,_)=>Arrange(fromDock:true);
         minimap=new(settings);minimap.Closed_+=ToggleMinimap;dock.MinimapClicked+=ToggleMinimap;dock.SetMinimapOn(settings.MinimapVisible);
-        Closed+=(_,_)=>{dock.Close();drops.Close();player.Close();minimap.Close();centerAlert.Close();bossWindow.Close();toast.Close();assistant.Close();};
+        Closed+=(_,_)=>{dock.Close();drops.Close();abyssCard.Close();player.Close();minimap.Close();centerAlert.Close();bossWindow.Close();toast.Close();assistant.Close();};
         centerAlert.Shown+=()=>{centerAlert.Topmost=!settings.OverlayAttachToGame;Restack(GetForegroundWindow());};
         HookForeground();
         Closed+=(_,_)=>{if(foregroundHook!=IntPtr.Zero)UnhookWinEvent(foregroundHook);};
@@ -539,7 +548,7 @@ public sealed partial class OverlayWindow : Window
         // A second colour makes the background a vertical gradient (Gamer Girl, Synthwave, Steampunk...).
         root.Background=look.Back2 is {} second?new LinearGradientBrush(Color.FromArgb(a,back.R,back.G,back.B),Color.FromArgb(a,C(second).R,C(second).G,C(second).B),90):new SolidColorBrush(Color.FromArgb(a,back.R,back.G,back.B));
         contentStack.LayoutTransform=new ScaleTransform(k,k);Width=LayoutWidth*k;
-        dock.ApplyScale(k);drops.ApplyAppearance(alpha,k);player.ApplyAppearance(alpha,k);
+        dock.ApplyScale(k);drops.ApplyAppearance(alpha,k);abyssCard.ApplyAppearance(alpha,settings.AbyssScale??k);player.ApplyAppearance(alpha,k);
         Arrange(fromDock:false);
     }
     // "Solo sobre el juego". Two things Windows does not allow from this process: making the game the owner window
@@ -548,7 +557,7 @@ public sealed partial class OverlayWindow : Window
     // when another app comes forward, the overlay is slotted right below that app - no longer topmost, so the app
     // covers it, yet still above the game and everything else.
     const uint NoMoveSizeActivate = 0x0001 | 0x0002 | 0x0010;
-    Window[] Family => [this, dock, drops, player, minimap, centerAlert, bossWindow, toast, assistant, assistant.Grip];
+    Window[] Family => [this, dock, drops, abyssCard, player, minimap, centerAlert, bossWindow, toast, assistant, assistant.Grip];
     readonly AssistantWindow assistant;
     PlayerCard? ownCard;
     /// <summary>The combat assistant bar: buffs and cooldowns, shown while the overlay is.</summary>
@@ -616,8 +625,22 @@ public sealed partial class OverlayWindow : Window
         if(arranging)return;arranging=true;
         if(fromDock){Left=dock.Left-Width-4;Top=dock.Top;}else{dock.Left=Left+Width+4;dock.Top=Top;}
         drops.Left=player.Left=dock.Left+dock.Width+4;drops.Top=player.Top=Top;
+        PlaceAbyss();
         arranging=false;
     }
+    // The Abyss card stays where it was dragged (while that is on a screen); else it goes under the loot card (or the player
+    // card) when one is open, or in its place.
+    void PlaceAbyss()
+    {
+        if(!abyssCard.IsVisible||abyssCard.Dragging)return;
+        if(settings.AbyssLeft is double x&&settings.AbyssTop is double y&&x>SystemParameters.VirtualScreenLeft-100&&y>SystemParameters.VirtualScreenTop-20
+            &&x<SystemParameters.VirtualScreenLeft+SystemParameters.VirtualScreenWidth-60&&y<SystemParameters.VirtualScreenTop+SystemParameters.VirtualScreenHeight-40)
+        {abyssCard.Left=x;abyssCard.Top=y;return;}
+        var above=drops.IsVisible?(Window)drops:player.IsVisible?player:null;
+        abyssCard.Left=dock.Left+dock.Width+4;
+        abyssCard.Top=above is null?Top:above.Top+above.ActualHeight+6;
+    }
+    public void ToggleAbyss(){settings.OverlayAbyss=!settings.OverlayAbyss;settings.Save();dock.SetAbyssOn(settings.OverlayAbyss);}
     public void ToggleMinimap(){settings.MinimapVisible=!settings.MinimapVisible;if(settings.MinimapVisible)PlusRequested?.Invoke();settings.Save();dock.SetMinimapOn(settings.MinimapVisible);}
     public void ToggleDrops(){settings.OverlayDrops=!settings.OverlayDrops;if(settings.OverlayDrops)PlusRequested?.Invoke();settings.Save();dock.SetDropsOn(settings.OverlayDrops);}
     static Brush Paint(string color) { var b = new SolidColorBrush((Color)ColorConverter.ConvertFromString(color)); b.Freeze(); return b; }
@@ -795,19 +818,20 @@ public sealed partial class OverlayWindow : Window
         bool wholeTroop = troop is { IsTroop: true } && settings.OverlayTroopAll;
         var shown = troop?.Members.Where(m => wholeTroop || m.Group == troop.OwnGroup).ToList();
         string troopRegion = PlayerProfiles.RegionOf(settings.RegionOffset);
-        // The instance room knows class and PC of everyone in it, players of other servers included (Elymas [Zik], 2026-10-13).
+        // The instance room knows class and PC of everyone in it, players of other servers included (MemberFour [Zik], 2026-10-13).
         RoomMember? RoomOf(string name) => s.Room?.Members.FirstOrDefault(m => m.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
         string? ClassOf(string name) => shown?.FirstOrDefault(m => m.Name.Equals(name, StringComparison.OrdinalIgnoreCase))?.ClassKey ?? RoomOf(name)?.ClassKey
             ?? (PlayerProfiles.Get(name, s.LocalServerId ?? settings.LastServerId, troopRegion).Card is { } c && ClassKeys.TryGetValue(c.ClassName, out var k) ? k : null);
-        var top = players.Where(p => p.Damage > 0).Take(wholeTroop ? 12 : 6).ToList();
-        long best = top.Count == 0 ? 1 : Math.Max(1, top[0].Damage), sum = Math.Max(1, players.Sum(p => p.Damage));
+        // The ones with the most damage (you always among them), ordered by DPS: the bars too; the % is each one's part of the damage.
+        var top = CaptureEngine.TopByDps(players.Where(p => p.Damage > 0), wholeTroop ? 12 : 6, s.LocalId);
+        double best = CaptureEngine.BestDps(top); long most = top.Count == 0 ? 1 : top.Max(p => p.Damage), sum = Math.Max(1, players.Sum(p => p.Damage));
         long? PowerOf(string name) => shown?.FirstOrDefault(m => m.Name.Equals(name, StringComparison.OrdinalIgnoreCase)) is { CombatPower: > 0 } tm ? tm.CombatPower
             : RoomOf(name) is { CombatPower: > 0 } rm ? rm.CombatPower
             : PlayerProfiles.Get(name, s.LocalServerId ?? settings.LastServerId, troopRegion).Card?.CombatPower;
         if (ranking && top.Count > 0)
         {
             if (wholeTroop) party.Children.Add(Label($"TROPA · DAÑO · {players.Count(p => p.Damage > 0)} con daño", 9.5, Dim));
-            for (int i = 0; i < top.Count; i++) party.Children.Add(PartyRow(i + 1, top[i], top[i].Id == s.LocalId, (double)top[i].Damage / best, (double)top[i].Damage / sum, ClassOf(top[i].Name), PowerOf(top[i].Name)));
+            for (int i = 0; i < top.Count; i++) party.Children.Add(PartyRow(i + 1, top[i], top[i].Id == s.LocalId, CaptureEngine.BarOf(top[i], best, most), (double)top[i].Damage / sum, ClassOf(top[i].Name), PowerOf(top[i].Name), CaptureEngine.Ranks(top[i])));
         }
         else if (s.Room is { Members.Count: > 0 } roomInfo)
         {
@@ -919,11 +943,20 @@ public sealed partial class OverlayWindow : Window
             else if(player.IsVisible)player.Hide();
             bool loot=!isPlayer&&settings.OverlayDrops&&drops.Load(currentNpc);
             if(loot&&!drops.IsVisible){drops.Show();drops.Topmost=!attach;Restack(GetForegroundWindow());Arrange(fromDock:false);}else if(!loot&&drops.IsVisible)drops.Hide();
+            if(settings.OverlayAbyss&&AbyssNow is not null)
+            {
+                var (mineRank,allRank)=AbyssRank?.Invoke()??(null,null);
+                // Restyled as soon as it is rebuilt: else it shows the default colours until the next tick.
+                if(abyssCard.Render(AbyssNow(),mineRank,allRank,DateTime.Now))ThemeWindow(abyssCard);
+                if(!abyssCard.IsVisible){abyssCard.Show();abyssCard.Topmost=!attach;Restack(GetForegroundWindow());}
+                PlaceAbyss();
+            }
+            else if(abyssCard.IsVisible)abyssCard.Hide();
             bool mapAllowed=Feature("companionMinimap");dock.SetMinimapAccess(mapAllowed);
             if(settings.MinimapVisible&&mapAllowed){minimap.Render(s);if(!minimap.IsVisible){minimap.Show();minimap.Topmost=!attach;Restack(GetForegroundWindow());}}
             else if(minimap.IsVisible)minimap.Hide();
         }
-        else if(IsVisible){Hide();dock.Hide();drops.Hide();player.Hide();minimap.Hide();bossWindow.Hide();}
+        else if(IsVisible){Hide();dock.Hide();drops.Hide();abyssCard.Hide();player.Hide();minimap.Hide();bossWindow.Hide();}
     }
     // The caster's kind: a boss in a dungeon or instance, a field / world boss, an elite, or an ordinary monster.
     static string KindOf(CastRow c, int? world)
@@ -1097,7 +1130,7 @@ public sealed partial class OverlayWindow : Window
     };
     /// <summary>A DPS row like TeamMate's, in our green: a rounded pill whose bar is the class colour, the class icon, the
     /// name with the player's combat power, DPS in bold and the share.</summary>
-    internal static UIElement PartyRow(int rank, ActorRow a, bool self, double fill, double share, string? classKey = null, long? power = null)
+    internal static UIElement PartyRow(int rank, ActorRow a, bool self, double fill, double share, string? classKey = null, long? power = null, bool ranked = true)
     {
         var color = classKey is not null && ClassColors.TryGetValue(classKey, out var c) ? c : Color.FromRgb(0x3F, 0xB8, 0xAF);
         var grid = new Grid { Height = 26, Margin = new Thickness(0, 2, 0, 1) };
@@ -1112,7 +1145,8 @@ public sealed partial class OverlayWindow : Window
         var text = new DockPanel { Margin = new Thickness(6, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center };
         var pct = Label($"{share * 100:0.0}%", 10.5, Paint("#A8ECD6")); pct.Width = 40; pct.TextAlignment = TextAlignment.Right;
         DockPanel.SetDock(pct, Dock.Right); text.Children.Add(pct);
-        var dpsText = Label($"{a.Dps:N0}/s", 11.5, Brushes.White); dpsText.FontWeight = FontWeights.Bold;
+        // A row whose DPS does not order the list yet (too little sustained hitting): its figure dimmed.
+        var dpsText = Label($"{a.Dps:N0}/s", 11.5, ranked ? Brushes.White : Muted); dpsText.FontWeight = ranked ? FontWeights.Bold : FontWeights.Normal;
         DockPanel.SetDock(dpsText, Dock.Right); text.Children.Add(dpsText);
         var icon = new Border { Width = 20, Height = 20, CornerRadius = new CornerRadius(5), Background = Paint("#59000000"), Margin = new Thickness(0, 0, 6, 0),
             Child = classKey is null ? null : new Image { Source = Icon($"/assets/ui/class_icon_{classKey}.png"), Margin = new Thickness(2) } };

@@ -79,6 +79,7 @@ public sealed class InventoryWatch
             if (item == Kinah)
             {
                 if (kinahNow >= 0 && count > kinahNow && at >= sessionStart) kinahGained += count - kinahNow;
+                if (kinahNow >= 0 && count > kinahNow) KinahGained?.Invoke(count - kinahNow, at);
                 kinahNow = count;
                 return;
             }
@@ -132,6 +133,8 @@ public sealed class InventoryWatch
     }
     /// <summary>An item entered the inventory (item id, quantity, frame time): pet souls and the loot of each creature are counted from here too.</summary>
     public event Action<int, long, DateTime>? Gained;
+    /// <summary>Kinah earned (the amount, frame time): the Abyss session counts it while farming there.</summary>
+    public event Action<long, DateTime>? KinahGained;
     /// <summary>Kinah earned in the session and the kinah now (null until the game sent it once).</summary>
     public (long Gained, long? Now) KinahSession { get { lock (gate) return (kinahGained, kinahNow >= 0 ? kinahNow : null); } }
     public IReadOnlyList<LootEntry> Loot { get { lock (gate) return loot.ToList(); } }

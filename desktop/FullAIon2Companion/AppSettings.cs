@@ -26,6 +26,12 @@ public sealed class AppSettings
     public bool OverlayVisible { get; set; }
     public bool BossSounds { get; set; } = true;
     public bool OverlayDrops { get; set; } = true;
+    /// <summary>The Abyss card beside the overlay (the strip's medal): ranking, points and the session farming there.</summary>
+    public bool OverlayAbyss { get; set; }
+    /// <summary>Where the Abyss card was dragged (null: beside the overlay) and its own size (null: the overlay's).</summary>
+    public double? AbyssLeft { get; set; }
+    public double? AbyssTop { get; set; }
+    public double? AbyssScale { get; set; }
     // Configuración > Combate
     public int CombatIdleSeconds { get; set; } = 15;
     public bool PartyOnly { get; set; } = true;
