@@ -15,7 +15,7 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "astro": "^7.3.8",
+    "astro": "^7.4.7",
     "cheerio": "^1.2.0",
     "leaflet": "^1.9.4",
     "lucide": "^1.55.0"
